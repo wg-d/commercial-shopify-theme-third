@@ -1,0 +1,168 @@
+{% assign og_title = page_title %}
+{% assign og_description = page_description | default: shop.description | default: shop.name %}
+{% assign og_url = canonical_url %}
+{% assign og_type = 'website' %}
+{% assign og_image_tags = '' %}
+
+{% if default_image == blank %}
+  {% assign og_default_image = page_image %}
+{% else %}
+  {% assign og_default_image = default_image %}
+{% endif %}
+
+{% if template.name == 'product' %}
+  {% assign variant = product.selected_variant %}
+  {% assign og_image = variant.featured_media.preview_image | default: product.featured_media.preview_image %}
+{% elsif template.name == 'collection' %}
+  {% assign og_image = collection.image %}
+{% elsif template.name == 'article' %}
+  {% if article.image %}
+    {% assign og_image = article.image %}
+  {% endif %}
+{% endif %}
+
+{% if og_image == blank %}
+  {% assign og_image = og_default_image %}
+{% endif %}
+
+{% if og_image != blank %}
+  {% capture og_image_tags %}
+    {% comment %}
+      LinkedIn requires 1200 (w) x 627 (h) pixels minimum to share
+      https://www.linkedin.com/help/linkedin/answer/46687/making-your-website-shareable-on-linkedin
+      Facebook suggests 1200 (w) x 630 (h) pixels minimum
+      https://developers.facebook.com/docs/sharing/best-practices/
+    {% endcomment %}
+    {% assign width = 1200 %}
+    {% assign height = width | divided_by: og_image.aspect_ratio | round %}
+
+    {% if height < 630 %}
+      {% assign height = 630 %}
+      {% assign width = height | times: og_image.aspect_ratio | round %}
+    {% endif %}
+    {% capture request_url %}{{ width }}x{{ height }}{% endcapture %}
+    <meta
+      property="og:image"
+      content="https:{{ og_image | img_url: request_url }}"
+    />
+    <meta
+      property="og:image:secure_url"
+      content="https:{{ og_image | img_url: request_url }}"
+    />
+    <meta property="og:image:width" content="{{ width }}" />
+    <meta property="og:image:height" content="{{ height }}" />
+    {% assign image_alt = og_image.alt %}
+    {% if og_image.alt == blank %}
+      {% assign image_alt = 'Social media image' %}
+    {% endif %}
+    <meta property="og:image:alt" content="{{ image_alt }}" />
+  {% endcapture %}
+{% endif %}
+
+{% if template.name == 'product' %}
+  {% assign variant = product.selected_variant %}
+  {% assign og_title = product.title | append: variant.title | strip_html %}
+{% elsif template.name == 'article' %}
+  {% assign og_title = article.title | strip_html %}
+  {% assign og_type = 'article' %}
+  {% assign og_description = article.excerpt_or_content | strip_html %}
+{% elsif template.name == 'password' %}
+  {% assign og_title = shop.name %}
+  {% assign og_url = shop.url %}
+  {% assign og_description = shop.description | default: shop.name %}
+{% endif %}
+
+<meta property="og:site_name" content="{{ shop.name | escape }}">
+<meta property="og:url" content="{{ og_url }}">
+<meta property="og:title" content="{{ og_title | escape }}">
+<meta property="og:type" content="{{ og_type }}">
+<meta property="og:description" content="{{ og_description | escape }}">
+
+{% if template.name == 'article' %}
+  <meta property="article:published_time" content="{{ article.published_at }}">
+  <meta property="article:author" content="{{ article.author }}">
+
+  {% for tag in article.tags %}
+    <meta property="article.tag" content="{{ tag }}">
+  {% endfor %}
+{% endif %}
+
+{{ og_image_tags }}
+
+{% assign twitter_title = page_title | default: shop.name %}
+{% assign twitter_description = page_description | default: shop.description | default: shop.name %}
+
+{% if twitter_handle == blank %}
+  {% assign twitter_handle = settings.social_twitter_handle | split: 'twitter.com/' | last %}
+{% endif %}
+
+{% if default_image == blank %}
+  {% assign twitter_default_image = page_image %}
+{% else %}
+  {% assign twitter_default_image = default_image %}
+{% endif %}
+
+{% if twitter_handle != blank %}
+  <meta name="twitter:site" content="@{{ twitter_handle | replace: '@', '' | escape }}">
+{% endif %}
+
+{% if template.name == 'product' %}
+  {% assign variant = product.selected_variant %}
+  {% assign twitter_image = variant.featured_media.preview_image | default: product.featured_media.preview_image %}
+{% elsif template.name == 'collection' %}
+  {% assign twitter_image = collection.image | default: twitter_image %}
+{% elsif template.name == 'article' %}
+  {% if article.image %}
+    {% assign twitter_image = article.image %}
+  {% endif %}
+{% endif %}
+
+{% if twitter_image == blank %}
+  {% assign twitter_image = twitter_default_image %}
+{% endif %}
+
+{% if twitter_image != blank %}
+  {% capture twitter_image_tags %}
+    {% comment %}
+      Twitter summary requires 144 (w) x 144 (h) pixels minimum to share,
+      displays at a 1:1 aspect ratio
+      https://developer.twitter.com/en/docs/tweets/optimize-with-cards/overview/summary
+
+      Twitter summary with large image require 300 (w) x 157 (h) pixels minimum to share,
+      display at a 2:1 aspect ratio
+      https://developer.twitter.com/en/docs/tweets/optimize-with-cards/overview/summary-card-with-large-image
+    {% endcomment %}
+    {% assign width = 1200 %}
+    {% if twitter_image.aspect_ratio <= 1 %}
+      {% comment %}
+        Summary
+      {% endcomment %}
+      {% assign height = width | divided_by: 1 | round %}
+      <meta name="twitter:card" content="summary">
+    {% else %}
+      {% comment %}
+        Summary with large image
+      {% endcomment %}
+      {% assign height = width | divided_by: 2 | round %}
+      <meta name="twitter:card" content="summary_large_image">
+    {% endif %}
+    {% capture request_url %}{{ width }}x{{ height }}{% endcapture %}
+    <meta
+      property="twitter:image"
+      content="https:{{ twitter_image | img_url: request_url, crop: 'center' }}"
+    />
+    <meta property="twitter:image:width" content="{{ width }}" />
+    <meta property="twitter:image:height" content="{{ height }}" />
+    {% assign image_alt = twitter_image.alt %}
+    {% if twitter_image.alt == blank %}
+      {% assign image_alt = 'Social media image' %}
+    {% endif %}
+    <meta property="twitter:image:alt" content="{{ image_alt | escape }}" />
+  {% endcapture %}
+{% endif %}
+
+<meta name="twitter:title" content="{{ twitter_title | escape }}">
+<meta name="twitter:description" content="{{ twitter_description | escape }}">
+
+{{ twitter_image_tags }}
+

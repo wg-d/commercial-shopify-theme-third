@@ -1,0 +1,395 @@
+{% assign section_classes = "home-section--content" %}
+{% assign section_heading = section.settings.section_heading %}
+{% if section_heading == blank %}
+  {% assign section_classes = section_classes | append: " no-section-heading" %}
+{% endif %}
+{% assign heading = section.settings.heading %}
+{% assign subheading = section.settings.subheading %}
+{% assign button_label = section.settings.button_label %}
+{% assign button_link = section.settings.button_link %}
+{% assign image = section.settings.image %}
+{% assign crop = section.settings.crop %}
+{% assign desktop_height = section.settings.desktop_height %}
+{% assign mobile_height = section.settings.mobile_height %}
+{% assign desktop_image_alignment = section.settings.desktop_image_alignment %}
+{% assign mobile_image_alignment = section.settings.mobile_image_alignment %}
+{% assign text_alignment = section.settings.text_alignment %}
+
+<script type="application/pxs-animation-mapping+json">
+  {
+    "blocks": [".image-with-text"],
+    "elements": [".image-with-text__heading", ".image-with-text__text", ".image-with-text__button"]
+  }
+</script>
+
+
+{% comment %}Inject @pixelunion/pxs-image-with-text/image-with-text begin{% endcomment %}
+{% comment %}
+
+  # General
+  @param section {Object}
+    Section object
+  @param section_classes {String}
+    A string of space separated classes to apply to the section element
+  @param base_name {String} Default: 'image-with-text'
+    A base name to use for all classes, and section type.
+
+  # Section Settings
+
+  @param section_heading {String} Optional
+    Section heading above the image
+  @param section_style {String} Optional
+    ie. accent or contrast - used in Startup
+  @param show_border (Boolean} Optional
+    Show section border
+  @param desktop_height {String} Optional
+    Section/image height on desktop
+  @param mobile_height {String} Optional
+    Section/image height on mobile
+
+  # Image Settings
+
+  @param image {Image} Required
+    Section image
+  @param desktop_image_alignment {String} Optional
+    Image position relative to the text content on desktop. Applied to a class on the section for CSS use.
+  @param mobile_image_alignment {String} Optional
+    Image position relative to the text content on mobile. Applied to a class on the section for CSS use.
+  @param crop {String} Optional
+    Image crop
+  @param overlay_opacity {Number} Optional
+    Overlay opacity for Image with Text Overlay. Used for inline style.
+  @param overlay_color {String} Optional
+    Overlay color. Used for inline style
+
+  # Text Settings
+
+  @param heading {String} Optional
+    Heading on the text side of the section
+  @param subheading {String} Optional
+    Subheading/text content for the text side of the section
+  @param text_color {String} Optional
+    Colour of text content and heading (does not apply to section heading)
+  @param text_alignment {String} Optional
+    Left, center or right alignment of text content
+  @param text_shadow {Boolean} Optional
+    Shadow effect on text content (existing setting in some themes)
+  @param content_position {String} Optional
+    Position of the text content in the container, usually for image with text overlay (ex. top-left, top-center, top-right)
+
+  # Button Settings
+
+  @param button_label {String} Optional
+    Button label on text side of section
+  @param button_link {String} Optional
+    Button link
+
+{% endcomment %}
+
+{%- assign base_name = base_name | default: 'image-with-text' -%}
+
+
+
+{%- if overlay_opacity > 0 and overlay_color -%}
+  {%- assign overlay_opacity = overlay_opacity | times: 0.01 -%}
+  {%- assign overlay_color = overlay_color | color_modify: 'alpha', overlay_opacity -%}
+{%- endif -%}
+
+{% capture text_classes %}
+  {% if text_alignment != blank %}
+    {{ base_name }}-text-alignment-{{ text_alignment }}
+  {% endif %}
+  {% if text_shadow %}
+   {{ base_name }}--text-shadow
+  {% endif %}
+{% endcapture %}
+
+<section
+  class="
+    {{ base_name }}
+    {% if section_style != blank %}
+      {{ base_name }}--section-style-{{ section_style }}
+    {% endif %}
+    {% if show_border %}
+      {{ base_name }}--section-show-border
+    {% endif %}
+    {% if desktop_height != blank %}
+      {{ base_name }}--desktop-height-{{ desktop_height }}
+    {% endif %}
+    {% if mobile_height != blank %}
+      {{ base_name }}--mobile-height-{{ mobile_height }}
+    {% endif %}
+    {% if desktop_image_alignment != blank %}
+      {{ base_name }}--desktop-image-alignment-{{ desktop_image_alignment }}
+    {% endif %}
+    {% if mobile_image_alignment != blank %}
+      {{ base_name }}--mobile-image-alignment-{{ mobile_image_alignment }}
+    {% endif %}
+    {% if content_position != blank %}
+      {{ base_name }}--content-position-{{ content_position }}
+    {% endif %}
+    {% if section_classes != blank %}
+      {{ section_classes }}
+    {% endif %}
+  "
+  data-section-id="{{ section.id }}"
+>
+  {%- if section_heading != blank -%}
+    <h2 class="{{ base_name }}__section-heading">{{ section_heading | escape }}</h2>
+  {%- endif -%}
+  <div class="{{ base_name }}__container">
+    <div class="{{ base_name }}__image-wrapper">
+      {%- if image != blank -%}
+        {% assign alt = image.alt | default: heading %}
+        {% assign crop = crop | default: 'center' %}
+        {% capture image_classes %}{{ base_name }}__image{% endcapture %}
+        {%
+          render 'rimg'
+          img: image,
+          alt: alt,
+          size: '1500x',
+          lazy: true,
+          crop: crop,
+          class: image_classes,
+        %}
+      {%- else -%}
+        {% capture placeholder_classes %}{{ base_name }}__image {{ base_name }}__placeholder{% endcapture %}
+        {{ 'collection-1' | placeholder_svg_tag: placeholder_classes }}
+      {%- endif -%}
+    </div>
+    <div
+      class="{{ base_name }}__content"
+      {% if overlay_color or text_color %}
+        style="
+          {% if overlay_color %}background-color: {{ overlay_color }};{% endif %}
+          {% if text_color %}color: {{ text_color }};{% endif %}
+        "
+      {% endif %}
+    >
+      {%-
+          if heading != blank
+          or subheading != blank
+          or button_label != blank
+          or button_link != blank
+       -%}
+       <div class="{{ base_name }}__content-wrapper {{ text_classes }}">
+          {%- if heading != blank -%}
+            <h2 class="{{ base_name }}__heading">{{ heading | escape }}</h2>
+          {%- endif -%}
+          {%- if subheading -%}
+            <div class="{{ base_name }}__text">{{ subheading }}</div>
+          {%- endif -%}
+          {%- if
+            button_label != blank
+            and button_link != blank
+          -%}
+            <a
+              class="{{ base_name }}__button"
+              href="{{ button_link }}"
+            >
+              {{ button_label }}
+            </a>
+          {%- endif -%}
+        </div>
+      {%- endif -%}
+    </div>
+  </div>
+</section>
+{% comment %}Inject @pixelunion/pxs-image-with-text/image-with-text end{% endcomment %}
+
+
+{% schema %}
+{
+  "name": "Image with Text",
+  "class": "image-with-text--section",
+  "settings": [
+    {
+      "id": "section_heading",
+      "type": "text",
+      "label": "Section Heading",
+      "default": "Image with text"
+    },
+    {
+      "type": "header",
+      "content": "Image"
+    },
+    {
+      "type": "image_picker",
+      "id": "image",
+      "label": "Image"
+    },
+    {
+      "type": "select",
+      "id": "crop",
+      "label": "Image focal point",
+      "options": [
+        {
+          "value": "top",
+          "label": "Top"
+        },
+        {
+          "value": "center",
+          "label": "Center"
+        },
+        {
+          "value": "bottom",
+          "label": "Bottom"
+        },
+        {
+          "value": "left",
+          "label": "Left"
+        },
+        {
+          "value": "right",
+          "label": "Right"
+        }
+      ],
+      "default": "center",
+      "info": "Used to keep the subject of your photo in view."
+    },
+    {
+      "type": "select",
+      "id": "desktop_height",
+      "label": "Desktop height",
+      "options": [
+        {
+          "value": "natural",
+          "label": "Natural"
+        },
+        {
+          "value": "400px",
+          "label": "400px"
+        },
+        {
+          "value": "500px",
+          "label": "500px"
+        },
+        {
+          "value": "600px",
+          "label": "600px"
+        },
+        {
+          "value": "700px",
+          "label": "700px"
+        },
+        {
+          "value": "800px",
+          "label": "800px"
+        }
+      ],
+      "default": "natural"
+    },
+    {
+      "type": "select",
+      "id": "mobile_height",
+      "label": "Mobile height",
+      "options": [
+        {
+          "value": "natural",
+          "label": "Natural"
+        },
+        {
+          "value": "300px",
+          "label": "300px"
+        },
+        {
+          "value": "400px",
+          "label": "400px"
+        },
+        {
+          "value": "500px",
+          "label": "500px"
+        }
+      ],
+      "default": "natural"
+    },
+    {
+      "id": "desktop_image_alignment",
+      "type": "select",
+      "options": [
+        {
+          "value": "left",
+          "label": "Left"
+        },
+        {
+          "value": "right",
+          "label": "Right"
+        }
+      ],
+      "default": "left",
+      "label": "Desktop image alignment"
+    },
+    {
+      "id": "mobile_image_alignment",
+      "type": "select",
+      "options": [
+        {
+          "value": "top",
+          "label": "Top"
+        },
+        {
+          "value": "bottom",
+          "label": "Bottom"
+        }
+      ],
+      "default": "top",
+      "label": "Mobile image alignment"
+    },
+    {
+      "type": "header",
+      "content": "Text"
+    },
+    {
+      "id": "heading",
+      "type": "text",
+      "label": "Heading",
+      "default": "Image with text"
+    },
+    {
+      "id": "subheading",
+      "type": "richtext",
+      "label": "Subheading",
+      "default": "<p>Pair large text with an image to give focus to your chosen product, collection, or blog post. Add details on availability, style, or even provide a review.</p>"
+    },
+    {
+      "id": "text_alignment",
+      "type": "select",
+      "options": [
+        {
+          "value": "left",
+          "label": "Left"
+        },
+        {
+          "value": "center",
+          "label": "Center"
+        },
+        {
+          "value": "right",
+          "label": "Right"
+        }
+      ],
+      "default": "left",
+      "label": "Text alignment"
+    },
+    {
+      "id": "button_label",
+      "type": "text",
+      "label": "Button label",
+      "default": "Button"
+    },
+    {
+      "id": "button_link",
+      "type": "url",
+      "label": "Button link"
+    }
+  ],
+  "presets": [
+    {
+      "category": "Image",
+      "name": "Image with text",
+      "settings": {}
+    }
+  ]
+}
+
+{% endschema %}

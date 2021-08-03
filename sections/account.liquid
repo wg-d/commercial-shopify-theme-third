@@ -1,0 +1,106 @@
+<section
+  class="account-page account-page-details"
+  data-template-account>
+  <header class="account-page-masthead">
+    <h1 class="account-page-title">
+      {{ 'customers.account.title' | t }}
+    </h1>
+  </header>
+
+  <div class="account-page-content">
+    <div class="account-page--two-column">
+      {% comment %}
+        Customer order summary
+      {% endcomment %}
+      <div class="account-page--column-large account-order-history">
+        <h2 class="account-page-subtitle">
+          {{ 'customers.account.order_history' | t }}
+        </h2>
+
+        {% if customer.orders.size > 0 %}
+          {% paginate customer.orders by 20 %}
+            <table class="account-table account-order-list">
+              <thead>
+                <tr>
+                  <th>{{ 'customers.account.order' | t }}</th>
+                  <th>{{ 'customers.account.payment' | t }}</th>
+                  <th>{{ 'customers.account.fulfillment' | t }}</th>
+                  <th>{{ 'customers.account.total' | t }}</th>
+                </tr>
+              </thead>
+
+              <tbody>
+                {% for order in customer.orders %}
+                  <tr>
+                    <td class="account-order-number">
+                      {%- capture order_link -%}
+                        {{ order.name }} - {{ order.created_at | date: format: 'short_day_month_year' }}
+                      {%- endcapture -%}
+
+                      {{ order_link | strip_newlines | link_to: order.customer_url, order.name }}
+                    </td>
+                    <td class="payment-status--{{ order.financial_status }}">
+                      {{ order.financial_status_label }}
+                    </td>
+                    <td class="fulfillment-status--{{ order.fulfillment_status }}">
+                      {{ order.fulfillment_status_label }}
+                    </td>
+                    <td class="account-order-list-total">
+                      <span class="money">{{ order.total_price | money }}</span>
+                    </td>
+                  </tr>
+                {% endfor %}
+              </tbody>
+            </table>
+
+            {% render 'pagination', paginate: paginate %}
+          {% endpaginate %}
+        {% else %}
+          <p class="empty">{{ 'customers.account.empty' | t }}</p>
+        {% endif %}
+      </div>
+
+      {% comment %}
+        Customer address summary
+      {% endcomment %}
+      <div class="account-page--column-small account-info">
+        <div class="account-info-block">
+          <h2 class="account-page-subtitle">
+            {{ customer.name }}
+          </h2>
+
+          <p class="account-info-item">
+            <a href="mailto:{{ customer.email }}">
+              {{ customer.email }}
+            </a>
+          </p>
+        </div>
+
+        <div class="account-info-block">
+          {% if customer.default_address != nil %}
+            <h2 class="account-page-subtitle">
+              {{ 'customers.account.default_address' | t }}
+            </h2>
+
+            {%
+              render 'account-address-list',
+              address: customer.default_address
+            %}
+          {% endif %}
+
+          <p class="account-address-item">
+            {% if customer.addresses_count == 0 %}
+              <a href="{{ routes.account_addresses_url }}">
+                {{ 'customers.account.new_address_link' | t }}
+              </a>
+            {% else %}
+              <a href="{{ routes.account_addresses_url }}">
+                {{ 'customers.account.view_addresses' | t: count: customer.addresses_count }}
+              </a>
+            {% endif %}
+          </p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>

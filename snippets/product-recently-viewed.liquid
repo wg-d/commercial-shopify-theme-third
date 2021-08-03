@@ -1,0 +1,74 @@
+{% comment %}
+  @param product {ProductDrop}
+    Product drop containing information about a product
+{% endcomment %}
+
+{%- if product != blank -%}
+  {%- assign selected_variant = product.selected_or_first_available_variant -%}
+  {%- assign selected_image = product.featured_image -%}
+  {%- assign compare_at_price = selected_variant.compare_at_price -%}
+  {%- assign price = selected_variant.price -%}
+  {%- assign product_available = product.available -%}
+
+  {%- assign on_sale = false -%}
+  {%- if compare_at_price > price -%}
+    {%- assign on_sale = true -%}
+  {%- endif -%}
+
+  {%- capture product_price -%}
+    {%-
+      render 'product-badge',
+      class_root: 'product',
+      product: product,
+      product_available: product_available,
+      on_sale: on_sale,
+      price: price,
+      compare_at_price: compare_at_price,
+      show_saved: true,
+      include_range: true,
+    -%}
+
+    {%-
+      render 'product-price',
+      class_root: 'product',
+      price: price,
+      price_varies: false,
+      compare_at_price: compare_at_price,
+      compare_at_price_varies: false,
+      on_sale: on_sale,
+      emphasize_price: false,
+      show_original: true,
+      include_hidden_price: false
+    -%}
+  {%- endcapture -%}
+
+  {%- capture recently_viewed_image -%}
+    {%- if selected_image -%}
+      {{- selected_image | img_url: '360x360' -}}
+    {%- else -%}
+      {%-
+        render 'placeholder_svg_uri'
+        placeholder: 'image'
+      -%}
+    {%- endif -%}
+  {%- endcapture -%}
+
+  "recently_viewed_info": {
+    "handle": {{ product.handle | json }}
+  },
+{% endif %}
+"time": {
+  "second": {{ 'general.time.second' | t | json }},
+  "seconds": {{ 'general.time.seconds' | t | json }},
+  "minute": {{ 'general.time.minute' | t | json }},
+  "minutes": {{ 'general.time.minutes' | t | json }},
+  "hour": {{ 'general.time.hour' | t | json }},
+  "hours": {{ 'general.time.hours' | t | json }},
+  "ago": {{ 'general.time.ago' | t | json }}
+},
+"product_card_settings": {
+  "emphasize_price": {{ settings.product_grid_emphasize_price }},
+  "sale_badge": {{ settings.product_sales_badge }},
+  "sale_badge_style": "{{ settings.product_sales_badge_style }}"
+},
+"currency": "{{ cart.currency.iso_code }}"

@@ -1,0 +1,9 @@
+<ul class="cartitems--list" data-cart-item-list>
+  {% for item in cart.items %}
+    {%
+      render 'cart-item',
+      item: item,
+      item_index: forloop.index,
+    %}
+  {% endfor %}
+</ul>

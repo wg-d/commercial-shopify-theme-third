@@ -1,0 +1,215 @@
+<script
+  type="application/json"
+  data-section-type="static-search"
+  data-section-id="{{ section.id }}">
+</script>
+
+{% assign enable_content = section.settings.enable_search_articles_pages %}
+
+{% assign paginate_by = section.settings.results_per_page_range %}
+
+{% paginate search.results by paginate_by %}
+
+  {% comment %}
+    Calculate number of results by type.
+  {% endcomment %}
+  {% assign product_count = 0 %}
+  {% assign article_count = 0 %}
+  {% assign page_count = 0 %}
+
+  {% assign page_title = 'general.accessibility.search' | t %}
+  {% assign total_result_count = search.results.size %}
+  {% if total_result_count > 0 %}
+    {% capture sanitized_terms %}
+      {%
+        render 'search-sanitizer',
+        search_terms: search.terms
+      %}
+    {% endcapture %}
+
+    {% assign sanitized_terms = sanitized_terms | strip %}
+    {% assign page_title = 'general.accessibility.search_results' | t: terms: sanitized_terms %}
+  {% endif %}
+
+  {% for item in search.results %}
+    {% if item.object_type == 'product' %}
+      {% assign product_count = product_count | plus: 1 %}
+    {% endif %}
+
+    {% if enable_content %}
+      {% if item.object_type == 'article' %}
+        {% assign article_count = article_count | plus: 1 %}
+      {% endif %}
+
+      {% if item.object_type == 'page' %}
+        {% assign page_count = page_count | plus: 1 %}
+      {% endif %}
+    {% endif %}
+  {% endfor %}
+
+  {% comment %}
+    Calculate the number of result types.
+  {% endcomment %}
+  {% assign type_count = 0 %}
+  {% if product_count > 0 %}{% assign type_count = type_count | plus: 1 %}{% endif %}
+  {% if article_count > 0 %}{% assign type_count = type_count | plus: 1 %}{% endif %}
+  {% if page_count > 0 %}{% assign type_count = type_count | plus: 1 %}{% endif %}
+
+  {% assign search_category = blank %}
+  {% assign search_filter_string = blank %}
+  {%- if search.performed -%}
+    {% assign field_prefixes = 'product_type: tag:' | split: ' ' %}
+    {% for field_prefix in field_prefixes %}
+      {% if search.terms contains field_prefix %}
+        {% assign search_filter = search.terms | split: field_prefix | last %}
+        {% assign search_category = search_filter | remove: 'searchfilter_' %}
+        {% assign search_filter_string = field_prefix | append: search_filter %}
+        {% break %}
+      {% endif %}
+    {% endfor %}
+  {%- endif -%}
+
+  {%
+    render 'breadcrumbs',
+    search_category: search_category,
+  %}
+
+  <div class="productgrid--outer layout--no-sidebar">
+    <div class="productgrid--wrapper">
+
+      <div class="productgrid--masthead">
+        <h1 class="visually-hidden">{{ page_title }}</h1>
+        {%
+          render 'page-search-form',
+          enable_content: enable_content,
+          search_filter_string: search_filter_string,
+          sanitized_terms: sanitized_terms,
+        %}
+      </div>
+
+
+      {% if product_count > 0 %}
+        <h2 class="visually-hidden">{{ 'general.accessibility.search_products' | t }}</h2>
+        <ul class="productgrid--items products-per-row-{{- section.settings.products_per_row -}}">
+            {% for item in search.results %}
+              {% if item.object_type != 'product' %}{% continue %}{% endif %}
+              {%
+                render 'product-grid-item',
+                product: item
+              %}
+            {% endfor %}
+          </ul>
+        {% else %}
+          <div class="productgrid--no-results">
+            {% assign title = 'search.general.no_search_performed' | t %}
+
+            {% if search.performed %}
+              {% capture sanitized_terms %}
+                {%
+                  render 'search-sanitizer',
+                  search_terms: search.terms
+                %}
+              {% endcapture %}
+
+              {% assign sanitized_terms = sanitized_terms | strip %}
+
+              {%- if search_category != blank -%}
+                {%
+                  assign title = 'search.general.no_results_products_title_in_category'
+                  | t: terms: sanitized_terms, category: search_category
+                %}
+              {%- else -%}
+                {% assign title = 'search.general.no_results_products_title' | t: terms: sanitized_terms %}
+              {%- endif -%}
+
+              {% if paginate.current_page > 1 %}
+                {%- if search_category != blank -%}
+                  {%
+                    assign title = 'search.general.no_more_results_products_title_in_category'
+                    | t: terms: sanitized_terms, category: search_category
+                  %}
+                {%- else -%}
+                  {% assign title = 'search.general.no_more_results_products_title' | t: terms: sanitized_terms %}
+                {%- endif -%}
+              {% endif %}
+            {% endif %}
+
+            <h2 class="productgrid--no-results-title">
+              {{ title }}
+            </h2>
+
+            {% if search.performed %}
+              <a class="productgrid--no-results-button" href="{{ routes.all_products_collection_url }}">
+                {{ 'search.general.view_all_products' | t }}
+              </a>
+            {% endif %}
+          </div>
+        {% endif %}
+      </div>
+
+      {% if enable_content and search.performed and search_category == blank %}
+        <div class="productgrid--footer">
+          {%
+            render 'results-search-content',
+            title: 'search.general.posts_title',
+            results: search.results,
+            results_type: 'article',
+            results_count: article_count
+          %}
+
+          {%
+            render 'results-search-content',
+            title: 'search.general.pages_title',
+            results: search.results,
+            results_type: 'page',
+            results_count: page_count
+          %}
+        </div>
+      {% endif %}
+
+      {% render 'pagination', paginate: paginate %}
+    </div>
+    {% render 'quick-shop' %}
+  </div>
+{% endpaginate %}
+
+{% schema %}
+{
+  "name": "Search results",
+  "class": "search--section section--canonical",
+  "settings": [
+    {
+      "type": "range",
+      "id": "results_per_page_range",
+      "label": "Results per page",
+      "min": 24,
+      "max": 48,
+      "step": 12,
+      "default": 24
+    },
+    {
+      "type": "select",
+      "id": "products_per_row",
+      "label": "Products per row",
+      "options": [
+        {
+          "label": "3",
+          "value": "3"
+        },
+        {
+          "label": "4",
+          "value": "4"
+        }
+      ],
+      "default": "4"
+    },
+    {
+      "id": "enable_search_articles_pages",
+      "type": "checkbox",
+      "label": "Show blog posts and pages in search results",
+      "default": true
+    }
+  ]
+}
+
+{% endschema %}

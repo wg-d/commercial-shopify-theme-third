@@ -1,0 +1,44 @@
+{% comment %}
+!! Warning !! Please do not make any changes to this file. !! Warning !!
+{% endcomment %}
+
+{% assign quotify_enabled = shop.metafields.quotify.enabled %}
+{% assign quotify_hide_cart = shop.metafields.quotify.hide_add_to_cart %}
+{% assign quotify_hide_price = shop.metafields.quotify.hide_price %}
+{% assign quotify_product_in_collection = 0 %}
+
+{% for collection in product.collections %}
+    {% if collection.metafields.quotify.enabled == 1 and quotify_product_in_collection == 0 %}
+        {% assign quotify_product_in_collection = 1 %}
+    {% endif %}
+{% endfor %}
+
+{% if quotify_enabled == 1 %}
+{% if shop.metafields.quotify.mode != 'selection' or shop.metafields.quotify.mode == 'selection' and product.metafields.quotify.enabled == 1 or shop.metafields.quotify.mode == 'selection' and quotify_product_in_collection == 1 %}
+                <button data-quotify data-product="{{ product | json | escape }}"
+                data-checksum="{{ product | json | prepend: 'qjQEHtl6NzafizRZ' | sha256  }}" data-shop="36755eb6-18d4-4d76-9383-ba7dbc7f597a"
+                type="button"
+                class="quotify-request-quote-btn {{ class }}">
+            {{ 'quotify.request_quote' | t }}
+        </button>
+    {% endif %}
+
+    {%- style -%}
+    {% if quotify_hide_cart == 1 %}
+        {% if shop.metafields.quotify.mode != 'selection' or shop.metafields.quotify.mode == 'selection' and product.metafields.quotify.enabled == 1 or shop.metafields.quotify.mode == 'selection' and quotify_product_in_collection == 1 %}
+            .template-product form[action^="/cart/add"] [data-shopify="payment-button"],
+            .template-product form[action^="/cart/add"] button[type="submit"],
+            .quotify-hide-cart-{{ product.id }} {
+                display: none !important;
+            }
+        {% endif %}
+    {% endif %}
+    {% if quotify_hide_price == 1 %}
+        {% if shop.metafields.quotify.mode != 'selection' or shop.metafields.quotify.mode == 'selection' and product.metafields.quotify.enabled == 1 or shop.metafields.quotify.mode == 'selection' and quotify_product_in_collection == 1 %}
+            .quotify-hide-price-{{ product.id }} {
+                display: none !important;
+            }
+        {% endif %}
+    {% endif %}
+    {%- endstyle -%}
+{% endif %}

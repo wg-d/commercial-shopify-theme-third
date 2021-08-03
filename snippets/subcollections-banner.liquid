@@ -1,0 +1,25 @@
+<div class="subcollections-banner__container">
+  {% if section.settings.show_collection_image and image %}
+    <figure class="subcollections-banner__image">
+      {%
+        render 'rimg',
+        img: image,
+        size: '1350x',
+        lazy: true,
+        canvas: true
+      %}
+    </figure>
+  {% endif %}
+
+  {% if heading != blank %}
+    <h1 class="subcollections-banner__title">
+      {{ heading }} 
+    </h1>
+  {% endif %}
+
+  {% if section.settings.show_description and description != blank %}
+    <div class="subcollections-banner__description rte">
+      {{ description }}
+    </div>
+  {% endif %}
+</div>

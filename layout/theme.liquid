@@ -1,0 +1,434 @@
+<!doctype html>
+<html class="no-js no-touch" lang="{{ shop.locale }}">
+  <head>
+    <meta name="facebook-domain-verification" content="4lzg0d1gt1wot0v3mptcjneiwb7byb" />
+    <meta charset="utf-8">
+    <meta http-equiv="x-ua-compatible" content="IE=edge">
+
+    <link rel="preconnect" href="https://cdn.shopify.com">
+    <link rel="preconnect" href="https://fonts.shopifycdn.com">
+    <link rel="preconnect" href="https://v.shopify.com">
+    <link rel="preconnect" href="https://cdn.shopifycloud.com">
+
+
+    
+    
+    <title>
+      {{- page_title -}}      {% assign unit_footage = 1.84 %}
+
+      {%- if current_tags -%}
+        {% capture cat_array %}{%- render 'advanced-tag-loop' -%}{% endcapture %}
+        {% assign cat_array = cat_array | split: '|' %}
+        {% assign title_tags = '' %}
+        {% assign meta_tags = current_tags | join: ', ' %}
+        {%- for tag in current_tags -%}
+          {% assign is_advanced_tag = false %}
+          {% assign cat = tag | split: '_' | first %}
+
+          {%- unless cat == tag -%}
+            {%- if cat_array contains cat -%}
+              {% assign is_advanced_tag = true %}
+              {% assign title_tags = title_tags | append: ', ' | append: tag | replace_first: '_', ': ' %}
+            {%- endif -%}
+          {%- endunless -%}
+
+          {%- unless is_advanced_tag -%}
+            {% assign title_tags = title_tags | append: ', ' | append: tag %}
+          {%- endunless -%}
+        {%- endfor -%}
+        {{ 'general.title.tags' | t: tags: title_tags | remove_first: ', ' }}
+      {%- endif -%}
+
+      {%- if current_page != 1 -%}
+        {{- 'general.title.page' | t: page: current_page -}}
+      {%- endif -%}
+
+      {%- unless page_title contains shop.name -%}
+        {{- 'general.title.shop' | t: shop: shop.name -}}
+      {%- endunless -%}
+    </title>
+
+    {% if page_description != blank %}
+      <meta name="description" content="{{ page_description | escape }}">
+    {% endif %}
+
+    {% render 'favicon' %}
+
+    {% if template contains 'collection' and current_tags %}
+      <meta name="robots" content="noindex" />
+      <link rel="canonical" href="{{ shop.url }}{{ collection.url }}" />
+    {% else %}
+      <link rel="canonical" href="{{ canonical_url }}" />
+    {% endif %}
+
+    <meta name="viewport" content="width=device-width">
+
+    {% assign twitter_handle = settings.social_twitter | split: 'twitter.com/' | last %}
+    {%
+      render 'social-meta-tags',
+      twitter_handle: twitter_handle
+    %}
+
+    <link rel="preload" href="{{ settings.type_menu | font_url }}" as="font" crossorigin="anonymous">
+    <link rel="preload" as="style" href="{{ 'theme.css' | asset_url }}">
+
+    {{ content_for_header }}
+
+    {{ 'theme.css' | asset_url | stylesheet_tag }}
+
+    {% comment %}Inject theme-object begin{% endcomment %}
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+    <script>
+      window.Theme = window.Theme || {};
+      window.Theme.routes = {
+        "root_url": "{{ routes.root_url }}",
+        "account_url": "{{ routes.account_url }}",
+        "account_login_url": "{{ routes.account_login_url }}",
+        "account_logout_url": "{{ routes.account_logout_url }}",
+        "account_register_url": "{{ routes.account_register_url }}",
+        "account_addresses_url": "{{ routes.account_addresses_url }}",
+        "collections_url": "{{ routes.collections_url }}",
+        "all_products_collection_url": "{{ routes.all_products_collection_url }}",
+        "search_url": "{{ routes.search_url }}",
+        "cart_url": "{{ routes.cart_url }}",
+        "cart_add_url": "{{ routes.cart_add_url }}",
+        "cart_change_url": "{{ routes.cart_change_url }}",
+        "cart_clear_url": "{{ routes.cart_clear_url }}",
+        "product_recommendations_url": "{{ routes.product_recommendations_url }}",
+      };
+    </script>
+    {% comment %}Inject theme-object end{% endcomment %}
+
+  
+                {% include 'omgrfq_script' %}
+            </head>
+
+  <body class="template-{{ template.name }}" data-instant-allow-query-string {% if settings.reduce_animations %}data-reduce-animations{% endif %}>
+    <script>
+      document.documentElement.className=document.documentElement.className.replace(/\bno-js\b/,'js');
+      if(window.Shopify&&window.Shopify.designMode)document.documentElement.className+=' in-theme-editor';
+      if(('ontouchstart' in window)||window.DocumentTouch&&document instanceof DocumentTouch)document.documentElement.className=document.documentElement.className.replace(/\bno-touch\b/,'has-touch');
+    </script>
+    <a class="skip-to-main" href="#site-main">{{ 'general.accessibility.skip_to_content' | t }}</a>
+    {% section 'static-announcement' %}
+    {% section 'static-utility-bar' %}
+    <header
+      class="site-header site-header-nav--open"
+      role="banner"
+      data-site-header
+    >
+      {% section 'static-header' %}
+    </header>
+    <div class="intersection-target" data-header-intersection-target></div>
+    <div class="site-main-dimmer" data-site-main-dimmer></div>
+    <main id="site-main" class="site-main" aria-label="Main content" tabindex="-1">
+      {{ content_for_layout }}
+    </main>
+
+    {% section 'static-footer' %}
+
+    {% comment %}
+      Below are various templates used in JavaScript
+    {% endcomment %}
+    <div style="display: none;" aria-hidden="true" data-templates>
+      {% comment %}Inject message-banner begin{% endcomment %}
+      <div
+        class="message-banner--container"
+        role="alert"
+        data-message-banner
+      >
+        <div class="message-banner--outer">
+          <div class="message-banner--inner" data-message-banner-content></div>
+      
+          <button
+            class="message-banner--close"
+            type="button"
+            aria-label="{{ 'general.accessibility.close' | t }}"
+            data-message-banner-close
+          >
+            {%- render 'icon-menu-close' -%}
+          </button>
+        </div>
+      </div>
+      {% comment %}Inject message-banner end{% endcomment %}
+
+      {% comment %}Inject atc-banner begin{% endcomment %}
+      <section class="atc-banner--container" role="log" data-atc-banner>
+        <div class="atc-banner--outer">
+          <div class="atc-banner--inner">
+            <div class="atc-banner--product">
+              <h2 class="atc-banner--product-title">
+                <span class="atc-banner--product-title--icon">
+                  {%- render 'icon-checkmark' -%}
+                </span>
+                {{ 'add_to_cart_banner.general.product_added' | t }}
+              </h2>
+      
+              <div class="atc--product">
+                <div class="atc--product-image" data-atc-banner-product-image>
+                  {{ 'image' | placeholder_svg_tag: 'placeholder--image' }}
+                </div>
+                <div class="atc--product-details">
+                  <h2 class="atc--product-details--title" data-atc-banner-product-title></h2>
+                  <span class="atc--product-details--options" data-atc-banner-product-options></span>
+                  <span class="atc--product-details--price">
+                    <span class="atc--product-details--price-quantity" data-atc-banner-product-price-quantity></span>
+                    <span class="atc--product-details--price-value money" data-atc-banner-product-price-value></span>
+                    <span class="atc--product-details--price-discounted money" data-atc-banner-product-price-discounted></span>
+                    <span class="atc--product-details--unit-price hidden" data-atc-banner-unit-price>
+                      {{ 'product_price.price.price_per_unit_html' | t: total_quantity: '** total_quantity **', unit_price: '** unit_price **', unit_measure: '** unit_measure **' }}
+                    </span>
+                  </span>
+                  <ul class="discount-list" data-atc-banner-product-discounts>
+                    <li class="discount-list-item">
+                      {% render 'icon-library', id: 'icon-sale-tag' %}
+                      <span class="discount-title"></span>
+                      (-<span class="money discount-amount"></span>)
+                    </li>
+                  </ul>
+                </div>
+              </div>
+            </div>
+      
+            <div class="atc-banner--cart">
+              <div class="atc-banner--cart-subtotal">
+                <span class="atc-subtotal--label">
+                  {{ 'add_to_cart_banner.general.sub_total' | t }}
+                </span>
+                <span class="atc-subtotal--price money" data-atc-banner-cart-subtotal></span>
+              </div>
+      
+              <footer class="atc-banner--cart-footer">
+                <a class="button-secondary atc-button--viewcart" href="{{ routes.cart_url }}" data-atc-banner-cart-button>
+                  {{ 'add_to_cart_banner.general.view_cart_html' | t: count: '<span></span>' }}
+                </a>
+                <form
+                  action="{{ routes.cart_url }}"
+                  method="post"
+                  aria-label="cart checkout"
+                >
+                  <button class="button-primary atc-button--checkout" type="submit" name="checkout">
+                    {% if settings.enable_checkout_lock_icon %}
+                      {% render 'icon-checkout-lock' %}
+                    {% endif %}
+                    <span>{{ 'add_to_cart_banner.general.checkout' | t }}</span>
+                  </button>
+                </form>
+              </footer>
+            </div>
+          </div>
+      
+          <button
+            class="atc-banner--close"
+            type="button"
+            aria-label="{{ 'general.accessibility.close' | t }}"
+            data-atc-banner-close
+          >
+            {%- render 'icon-menu-close' -%}
+          </button>
+        </div>
+      </section>
+      {% comment %}Inject atc-banner end{% endcomment %}
+
+    </div>
+
+    {% comment %}
+      Modal container, used on Collections, Password, and QuickShop
+    {% endcomment %}
+    {% comment %}Inject modal begin{% endcomment %}
+    <div class="modal" data-modal-container aria-label="modal window" data-trap-focus>
+      <div class="modal-inner" data-modal-inner>
+        <button
+          class="modal-close"
+          type="button"
+          aria-label="{{ 'general.accessibility.close' | t }}"
+          data-modal-close
+        >
+          {% render 'icon-menu-close' %}
+        </button>
+        <div class="modal-content" data-modal-content></div>
+      </div>
+    </div>
+    
+    <div class="modal-1" data-modal-container-1 aria-label="modal window">
+      <div class="modal-inner" data-modal-inner>
+        <button
+          class="modal-close"
+          type="button"
+          aria-label="{{ 'general.accessibility.close' | t }}"
+          data-modal-1-close
+        >
+          {% render 'icon-menu-close' %}
+        </button>
+        <div class="modal-content" data-modal-content></div>
+      </div>
+    </div>
+    {% comment %}Inject modal end{% endcomment %}
+
+
+    {% comment %}
+      This is the PhotoSwipe dialog which needs to be in the base page
+    {% endcomment %}
+    {% comment %}Inject product-gallery-zoom begin{% endcomment %}
+    {% comment %} Root element of PhotoSwipe. Must have class pswp. {% endcomment %}
+    <div
+      class="pswp"
+      tabindex="-1"
+      role="dialog"
+      aria-hidden="true"
+      aria-label="{{ 'general.accessibility.product_zoom_dialog' | t }}"
+      data-photoswipe
+    >
+    
+      {% comment %} Background of PhotoSwipe.
+            It's a separate element as animating opacity is faster than rgba(). {% endcomment %}
+      <div class="pswp__bg"></div>
+    
+      {% comment %} Slides wrapper with overflow:hidden. {% endcomment %}
+      <div class="pswp__scroll-wrap">
+          {% comment %} Container that holds slides.
+              PhotoSwipe keeps only 3 of them in the DOM to save memory.
+              Don't modify these 3 pswp__item elements, data is added later on. {% endcomment %}
+          <div class="pswp__container" aria-hidden="true">
+              <div class="pswp__item"></div>
+              <div class="pswp__item"></div>
+              <div class="pswp__item"></div>
+          </div>
+    
+          {% comment %} Default (PhotoSwipeUI_Default) interface on top of sliding area. Can be changed. {% endcomment %}
+          <div class="pswp__ui pswp__ui--hidden">
+              <div class="pswp__top-bar">
+                  {% comment %}  Controls are self-explanatory. Order can be changed. {% endcomment %}
+                  <div class="pswp__counter"></div>
+                  <button class="pswp__button pswp__button--close" title="{{ 'general.accessibility.close' | t }}">
+                    <span tabindex="-1">
+                      {% render 'icon-library', id: 'icon-close' %}
+                    </span>
+                  </button>
+                  <button class="pswp__button pswp__button--share" title="Share"></button>
+                  <button class="pswp__button pswp__button--fs" title="Toggle fullscreen"></button>
+                  <button class="pswp__button pswp__button--zoom" title="Zoom in/out"></button>
+    
+                  {% comment %} Preloader demo https://codepen.io/dimsemenov/pen/yyBWoR {% endcomment %}
+                  {% comment %} element will get class pswp__preloader--active when preloader is running {% endcomment %}
+                  <div class="pswp__preloader">
+                      <div class="pswp__preloader__icn">
+                        <div class="pswp__preloader__cut">
+                          <div class="pswp__preloader__donut"></div>
+                        </div>
+                      </div>
+                  </div>
+              </div>
+    
+              <div class="pswp__share-modal pswp__share-modal--hidden pswp__single-tap">
+                  <div class="pswp__share-tooltip"></div>
+              </div>
+    
+              <button class="pswp__button pswp__button--arrow--left" title="Previous (arrow left)">
+              </button>
+              <button class="pswp__button pswp__button--arrow--right" title="Next (arrow right)">
+              </button>
+    
+              <div class="pswp__caption">
+                  <div class="pswp__caption__center"></div>
+              </div>
+          </div>
+      </div>
+      <div class="product-zoom--thumbnails" data-photoswipe-thumbs>
+        <button
+          class="gallery-navigation--scroll-button scroll-left"
+          aria-label="Scroll thumbnails left"
+          data-gallery-scroll-button
+        >
+          {% render 'icon-chevron-down' %}
+        </button>
+        <button
+          class="gallery-navigation--scroll-button scroll-right"
+          aria-label="Scroll thumbnails right"
+          data-gallery-scroll-button
+        >
+          {% render 'icon-chevron-down' %}
+        </button>
+        <div class="product-zoom--thumb-scroller" data-photoswipe-thumb-scroller></div>
+      </div>
+    </div>
+    {% comment %}Inject product-gallery-zoom end{% endcomment %}
+
+
+    {%- if template contains 'customer' -%}
+      {{ 'shopify_common.js' | shopify_asset_url | script_tag }}
+      {{ 'customer_area.js' | shopify_asset_url | script_tag }}
+    {%- endif -%}
+
+    {% unless settings.reduce_animations %}
+      <script>
+        (
+          function () {
+            var classes = {
+              block: 'pxu-lia-block',
+              element: 'pxu-lia-element',
+            };
+
+            document
+              .querySelectorAll('[type="application/pxs-animation-mapping+json"]')
+              .forEach(function (mappingEl) {
+                const section = mappingEl.parentNode;
+                try {
+                  const mapping = JSON.parse(mappingEl.innerHTML);
+                  mapping.elements.forEach(function (elementSelector) {
+                    section
+                      .querySelectorAll(elementSelector)
+                      .forEach(function (element) { element.classList.add(classes.element); });
+                  });
+
+                  mapping.blocks.forEach(function (blockSelector) {
+                    section
+                      .querySelectorAll(blockSelector)
+                      .forEach(function (block) { block.classList.add(classes.block); });
+                  });
+                } catch (error) {
+                  console.warn('Unable to parse animation mapping', mappingEl, error);
+                }
+            });
+          }
+        )()
+      </script>
+    {% endunless %}
+
+    <script
+      src="{{ 'empire.js' | asset_url }}"
+      data-scripts
+      data-shopify-api-url="{{ 'api.jquery.js' | shopify_asset_url }}"
+      data-shopify-countries="/services/javascripts/countries.js"
+      data-shopify-common="{{ 'shopify_common.js' | shopify_asset_url }}"
+      data-shopify-cart="{{ 'jquery.cart.js' | asset_url }}"
+      data-pxu-polyfills="{{ 'polyfills.js' | asset_url }}"
+    >
+    </script>
+
+    {% render 'structured-data' %}
+
+    <script>
+    (function () {
+      function handleFirstTab(e) {
+        if (e.keyCode === 9) { // the "I am a keyboard user" key
+          document.body.classList.add('user-is-tabbing');
+          window.removeEventListener('keydown', handleFirstTab);
+        }
+      }
+      window.addEventListener('keydown', handleFirstTab);
+    })();
+    </script>
+
+    {% unless settings.reduce_animations %}
+      {{ 'ripple.css' | asset_url | stylesheet_tag }}
+    {% endunless %}
+
+    <script
+      src="{{ 'instantPage.min.js' | asset_url }}"
+      type="module"
+      defer
+    >
+    </script>
+  </body>
+</html>

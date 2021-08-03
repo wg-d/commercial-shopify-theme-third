@@ -1,0 +1,179 @@
+{% comment %}
+  @param product {Product}
+    The product object in question
+
+  @param selected_media {Media}
+    The current selected media in the gallery
+
+  @param aspect_ratio {string}
+    The aspect ratio setting, which is either 'short', 'tall', or 'square'
+
+  @param image_crop {boolean}
+    Defines if the image should be cropped or not
+
+  @param hover_zoom {String}
+    This is the hover zoom setting, which is either 'disabled', 'separate', or 'replace'
+{% endcomment %}
+
+<div
+  class="
+    product-gallery--viewer
+    {% if product.media.size > 0 %}
+      product-gallery--has-media
+    {% endif %}
+  "
+  data-gallery-viewer
+>
+  {% for media in product.media %}
+    <figure
+      class="
+        product-gallery--media
+        product-gallery--{{ media.media_type }}
+      "
+      tabindex="-1"
+      {% if selected_media.id != media.id %}
+        aria-hidden="true"
+      {% else %}
+        aria-hidden="false"
+      {% endif %}
+      data-gallery-figure
+      data-gallery-index="{{ forloop.index0 }}"
+      data-gallery-selected="{%- if selected_media.id == media.id -%}true{%- else -%}false{%- endif -%}"
+      data-media="{{ media.id }}"
+      data-media-type="{{ media.media_type }}"
+      {% if media.media_type == 'image' %}
+        {% assign max_zoom = 2400 %}
+        {% assign zoom_height = media.height %}
+        {% assign zoom_width = media.width %}
+        {% if image_crop %}
+          {% case aspect_ratio %}
+          {% when 'short' %}
+            {% assign min_width = media.height | times: 4 | divided_by: 3 %}
+            {% if media.width > min_width %}
+              {% assign zoom_width = min_width %}
+            {% else %}
+              {% assign zoom_height = media.width | times: 3 | divided_by: 4 %}
+            {% endif %}
+          {% when 'square' %}
+            {% comment %} Square crop {% endcomment %}
+            {% if media.height > media.width %}
+              {% assign zoom_height = media.width %}
+            {% else %}
+              {% assign zoom_width = media.height %}
+            {% endif %}
+          {% when 'tall' %}
+            {% assign min_width = media.height | times: 2 | divided_by: 3 %}
+            {% if media.width > min_width %}
+              {% assign zoom_width = min_width %}
+            {% else %}
+              {% assign zoom_height = media.width | times: 3 | divided_by: 2 %}
+            {% endif %}
+          {% endcase %}
+        {% endif %}
+
+        {% comment %} Adjust the image dimensions to be within the maximum zoom size {% endcomment %}
+        {% if zoom_height > max_zoom or zoom_width > max_zoom %}
+          {% assign crop_aspect_ratio = zoom_width | times: 1000 | divided_by: zoom_height %}
+          {% if zoom_width > zoom_height %}
+            {% assign zoom_width = max_zoom %}
+            {% assign zoom_height = max_zoom | times: 1000 | divided_by: crop_aspect_ratio %}
+          {% else %}
+            {% assign zoom_height = max_zoom %}
+            {% assign zoom_width = max_zoom | times: crop_aspect_ratio | divided_by: 1000 %}
+          {% endif %}
+        {% endif %}
+
+        {% assign image_dimensions = zoom_width | append: 'x' | append: zoom_height %}
+
+        {% if image_crop %}
+          data-zoom="{{ media | img_url: image_dimensions, crop: 'center' }}"
+        {% else %}
+          data-zoom="{{ media | img_url: image_dimensions }}"
+        {% endif %}
+        data-image-height="{{ zoom_height }}"
+        data-image-width="{{ zoom_width }}"
+      {% endif %}
+    >
+      {% case media.media_type %}
+      {% when 'image' %}
+        <div
+          class="product-gallery--image-background"
+          {% if image_crop %}
+            {%
+              render 'rimg',
+              img: media,
+              size: 'x700',
+              lazy: true,
+              background: true
+            %}
+          {% endif %}
+        >
+          {%
+            render 'rimg',
+            img: media,
+            class: 'product-gallery--loaded-image'
+            size: 'x700',
+            lazy: true,
+            canvas: true
+          %}
+        </div>
+      {% when 'external_video' %}
+        {% assign external_video_url = media | external_video_url %}
+        <div class="product-gallery--external-video">
+          {%
+            render 'video'
+            url: external_video_url,
+            cover: media.preview_image,
+            slideshow: true,
+            aspect_ratio: '16-9',
+          %}
+        </div>
+      {% when 'model' %}
+        {{ media | model_viewer_tag: image_size: '1024x', reveal: 'interaction' , toggleable: true, interaction-prompt-threshold: 0 }}
+      {% when 'video' %}
+        {{ media | media_tag: image_size: '1024x' }}
+      {% else %}
+        {{ media | media_tag }}
+      {% endcase %}
+    </figure>
+  {% else %}
+    <figure
+      class="
+        product-gallery--media
+        product-gallery--image
+        product-gallery--image-placeholder
+      "
+    >
+      {% if onboarding %}
+        {{ 'product-1' | placeholder_svg_tag: 'placeholder--image' }}
+      {% else %}
+        {{ 'image' | placeholder_svg_tag: 'placeholder--image' }}
+      {% endif %}
+    </figure>
+  {% endfor %}
+
+  {% assign image_count = product.media | where: "media_type", "image" | size %}
+  {% if image_count > 0 and click_to_zoom != 'disabled' %}
+    <button
+      class="
+        product-gallery--expand
+        {% if click_to_zoom == 'desktop' %}expand--hide-mobile{% endif %}
+        {% if click_to_zoom == 'mobile' %}expand--hide-desktop{% endif %}
+      "
+      data-gallery-expand aria-haspopup="true"
+    >
+      <span class="click-text" tabindex="-1">
+        {% render 'icon-library', id: 'icon-zoom' %}
+        {{ 'product.general.zoom' | t }}
+      </span>
+      <span class="tap-text" tabindex="-1">
+        {% render 'icon-library', id: 'icon-tap' %}
+        {{ 'product.general.zoomTapMobile' | t }}
+      </span>
+    </button>
+  {% endif %}
+</div>
+
+{% if hover_zoom == 'separate' %}
+  <div class="product-gallery--zoomed-image" data-zoomed-image></div>
+{% endif %}

@@ -1,0 +1,160 @@
+{% layout none %}
+
+<!doctype html>
+<!--[if IE]><html class="no-js ie9" lang="{{ shop.locale }}"><![endif]-->
+<!--[if !IE]><!--><html class="no-js" lang="{{ shop.locale }}"><!--<![endif]-->
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="x-ua-compatible" content="IE=edge">
+
+    {%- assign formatted_initial_value = gift_card.initial_value | money_without_trailing_zeros: gift_card.currency -%}
+    {%- assign formatted_initial_value_stripped = formatted_initial_value | strip_html -%}
+    <title>{{ 'giftcard.issued.title_html' | t: value: formatted_initial_value_stripped, shop: shop.name }}</title>
+
+    {% if page_description != blank %}
+      <meta name="description" content="{{ 'giftcard.issued.subtext' | t }}">
+    {% endif %}
+
+    {% render 'favicon' %}
+
+    <link rel="canonical" href="{{ canonical_url }}">
+    <meta name="viewport" content="width=device-width">
+
+    {{ content_for_header }}
+
+    <script>
+      document.documentElement.className = document.documentElement.className.replace(/\bno-js\b/,'js');
+
+      if (window.Shopify && window.Shopify.designMode) document.documentElement.className += ' in-theme-editor';
+
+      if (('ontouchstart' in window) || window.DocumentTouch && document instanceof DocumentTouch) {
+        document.documentElement.className = document.documentElement.className.replace(/\bno-touch\b/,'has-touch');
+      }
+    </script>
+    {{ 'giftcard.css' | asset_url | stylesheet_tag }}
+  </head>
+
+  <body class="template-giftcard">
+    <main class="site-main" role="main" aria-label="Main content">
+      <header class="giftcard-header">
+        <a
+          class="giftcard-header-logo"
+          href="{{ routes.root_url }}">
+          <span class="giftcard-header-logo-text">
+            {{ shop.name }}
+          </span>
+        </a>
+      </header>
+
+      <div class="giftcard--container">
+        <h1 class="giftcard-title">
+          {{ 'giftcard.issued.subtext' | t }}
+        </h1>
+
+        {% unless gift_card.enabled %}
+          <p class="giftcard-message">
+            {{ 'giftcard.issued.disabled' | t }}
+          </p>
+        {% endunless %}
+
+        {% assign gift_card_expiry_date = gift_card.expires_on | date: "%d/%m/%y" %}
+        {% if gift_card.expired and gift_card.enabled %}
+          <p class="giftcard-message message--error">
+            {{ 'giftcard.issued.expired' | t: expiry: gift_card_expiry_date }}
+          </p>
+        {% endif %}
+
+        {% if gift_card.expired != true and gift_card.expires_on and gift_card.enabled %}
+          <p class="giftcard-message">
+            {{ 'giftcard.issued.active' | t: expiry: gift_card_expiry_date }}
+          </p>
+        {% endif %}
+
+        <div class="giftcard-image">
+          <img
+            src="{{ 'gift-card/card.jpg' | shopify_asset_url }}"
+            alt="{{ 'giftcard.issued.title_html' | t: value: formatted_initial_value_stripped, shop: shop.name | escape }}"
+          >
+
+          {%- assign initial_value_size = formatted_initial_value | size -%}
+          <div class="giftcard-amount">
+            {% if gift_card.balance != gift_card.initial_value %}
+              <span class="giftcard-tooltip">
+                <span class="giftcard-tooltip-label">
+                  {{ 'giftcard.issued.remaining_html' | t: balance: gift_card.balance | money }}
+                </span>
+              </span>
+            {% endif %}
+            <strong>{{ formatted_initial_value }}</strong>
+          </div>
+
+          {%- assign code_size = gift_card.code | format_code | size -%}
+          <div
+            class="giftcard-code
+              {% if code_size <= 25 %}
+                giftcard-code--large
+              {% elsif code_size > 25 and code_size <= 30 %}
+                giftcard-code--medium{% else %} giftcard-code--small
+              {% endif %}"
+          >
+            <div class="giftcard-code--inner">
+              <strong
+                class="giftcard-code-text{% if gift_card.expired or gift_card.enabled != true %} disabled{% endif %}"
+                data-giftcard-code
+              >
+                {{ gift_card.code | format_code }}
+              </strong>
+            </div>
+          </div>
+        </div>
+
+        <p>
+          {{ 'giftcard.issued.redeem_html' | t: value: formatted_initial_value_stripped }}
+        </p>
+
+        <div class="giftcard-qr"
+             data-giftcard-qr="{{ gift_card.qr_identifier }}">
+        </div>
+
+        <div>
+          <div class="giftcard-actions">
+            <a href="{{ shop.url }}" class="button-primary" target="_blank">
+              {{ 'giftcard.issued.shop_link' | t }}
+            </a>
+
+            <button class="button-secondary" type="button" data-giftcard-print>
+              {{ 'giftcard.issued.print' | t }}
+            </button>
+          </div>
+
+          {% if gift_card.pass_url %}
+            <p>
+              <a class="giftcard__apple-wallet" href="{{ gift_card.pass_url }}">
+                <img
+                  class="giftcard__apple-wallet-image"
+                  src="{{ 'gift-card/add-to-apple-wallet.svg' | shopify_asset_url }}"
+                  width="120"
+                  height="40"
+                  alt="{{ 'giftcard.issued.add_to_apple_wallet' | t }}"
+                >
+              </a>
+            </p>
+          {% endif %}
+        </div>
+      </div>
+    </main>
+    {{ 'vendor/qrcode.js' | shopify_asset_url | script_tag }}
+
+    <script
+      src="{{ 'vendors-main.bundle.js' | asset_url }}"
+    >
+    </script>
+
+    <script
+      src="{{ 'empire.js' | asset_url }}"
+      data-scripts
+      data-pxu-polyfills="{{ 'polyfills.js' | asset_url }}"
+    >
+    </script>
+  </body>
+</html>

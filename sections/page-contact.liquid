@@ -1,0 +1,127 @@
+<article class="site-page" data-template-page data-template-contact>
+
+  <header class="page-masthead">
+    <h1 class="page-title">
+      {{ page.title }}
+    </h1>
+  </header>
+  {% form 'contact' %}
+
+    {% if page.content != blank %}
+      <div class="page-content rte">
+        {{ page.content }}
+      </div>
+    {% endif %}
+
+    <div class="contact-page-content">
+      {% assign has_message = false %}
+
+      {% if form.errors != blank %}
+        {% assign has_message = true %}
+        {% assign message_type = 'error' %}
+      {% endif %}
+
+      {% if form.posted_successfully? %}
+        {% assign has_message = true %}
+        {% assign message_type = 'success' %}
+      {% endif %}
+
+      {% if has_message %}
+        <div class="contact-message message--{{ message_type }}">
+          {% case message_type %}
+            {% when 'success' %}
+              <p>
+                {{ 'contact.form.post_success' | t }}
+              </p>
+            {% when 'error' %}
+              {{ form.errors | default_errors }}
+          {% endcase %}
+        </div>
+      {% endif %}
+
+      <div class="form-fields-columns">
+        <div class="form-field form-field--half">
+          {% assign value = '' %}
+          {%- if form.name -%}
+            {% assign value = form.name %}
+          {%- elsif customer -%}
+            {% assign value = customer.name %}
+          {%- endif -%}
+
+          <input
+            class="form-field-input form-field-text {% if form.errors contains 'name' %}form-field-error{% endif %}"
+            id="contact_name"
+            name="contact[name]"
+            type="text"
+            value="{{ value }}">
+
+          <label class="form-field-title" for="contact_name">
+            {{ 'contact.form.name' | t }}
+          </label>
+        </div>
+
+        <div class="form-field form-field--half">
+          {% assign value = '' %}
+          {%- if form.email -%}
+            {% assign value = form.email %}
+          {%- elsif customer -%}
+            {% assign value = customer.email %}
+          {%- endif -%}
+          <input
+            class="form-field-input form-field-text {% if form.errors contains 'email' %}form-field-error{% endif %}"
+            id="contact_email"
+            name="contact[email]"
+            type="text"
+            value="{{ value }}"
+            autocorrect="off"
+            autocapitalize="off">
+
+          <label class="form-field-title" for="contact_email">
+            {{ 'contact.form.email' | t }}
+          </label>
+        </div>
+      </div>
+
+      <div class="form-field">
+        {% assign value = '' %}
+        {%- if form.phone -%}
+          {% assign value = form.phone %}
+        {%- elsif customer -%}
+          {% assign value = customer.phone %}
+        {%- endif -%}
+
+        <input
+          class="form-field-input form-field-text {% if form.errors contains 'phone' %}form-field-error{% endif %}"
+          id="contact_phone"
+          name="contact[phone]"
+          type="tel"
+          value="{{ value }}">
+
+        <label class="form-field-title" for="contact_phone">
+          {{ 'contact.form.phone' | t }}
+        </label>
+      </div>
+
+      <div class="form-field">
+        {% assign value = '' %}
+        {%- if form.body -%}
+          {% assign value = form.body %}
+        {%- endif -%}
+        <textarea
+          class="form-field-input form-field-textarea {% if form.errors contains 'body' %}form-field-error{% endif %}"
+          id="contact_message"
+          name="contact[message]">{{ value }}</textarea>
+
+        <label class="form-field-title" for="contact_body">
+          {{ 'contact.form.message' | t }}
+        </label>
+      </div>
+
+      <div class="form-action-row">
+        <button class="button-primary contact-form-button" type="submit">
+          {{ 'contact.form.send' | t }}
+        </button>
+      </div>
+    </div>
+  {% endform %}
+</article>

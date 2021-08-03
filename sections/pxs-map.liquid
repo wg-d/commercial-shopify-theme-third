@@ -1,0 +1,407 @@
+<script
+  type="application/json"
+  data-section-type="pxs-map"
+  data-section-id="{{ section.id }}"
+  data-section-data
+>
+  {
+    {% if section.settings.enable_custom_colors %}
+      {% assign background_color = section.settings.background_color %}
+      {% assign foreground_color = section.settings.foreground_color %}
+      "colors": {
+        "a": {{ foreground_color | json }},
+        "b": {{ background_color | color_mix: foreground_color, 30 | json }},
+        "c": {{ background_color | color_mix: foreground_color, 50 | json }},
+        "d": {{ background_color | color_mix: foreground_color, 70 | json }},
+        "e": {{ background_color | color_mix: '#ffffff', 98 | json }},
+        "f": {{ background_color | color_mix: '#000000', 50 | json }}
+      },
+    {% endif %}
+    "api_key": {{ section.settings.api_key | default: false | json }},
+    "address": {{ section.settings.address | json }},
+    "zoom": {{ section.settings.zoom | json }}
+  }
+</script>
+
+<script type="application/pxs-animation-mapping+json">
+  {
+    "blocks": [".pxs-map-card-wrapper"],
+    "elements": [
+      ".pxs-map-card-heading",
+      ".pxs-map-card-content"
+    ]
+  }
+</script>
+
+{% assign layout = section.settings.layout | split: '-' %}
+
+{% assign crop = 'center' %}
+{% if section.settings.image_position contains 'top' %}
+  {% assign crop = 'top' %}
+{% elsif section.settings.image_position contains 'bottom' %}
+  {% assign crop = 'bottom' %}
+{% endif %}
+
+<div
+  class="
+    pxs-map
+    pxs-map-section-layout-{{ layout[0] }}
+    pxs-map-section-layout-y-{{ layout[0] }}-{{ layout[1] }}
+    pxs-map-section-layout-x-{{ layout[0] }}-{{ layout[2] }}
+    pxs-map-section-layout-mobile-{{ section.settings.layout_mobile }}
+  "
+>
+  <div
+    class="
+      pxs-map-wrapper
+      pxs-map-wrapper-height-{{ section.settings.section_height }}
+    "
+    {% if section.settings.image %}
+      {% capture background_style %}
+        background-position: {{ section.settings.image_position }};
+      {% endcapture %}
+
+      {%
+        include 'rimg',
+        img: section.settings.image,
+        size: '1400x',
+        crop: crop,
+        style: background_style,
+        lazy: true,
+        background: true
+      %}
+    {% endif %}
+    data-map
+  >
+    {% if section.settings.image %}
+      {%
+        include 'rimg',
+        img: section.settings.image,
+        size: '1400x',
+        class: 'pxs-map-image',
+        crop: 'center',
+        lazy: true,
+        canvas: true
+      %}
+    {% endif %}
+
+    <div class="pxs-map-container" data-map-container></div>
+
+    {% if section.settings.opacity != 0 and section.settings.overlay_color != 'rgba(0,0,0,0)' %}
+      {% assign opacity = section.settings.opacity | times: 0.01 %}
+      {% assign overlay = section.settings.overlay_color | color_modify: 'alpha', opacity %}
+
+      <div
+        class="pxs-map-overlay"
+        style="background-color: {{ overlay }}"
+      >
+      </div>
+    {% endif %}
+  </div>
+
+  {% if
+    section.settings.title != blank or
+    section.settings.content != blank
+  %}
+    <div class="pxs-map-card-wrapper">
+      <div
+        class="
+          pxs-map-card
+          pxs-map-card-text-alignment-{{ section.settings.text_alignment }}
+        "
+      >
+        {% if section.settings.title != blank %}
+          <h2 class="pxs-map-card-heading">{{ section.settings.title | escape }}</h2>
+        {% endif %}
+
+        {% if section.settings.content != blank %}
+          <div class="pxs-map-card-content rte">{{ section.settings.content }}</div>
+        {% endif %}
+      </div>
+    </div>
+  {% endif %}
+</div>
+
+{% schema %}
+{
+  "name": "Map",
+  "class": "pxs-map-section",
+  "settings": [
+    {
+      "type": "select",
+      "id": "section_height",
+      "label": "Section height",
+      "options": [
+        {
+          "value": "small",
+          "label": "Small"
+        },
+        {
+          "value": "medium",
+          "label": "Medium"
+        },
+        {
+          "value": "large",
+          "label": "Large"
+        }
+      ],
+      "default": "medium"
+    },
+    {
+      "type": "header",
+      "content": "Text"
+    },
+    {
+      "type": "text",
+      "id": "title",
+      "label": "Heading",
+      "default": "Location"
+    },
+    {
+      "type": "richtext",
+      "id": "content",
+      "label": "Address and hours",
+      "default": "<p>1221 Broad St<br>Victoria, BC</p>"
+    },
+    {
+      "type": "select",
+      "id": "text_alignment",
+      "label": "Text alignment",
+      "options": [
+        {
+          "value": "left",
+          "label": "Left"
+        },
+        {
+          "value": "center",
+          "label": "Center"
+        },
+        {
+          "value": "right",
+          "label": "Right"
+        }
+      ],
+      "default": "center"
+    },
+    {
+      "type": "select",
+      "id": "layout",
+      "label": "Desktop layout",
+      "options": [
+        {
+          "group": "Outside",
+          "value": "outside-top-left",
+          "label": "Left top"
+        },
+        {
+          "group": "Outside",
+          "value": "outside-center-left",
+          "label": "Left center"
+        },
+        {
+          "group": "Outside",
+          "value": "outside-bottom-left",
+          "label": "Left bottom"
+        },
+        {
+          "group": "Outside",
+          "value": "outside-top-right",
+          "label": "Right top"
+        },
+        {
+          "group": "Outside",
+          "value": "outside-center-right",
+          "label": "Right center"
+        },
+        {
+          "group": "Outside",
+          "value": "outside-bottom-right",
+          "label": "Right bottom"
+        },
+        {
+          "group": "Overlay",
+          "value": "overlay-top-left",
+          "label": "Top left"
+        },
+        {
+          "group": "Overlay",
+          "value": "overlay-top-center",
+          "label": "Top center"
+        },
+        {
+          "group": "Overlay",
+          "value": "overlay-top-right",
+          "label": "Top right"
+        },
+        {
+          "group": "Overlay",
+          "value": "overlay-center-left",
+          "label": "Center left"
+        },
+        {
+          "group": "Overlay",
+          "value": "overlay-center-center",
+          "label": "Center"
+        },
+        {
+          "group": "Overlay",
+          "value": "overlay-center-right",
+          "label": "Center right"
+        },
+        {
+          "group": "Overlay",
+          "value": "overlay-bottom-left",
+          "label": "Bottom left"
+        },
+        {
+          "group": "Overlay",
+          "value": "overlay-bottom-center",
+          "label": "Bottom center"
+        },
+        {
+          "group": "Overlay",
+          "value": "overlay-bottom-right",
+          "label": "Bottom right"
+        }
+      ],
+      "default": "overlay-center-center"
+    },
+    {
+      "type": "select",
+      "id": "layout_mobile",
+      "label": "Mobile layout",
+      "options": [
+        {
+          "value": "above",
+          "label": "Above map"
+        },
+        {
+          "value": "below",
+          "label": "Below map"
+        }
+      ],
+      "default": "below"
+    },
+    {
+      "type": "header",
+      "content": "Map"
+    },
+    {
+      "type": "text",
+      "id": "address",
+      "label": "Map address",
+      "default": "1221 Broad St, Victoria, BC"
+    },
+    {
+      "type": "text",
+      "id": "api_key",
+      "label": "Google Maps API key",
+      "info": "You’ll need to enable both [Google Maps](https://help.shopify.com/manual/using-themes/troubleshooting/map-section-api-key) and [Geocoding](https://developers.google.com/maps/documentation/geocoding/get-api-key) API keys to display the map."
+    },
+    {
+      "type": "checkbox",
+      "id": "enable_custom_colors",
+      "label": "Use custom map colors"
+    },
+    {
+      "type": "color",
+      "id": "foreground_color",
+      "label": "Map foreground color",
+      "default": "#292929"
+    },
+    {
+      "type": "color",
+      "id": "background_color",
+      "label": "Map background color",
+      "default": "#ffffff"
+    },
+    {
+      "type": "range",
+      "id": "zoom",
+      "label": "Map zoom level",
+      "min": 1,
+      "max": 6,
+      "step": 1,
+      "unit": "x",
+      "default": 2
+    },
+    {
+      "type": "image_picker",
+      "id": "image",
+      "label": "Image",
+      "info": "This image is displayed when the map is not used or cannot be loaded"
+    },
+    {
+      "type": "select",
+      "id": "image_position",
+      "label": "Image position",
+      "options": [
+        {
+          "label": "Top left",
+          "value": "top left"
+        },
+        {
+          "label": "Top center",
+          "value": "top center"
+        },
+        {
+          "label": "Top right",
+          "value": "top right"
+        },
+        {
+          "label": "Center left",
+          "value": "center left"
+        },
+        {
+          "label": "Center",
+          "value": "center center"
+        },
+        {
+          "label": "Center right",
+          "value": "center right"
+        },
+        {
+          "label": "Bottom left",
+          "value": "bottom left"
+        },
+        {
+          "label": "Bottom center",
+          "value": "bottom center"
+        },
+        {
+          "label": "Bottom right",
+          "value": "bottom right"
+        }
+      ],
+      "default": "center center"
+    },
+    {
+      "type": "header",
+      "content": "Overlay"
+    },
+    {
+      "type": "color",
+      "id": "overlay_color",
+      "label": "Color",
+      "default": "#000000"
+    },
+    {
+      "type": "range",
+      "id": "opacity",
+      "label": "Opacity",
+      "min": 0,
+      "max": 100,
+      "step": 1,
+      "unit": "%",
+      "default": 10
+    }
+  ],
+  "presets": [
+    {
+      "name": "Map",
+      "category": "Store information"
+    }
+  ]
+}
+
+{% endschema %}

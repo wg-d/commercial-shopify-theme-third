@@ -1,0 +1,58 @@
+{% layout none %}
+
+{% capture to_hash %}
+  {{ shop.money_format | strip_html }}
+  {{ settings | json }}
+  {{ 'product.buttons.add_to_cart' | t }}
+  {{ 'product.buttons.sold_out' | t  }}
+  {{ product | json }}
+{% endcapture %}
+{% assign to_hash = to_hash | replace: ' ', '' | sha256 %}
+
+{% assign hover_zoom = 'disabled' %}
+{% if settings.quickshop_enable_hover_zoom %}
+  {% assign hover_zoom = 'replace' %}
+{% endif %}
+
+<template data-options>
+  {
+    "hash": {{ to_hash | json }}
+  }
+</template>
+
+<template data-data>
+  {
+    "product": {{ product | json }},
+    "settings": {
+      "money_format": {{ shop.money_format | strip_html | json }},
+      "thumbnail_position": "below",
+      "gallery_video_autoplay": {{ settings.quickshop_gallery_video_autoplay | json }},
+      "gallery_video_looping": {{ settings.quickshop_gallery_video_looping | json }},
+      "hover_zoom": {{ settings.quickshop_gallery_hover_zoom | json }},
+      "click_to_zoom": "disabled",
+      "swatches_enable": {{ settings.swatches_enable | json }},
+      "sold_out_options": {{ settings.quickshop_sold_out_options | json }},
+      "select_first_available_variant": {{ settings.quickshop_select_first_available_variant | json }}
+    },
+    "context": {
+      "select_variant": {{ 'product.general.select_variant' | t | json }},
+      "product_available": {{ 'product.buttons.add_to_cart' | t | json }},
+      "product_sold_out": {{ 'product.buttons.sold_out' | t | json }},
+      "product_unavailable": {{ 'product.buttons.unavailable' | t | json }}
+    }
+  }
+</template>
+
+<template data-html="content">
+  {%-
+    render 'product',
+    layout: false,
+    is_product_modal: true,
+    select_first_available_variant: settings.quickshop_select_first_available_variant,
+    gallery_aspect_ratio: settings.quickshop_gallery_aspect_ratio,
+    gallery_thumbnail_position: 'below',
+    gallery_image_crop: settings.quickshop_gallery_image_crop,
+    gallery_click_to_zoom: 'disabled',
+    gallery_hover_zoom: settings.quickshop_gallery_hover_zoom
+  -%}
+</template>

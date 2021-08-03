@@ -1,0 +1,86 @@
+{% comment %}
+  @param section Object
+         Required section containing settings
+
+  @param onboarding Bool
+         Triggers onboarding helper class and functionality
+
+  @param article Object
+{% endcomment %}
+
+{%- capture excerpt_class -%}
+  article--excerpt-wrapper
+  article--excerpt-wrapper--featured
+  {% if article.image %}
+    article--excerpt-wrapper--has-image
+  {% else %}
+    article--excerpt-wrapper--no-image
+  {% endif %}
+{%- endcapture -%}
+
+<article class="{{ excerpt_class | strip_newlines }}">
+
+  {% if article.image %}
+    <a
+      class="article--excerpt-image"
+      href="{{ article.url }}"
+      tabindex="-1"
+      {%
+        render 'rimg',
+        img: article.image,
+        lazy: true,
+        size: '526x526',
+        crop: 'center',
+        background: true
+      %}
+    >
+      {%
+        render 'rimg',
+        img: article.image,
+        lazy: true,
+        canvas: true,
+        crop: 'center',
+        size: '526x526'
+      %}
+    </a>
+  {% endif %}
+
+  <div class="article--excerpt-content">
+    {% if section.settings.show_date or section.settings.show_author %}
+      <div class="article--excerpt-meta">
+        {% if section.settings.show_date %}
+          <span class="article--excerpt-meta-item">
+            {{ article.published_at | date: format: 'month_day_year' }}
+          </span>
+        {% endif %}
+
+        {% if section.settings.show_author %}
+          <span class="article--excerpt-meta-item">
+            {{ article.author }}
+          </span>
+        {% endif %}
+      </div>
+    {% endif %}
+
+    <h2 class="article--excerpt-title">
+      <a href="{{ article.url }}">
+        {{ article.title }}
+      </a>
+    </h2>
+
+    {% if article.excerpt_or_content != blank %}
+      <div class="article--excerpt-text rte">
+        {% if article.excerpt == blank %}
+          <p>{{ article.content | strip_html | truncatewords: 30 }}</p>
+        {% else %}
+          {{ article.excerpt }}
+        {% endif %}
+      </div>
+    {% endif %}
+
+    <a class="article--excerpt-button" href="{{ article.url }}" aria-label="read {{ article.title }}">
+      {{ 'blog.general.read_more' | t }}
+    </a>
+  </div>
+
+</article>

@@ -1,0 +1,120 @@
+{% comment %}
+  @param menu LinkList
+    List of menu items
+
+  @param block Block
+    The block with the meganav properties
+
+{% endcomment %}
+
+{% assign image_grid = false %}
+{% if block.settings.submenu_layout contains 'images' %}
+  {% assign image_grid = true %}
+{% endif %}
+
+{%- capture meganav_classes -%}
+  navmenu-submenu
+  navmenu-meganav
+  navmenu-meganav--desktop
+{%- endcapture -%}
+
+{%- capture navmenu_classes -%}
+  navmenu
+  navmenu-depth-2
+  navmenu-meganav-sidenav__items
+  {% if image_grid %}
+    navmenu-meganav-sidenav__items--images
+  {% else %}
+    navmenu-meganav-sidenav__items--text-columns
+  {% endif %}
+{%- endcapture -%}
+
+<div
+  class="{{ meganav_classes | strip_newlines }}"
+  data-navmenu-submenu
+  data-meganav-menu
+  data-meganav-id="{{ block.id }}"
+  {% unless block.settings.image_aspect_ratio == 'natural' %}
+    data-meganav-sidenav-image-aspect-ratio="{{ block.settings.image_aspect_ratio }}"
+    data-meganav-sidenav-image-crop="{{ block.settings.image_crop }}"
+  {% endunless %}
+>
+  <div
+    class="
+      navmenu-meganav-wrapper
+      navmenu-meganav-sidenav__wrapper
+      {% if image_grid %}
+        navmenu-meganav-sidenav__wrapper--images
+      {% endif %}
+    "
+  >
+    <ul
+      class="{{ navmenu_classes | strip_newlines }}"
+      data-navmenu
+    >
+      {% for menu_item in menu.links %}
+        {%- capture navmenu_item_classes -%}
+          navmenu-item
+          navmenu-item-parent
+          navmenu-id-{{ menu_item.title | handle }}
+          navmenu-meganav-sidenav__item
+        {%- endcapture -%}
+
+        {% assign has_subnav = false %}
+        {% if menu_item.links.size > 0 %}
+          {% assign has_subnav = true %}
+        {% endif %}
+
+        <li
+          class="{{ navmenu_item_classes | strip_newlines }}"
+          {% if has_subnav %}
+            data-navmenu-trigger
+            data-navmenu-parent
+          {% endif %}
+          {{ block.shopify_attributes }}>
+          <a
+            href="{{ menu_item.url }}"
+            class="
+              navmenu-item-text
+              navmenu-link
+              {% if has_subnav %}
+                navmenu-link-parent
+              {% endif %}
+              navmenu-meganav-sidenav__item-text
+            "
+            {% if has_subnav %}
+              aria-haspopup="true"
+              aria-expanded="false"
+          {% endif %}
+          >
+            <span>{{ menu_item.title }}</span>
+            {% if has_subnav %}
+              <span
+                class="navmenu-icon navmenu-icon-depth-2"
+              >
+                {% render 'icon-chevron-down-small' %}
+              </span>
+            {% endif %}
+          </a>
+
+          {% case block.settings.submenu_layout %}
+            {% when 'product_images' %}
+              {% assign show_images_for = 'product_link' %}
+            {% when 'collection_images' %}
+              {% assign show_images_for = 'collection_link' %}
+          {% endcase %}
+
+          {%
+            render 'navlist',
+            menu_list: linklists[menu_item.handle].links,
+            depth: 3,
+            max_depth: 3,
+            aria_expanded: true,
+            is_mobile: false,
+            show_images_for: show_images_for,
+          %}
+        </li>
+      {% endfor %}
+    </ul>
+  </div>
+</div>

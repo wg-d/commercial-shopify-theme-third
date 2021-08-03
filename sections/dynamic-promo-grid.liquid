@@ -1,0 +1,283 @@
+<script type="application/pxs-animation-mapping+json">
+  {
+    "blocks": [".promo-block"],
+    "elements": [
+      ".promo-block--header",
+      ".promo-block--text",
+      ".promo-block--button"
+    ]
+  }
+</script>
+
+<section class="promo-grid--container">
+  {% if section.settings.title != blank %}
+    <h2 class="home-section--title">
+      {{ section.settings.title | escape }}
+    </h2>
+  {% endif %}
+
+  {%- capture classes -%}
+    home-section--content
+    promo-grid--height-{{ section.settings.section_height }}
+  {%- endcapture -%}
+
+  <div class="{{ classes | strip_newlines }}">
+    {% if section.blocks.size > 0 %}
+      <div class="promo-grid--inner promo-grid__columns--{{ section.settings.section_columns }}">
+        {% for block in section.blocks %}
+          {%
+            render 'promo-block',
+            block: block,
+            text_alignment: section.settings.text_alignment,
+            index: forloop.index,
+            background_position: block.settings.background_position
+          %}
+        {% endfor %}
+      </div>
+    {% endif %}
+  </div>
+
+  {%
+    render 'promo-block-background',
+    blocks: section.blocks
+  %}
+</section>
+
+{% schema %}
+{
+  "name": "Grid",
+  "class": "promo-grid--section",
+  "max_blocks": 20,
+  "settings": [
+    {
+      "type": "text",
+      "id": "title",
+      "label": "Heading",
+      "default": "Grid"
+    },
+    {
+      "id": "section_height",
+      "type": "select",
+      "label": "Image height",
+      "options": [
+        {
+          "value": "small",
+          "label": "Small"
+        },
+        {
+          "value": "medium",
+          "label": "Medium"
+        },
+        {
+          "value": "large",
+          "label": "Large"
+        },
+        {
+          "value": "natural",
+          "label": "Natural"
+        }
+      ],
+      "default": "small"
+    },
+    {
+      "id": "section_columns",
+      "type": "range",
+      "label": "Number of columns",
+      "min": 1,
+      "max": 4,
+      "step": 1,
+      "default": 2
+    },
+    {
+      "id": "text_alignment",
+      "type": "select",
+      "label": "Text alignment",
+      "options": [
+        {
+          "value": "top-left",
+          "label": "Top left"
+        },
+        {
+          "value": "top-center",
+          "label": "Top center"
+        },
+        {
+          "value": "top-right",
+          "label": "Top right"
+        },
+        {
+          "value": "center-left",
+          "label": "Center left"
+        },
+        {
+          "value": "center-center",
+          "label": "Center center"
+        },
+        {
+          "value": "center-right",
+          "label": "Center right"
+        },
+        {
+          "value": "bottom-left",
+          "label": "Bottom left"
+        },
+        {
+          "value": "bottom-center",
+          "label": "Bottom center"
+        },
+        {
+          "value": "bottom-right",
+          "label": "Bottom right"
+        }
+      ],
+      "default": "top-left"
+    }
+  ],
+  "blocks": [
+    {
+      "type": "promotion",
+      "name": "Promotional item",
+      "settings": [
+        {
+          "id": "image",
+          "type": "image_picker",
+          "label": "Image"
+        },
+        {
+          "type": "select",
+          "id": "background_position",
+          "label": "Background position",
+          "options": [
+            {
+              "value": "top-left",
+              "label": "Top left"
+            },
+            {
+              "value": "top-center",
+              "label": "Top center"
+            },
+            {
+              "value": "top-right",
+              "label": "Top right"
+            },
+            {
+              "value": "center-left",
+              "label": "Center left"
+            },
+            {
+              "value": "center-center",
+              "label": "Center center"
+            },
+            {
+              "value": "center-right",
+              "label": "Center right"
+            },
+            {
+              "value": "bottom-left",
+              "label": "Bottom left"
+            },
+            {
+              "value": "bottom-center",
+              "label": "Bottom center"
+            },
+            {
+              "value": "bottom-right",
+              "label": "Bottom right"
+            }
+          ],
+          "default": "center-center"
+        },
+        {
+          "type": "text",
+          "id": "title",
+          "label": "Heading",
+          "default": "Grid"
+        },
+        {
+          "type": "textarea",
+          "id": "text",
+          "label": "Text",
+          "default": "Use this section to welcome customers to your store, say a bit about your brand, or share news."
+        },
+        {
+          "type": "color",
+          "id": "color",
+          "label": "Text color",
+          "default": "#4d4d4d"
+        },
+        {
+          "type": "url",
+          "id": "block_link",
+          "label": "Link"
+        },
+        {
+          "type": "text",
+          "id": "button_text",
+          "label": "Button text"
+        },
+        {
+          "id": "button_style",
+          "type": "select",
+          "label": "Button style",
+          "options": [
+            {
+              "value": "primary",
+              "label": "Primary"
+            },
+            {
+              "value": "secondary",
+              "label": "Secondary"
+            }
+          ],
+          "default": "primary"
+        },
+        {
+          "type": "header",
+          "content": "Overlay"
+        },
+        {
+          "id": "show_overlay",
+          "type": "checkbox",
+          "label": "Show overlay"
+        },
+        {
+          "id": "background",
+          "type": "color",
+          "label": "Color"
+        },
+        {
+          "id": "opacity",
+          "type": "range",
+          "label": "Opacity",
+          "min": 1,
+          "max": 100,
+          "step": 1,
+          "unit": "%",
+          "default": 50
+        }
+      ]
+    }
+  ],
+  "presets": [
+    {
+      "name": "Grid",
+      "category": "Image",
+      "blocks": [
+        {
+          "type": "promotion"
+        },
+        {
+          "type": "promotion"
+        },
+        {
+          "type": "promotion"
+        },
+        {
+          "type": "promotion"
+        }
+      ]
+    }
+  ]
+}
+
+{% endschema %}

@@ -1,0 +1,146 @@
+{% comment %} Assign object as block or section {% endcomment %}
+{% if type == 'block' %}
+  {%- assign object = block -%}
+{% else %}
+  {%- assign object = section -%}
+{% endif %}
+
+<script type="application/pxs-animation-mapping+json">
+  {
+    "blocks": [".subcollections-grid__item"],
+    "elements": [
+      ".subcollections-grid__item-image"
+    ]
+  }
+</script>
+
+{% assign hasNoSubcategories = false %}
+{% assign hasSubcategories = false %}
+{% for link in linklists[collection.handle].links %}
+  {% if link.levels == 0 %}
+    {% assign hasNoSubcategories = true %}
+  {% elsif link.levels != 0 %}
+    {% assign hasSubcategories = true %}
+  {% endif %}
+{% endfor %}
+
+{% if hasSubcategories or layout_type == 'grid' or layout_type == 'slideshow' or onboard %}
+<div class="subcollections__container">
+  <ul class="
+    subcollections-list__content 
+    subcollections-list__image-crop--{{ object.settings.image_crop }} 
+    mobile-accordion__open--{{ object.settings.expand_mobile_menus }} 
+    subcollections-list__{{ object.settings.thumbnail_image }} 
+    subcollections-list__columns-{{ object.settings.thumbnail_columns_desktop }}
+    " 
+    data-subcollections-layout="{{ layout_type }}">
+    {% if layout_type == 'menu' %}
+      {% if onboard %}
+        {% for i in (1..6) %}
+          {%
+            render 'subcollections-menu-list-item',
+            onboard: onboard,
+            collection: collection,
+            link: false,
+            enabled_mobile_accordion: object.settings.expand_mobile_menus
+          %}
+        {% endfor %}
+      {% else %}
+        {% for link in linklists[collection.handle].links %}
+          {% if link.levels != 0 %}
+            {%
+              render 'subcollections-menu-list-item',
+              onboard: onboard,
+              collection: collection,
+              link: link,
+              enabled_mobile_accordion: object.settings.expand_mobile_menus
+            %}
+          {% endif %}
+        {% endfor %}
+      {% endif %}
+
+    {% elsif layout_type == 'grid' %}
+      {% if onboard %}
+        {% for i in (1..6) %}
+          {%
+            render 'subcollections-grid-list-item',
+            onboard: onboard,
+            collection: collection,
+            link: false
+          %}
+        {% endfor %}
+      {% else %}
+        {% for link in linklists[collection.handle].links %}
+          {%
+            render 'subcollections-grid-list-item',
+            onboard: onboard,
+            collection: collection,
+            link: link,
+            show_product_count: object.settings.show_product_count
+          %}
+        {% endfor %}
+      {% endif %}
+
+    {% elsif layout_type == 'slideshow' %}
+      {% if onboard %}
+        {% for i in (1..6) %}
+          {%
+            render 'subcollections-grid-list-item',
+            onboard: onboard,
+            collection: collection,
+            link: false
+          %}
+        {% endfor %}
+      {% else %}
+        {% for link in linklists[collection.handle].links %}
+          {%
+            render 'subcollections-grid-list-item',
+            onboard: onboard,
+            collection: collection,
+            link: link,
+            show_product_count: object.settings.show_product_count,
+            type: 'block',
+            block: block
+          %}
+        {% endfor %}
+      {% endif %}
+
+    {% endif %}
+  </ul>
+</div>
+{% endif %}
+
+{% if layout_type == 'menu' and hasNoSubcategories == true %}
+  <div class="subcollections__container">
+    <ul 
+      class="
+        subcollections-list__content 
+        subcollections-list__no-sublinks 
+        subcollections-list__{{ object.settings.thumbnail_image }} 
+        subcollections-list__image-crop--{{ object.settings.image_crop }}
+      " 
+      data-subcollections-layout="{{ layout_type }}">
+        {% if onboarding %}
+          {% for i in (1..6) %}
+            {%
+              render 'subcollections-menu-list-item',
+              onboarding: onboarding,
+              collection: collection,
+              link: false
+            %}
+          {% endfor %}
+        {% else %}
+          {% for link in linklists[collection.handle].links %}
+            {% if link.levels == 0 %}
+              {%
+                render 'subcollections-menu-list-item',
+                onboarding: onboarding,
+                collection: collection,
+                link: link
+              %}
+            {% endif %}
+          {% endfor %}
+        {% endif %}
+    </ul>
+  </div>
+{% endif %}

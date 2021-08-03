@@ -1,0 +1,57 @@
+{% assign image = 'image_' | append: id %}
+{% assign text = 'text_' | append: id %}
+{% assign url = 'link_' | append: id %}
+{% assign position = 'position_' | append: id %}
+{% assign size = 'size_' | append: id %}
+
+{% assign image = settings[image] %}
+{% assign text = settings[text] %}
+{% assign url = settings[url] %}
+{% assign position = settings[position] %}
+{% assign size = settings[size] %}
+
+{% if image != blank %}
+  <div
+    class="
+      navmenu-meganav-standard__image-container
+      navmenu-meganav-standard__image-{{ position }}
+    "
+  >
+    {% if url %}
+      <a class="navmenu-meganav-standard__image-link" href="{{ url }}">
+    {% endif %}
+      {% capture image_classes %}
+        navmenu-meganav-standard__image
+        navmenu-meganav-standard__image-size-{{ size }}
+      {% endcapture %}
+      {% if size == 'small' %}
+        {% assign image_width = '280x' %}
+      {% elsif size == 'medium' %}
+        {% assign image_width = '300x' %}
+      {% else %}
+        {% assign image_width = '400x' %}
+      {% endif %}
+      {%
+        render 'rimg',
+        img: image,
+        class: image_classes,
+        size: image_width,
+        alt: text
+      %}
+    {% if url %}
+      </a>
+    {% endif %}
+
+    {% if text != blank %}
+      <p class="navmenu-meganav-standard__image-text">
+        {% if url %}
+          <a class="navmenu-meganav-standard__image-link" href="{{ url }}">
+        {% endif %}
+          {{ text | escape }}
+        {% if url %}
+          </a>
+        {% endif %}
+      </p>
+    {% endif %}
+  </div>
+{% endif %}

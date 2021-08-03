@@ -1,0 +1,87 @@
+{% comment %}
+  @param block Object
+         Optional object to display block attributes if used as a block
+
+  @param collection Object
+         The collection to display
+
+  @param collection_image Object
+         Image object, can be used to override collection image
+
+  @param collection_image_alt String
+         String to show an alt tag on the image
+
+{% endcomment %}
+
+{% assign block = block | default: nil %}
+
+{% assign collection_image = collection_image | default: nil %}
+{% assign collection_image_alt = collection_image_alt | default: nil %}
+
+{% assign onboard = false %}
+{% assign image = false %}
+{% assign image_alt = false %}
+
+{% assign link = link | default: false %}
+{% assign collection = collection | default: nil %}
+
+{% if collection == blank or collection.empty? %}
+  {% assign onboard = true %}
+{% endif %}
+
+{% if link %}
+  {% assign current_collection = link.object %}
+{% else %}
+  {% assign current_collection = collection %}
+{% endif %}
+
+{% if block.settings.title != blank %}
+  {% assign collection_title = block.settings.title %}
+{% else %}
+  {% assign collection_title = current_collection.title %}
+{% endif %}
+
+{% assign collection_url = current_collection.url %}
+
+{% if onboard %}
+  {% assign collection_title = 'onboarding.collection.title' | t  %}
+  {% assign collection_url = '#' %}
+{% endif %}
+
+{% if collection_image and onboard == false %}
+  {% assign image = collection_image %}
+  {% assign image_alt = collection_image_alt | default: current_collection.image.alt | escape | default: collection_title | escape %}
+{% elsif current_collection.image %}
+  {% assign image = current_collection.image %}
+  {% assign image_alt = current_collection.image.alt | escape %}
+{% else %}
+  {% assign image = current_collection.products.first.featured_media.preview_image %}
+  {% assign image_alt = collection_title | escape %}
+{% endif %}
+
+<li class="collection__item" {% if block %}{{ block.shopify_attributes }}{% endif %}>
+  <a href="{{ collection_url }}">
+    <figure class="collection__item-image">
+        {% if image and image_alt %}
+          {%
+            render 'rimg',
+            img: image,
+            alt: image_alt,
+            size: '1350x',
+            lazy: true,
+            canvas: true,
+            attr: 'data-collection-image'
+          %}
+        {% else %}
+          {%- capture index -%}
+            {%- cycle '1', '2', '3', '4', '5', '6' -%}
+          {%- endcapture -%}
+          {{ 'collection-' | append: index | placeholder_svg_tag: 'placeholder--image' }}
+        {% endif %}
+    </figure>
+
+    <span class="collection__item-info collection__item-title">
+        {{ collection_title }}
+    </span>
+  </a>
+</li>

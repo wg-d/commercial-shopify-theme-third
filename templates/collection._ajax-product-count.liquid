@@ -1,0 +1,18 @@
+{% layout none %}
+
+{%- capture to_hash -%}
+  {{- 'now' | date: '%H' -}}
+{%- endcapture -%}
+{% assign to_hash = to_hash | replace: ' ', '' | sha256 %}
+
+<template data-options>
+  {
+    "hash": {{ to_hash | json }}
+  }
+</template>
+
+<template data-data>
+  {
+    "product_count": {{ collection.products_count }}
+  }
+</template>

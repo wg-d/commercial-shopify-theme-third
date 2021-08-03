@@ -1,0 +1,200 @@
+<script
+  type="application/json"
+  data-section-type="static-article"
+  data-section-id="{{ section.id }}">
+</script>
+
+{% assign has_share = false %}
+{% if section.settings.use_share_buttons %}
+  {% assign has_share = true %}
+{% endif %}
+
+{%- capture share_buttons -%}
+  {% assign social_image = false %}
+  {% if article.image %}
+    {% assign social_image = article.image | img_url: '1024x' %}
+  {% endif %}
+  {% assign social_url = shop.url | append: article.url %}
+  {%-
+    render 'share-buttons',
+    snippet_title: 'general.share_buttons.title_short',
+    social_image: social_image,
+    social_title: article.title,
+    social_url: social_url
+  -%}
+{%- endcapture  -%}
+
+<section class="article--outer">
+  {% if article.image %}
+    <figure
+      class="article-image article-image--{{- section.settings.featured_image_width }}"
+      {%
+        render 'rimg',
+        img: article.image,
+        size: '1800x',
+        lazy: true,
+        crop: 'center',
+        background: true
+      %}
+    >
+      {%
+        render 'rimg',
+        img: article.image,
+        size: '1800x',
+        crop: 'center',
+        lazy: true,
+        canvas: true
+      %}
+    </figure>
+  {% endif %}
+
+  <div class="article--container">
+
+    {% if has_share %}
+      <div class="article--sidebar">
+        {{- share_buttons -}}
+      </div>
+    {% endif %}
+
+    <div class="article--inner">
+      {% if section.settings.show_date or section.settings.show_author %}
+        <div class="article--meta">
+          {% if section.settings.show_date %}
+            <span class="article--meta-item">
+              {{ article.published_at | date: format: 'month_day_year' }}
+            </span>
+          {% endif %}
+
+          {% if section.settings.show_author %}
+            <span class="article--meta-item">
+              {{ article.author }}
+            </span>
+          {% endif %}
+        </div>
+      {% endif %}
+
+      <h1 class="article--title">
+        {{ article.title }}
+      </h1>
+
+      <div class="article--content rte">
+        {{ article.content }}
+      </div>
+
+      {% if article.tags != blank %}
+        <div class="article--tags">
+          <span class="article--tags-title">{{- 'blog.article.filed_in' | t -}}</span>
+          {% for tag in article.tags %}
+            {{ tag | link_to_tag: tag }}{% unless forloop.last %},{% endunless %}
+          {% endfor %}
+        </div>
+      {% endif %}
+
+      {% if has_share %}
+        <div class="article--share-buttons">
+          {{- share_buttons -}}
+        </div>
+      {% endif %}
+
+      {% if blog.next_article or blog.previous_article %}
+        <div class="article--pagination">
+          {% assign current_found = false %}
+          {% assign done = false %}
+          {% for a in blog.articles %}
+            {% if current_found and done == false %}
+              {% assign next_article = a %}
+              {% assign done = true %}
+            {% endif %}
+
+            {% unless done %}
+              {% if a.id == article.id %}
+                {% assign current_found = true %}
+              {% else %}
+                {% assign prev_article = a %}
+              {% endif %}
+            {% endunless %}
+          {% endfor %}
+
+          {% if prev_article %}
+            <div class="article--pagination-item-left">
+              <a href="{{ prev_article.url }}">
+                <span class="article--pagination-chevron-left" aria-hidden="true">
+                  {% render 'icon-chevron-down-small' %}
+                </span>
+                <span class="article--pagination-text">
+                  {{ 'blog.article.previous_article' | t }}
+                  <span class="article--pagination-title">
+                    {{ prev_article.title | escape }}
+                  </span>
+                </span>
+              </a>
+            </div>
+          {% endif %}
+
+          {% if next_article %}
+            <div class="article--pagination-item-right">
+              <a href="{{ next_article.url }}">
+                <span class="article--pagination-text">
+                  {{ 'blog.article.next_article' | t }}
+                  <span class="article--pagination-title">
+                    {{ next_article.title | escape }}
+                  </span>
+                </span>
+                <span class="article--pagination-chevron-right" aria-hidden="true">
+                  {% render 'icon-chevron-down-small' %}
+                </span>
+              </a>
+            </div>
+          {% endif %}
+        </div>
+      {% endif %}
+
+      {% render 'article-comments', comment: comment %}
+    </div>
+  </div>
+</section>
+
+{% schema %}
+{
+  "name": "Article pages",
+  "class": "article--section section--canonical",
+  "settings": [
+    {
+      "id": "featured_image_width",
+      "type": "select",
+      "label": "Featured image width",
+      "options": [
+        {
+          "value": "content-width",
+          "label": "Content width"
+        },
+        {
+          "value": "full-width",
+          "label": "Full width"
+        }
+      ],
+      "default": "full-width"
+    },
+
+    {
+      "type": "checkbox",
+      "id": "show_date",
+      "label": "Show date published",
+      "default": true
+    },
+    {
+      "type": "checkbox",
+      "id": "show_author",
+      "label": "Show post author",
+      "default": true
+    },
+    {
+      "type": "checkbox",
+      "id": "use_share_buttons",
+      "label": "Use share buttons",
+      "default": true
+    }
+  ]
+}
+
+{% endschema %}

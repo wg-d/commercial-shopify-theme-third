@@ -1,0 +1,176 @@
+{% comment %}
+  @param section [section] Shopify section to reference
+
+  @param selected_collection [Collection] Collection to display.
+    If falsey, onboarding content will be displayed.
+
+  @param title_card_source [String] One of `block` or `simple`.
+    Blocks will pull detailed title cards from title_card_block, simple will display a simplified version. If no source is provided, title cards will not be displayed.
+
+  @param title_card_block [Block] Block to reference for title card settings
+
+  @param item_count [Integer] Total number of items (product cards + title cards)
+
+  @param title [String] Markup to output for collection title
+
+  @param disable_cta_button [Boolean]  If true, CTA button will not be rendered.
+{% endcomment %}
+
+{% if selected_collection %}
+  {% assign products = selected_collection.products %}
+{% else %}
+  {% assign onboarding = true %}
+{% endif %}
+
+{% assign product_count = section.settings.product_count %}
+
+{% comment %}
+  If there are more than 5 products to display, we always
+  show the slideshow layout.
+{% endcomment %}
+
+{% if section.settings.layout == 'slideshow' and item_count > 5 %}
+  {% assign layout = 'slideshow' %}
+{% else %}
+  {% assign layout = 'grid' %}
+{% endif %}
+
+{% if title_card_source %}
+  {% capture title_card %}
+    <li
+      class="
+        productgrid--item
+        featured-collection__title-card
+        {% if title_card_source == 'block' %}
+          featured-collection__title-card--horizontal-size-{{ horizontal_size }}
+          {% unless title_card_block.settings.image %}featured-collection__title-card--placeholder{% endunless %}
+        {% endif %}
+      "
+      {% if title_card_source == 'block' %}
+        {% if title_card_block.settings.image %}
+          {%
+            render 'rimg',
+            img: title_card_block.settings.image
+            size: '500x750',
+            crop: 'center',
+            background: true,
+            lazy: true
+          %}
+        {% endif %}
+        {{ title_card_block.shopify_attributes }}
+      {% endif %}
+    >
+      {% if title_card_source == 'block' %}
+        {% if title_card_block.settings.image %}
+          {%
+            render 'rimg',
+            img: title_card_block.settings.image
+            size: '500x750',
+            crop: 'center',
+            canvas: true,
+            lazy: true
+          %}
+        {% else %}
+          {{ 'collection-5' | placeholder_svg_tag: 'placeholder--image' }}
+        {% endif %}
+      {% endif %}
+
+      <a
+      class="
+        featured-collection__title-card-outer
+        featured-collection__title-card-outer--align-{{ title_card_block.settings.text_alignment | default: 'center-center' }}
+      "
+        {% if selected_collection.url != blank %}
+          href="{{ selected_collection.url }}"
+        {% endif %}
+      >
+        <div class="featured-collection__title-card-inner">
+          {% if onboarding %}
+            <span class="featured-collection__title-card-pre-heading">
+              {{ 'onboarding.featured_collection.subtitle' | t }}
+            </span>
+
+            <span class="featured-collection__title-card-heading">
+              {{ 'onboarding.featured_collection.title' | t }}
+            </span>
+          {% elsif title_card_source == 'block' %}
+            {% unless title_card_block.settings.pre_heading == blank %}
+              <span class="featured-collection__title-card-pre-heading">
+                {{ title_card_block.settings.pre_heading }}
+              </span>
+            {% endunless %}
+
+            {% unless title_card_block.settings.heading == blank %}
+              <span class="featured-collection__title-card-heading">
+                {{ title_card_block.settings.heading }}
+              </span>
+            {% endunless %}
+
+            {% unless title_card_block.settings.cta_label == blank %}
+              <span class="featured-collection__title-card-button">
+                {{ title_card_block.settings.cta_label }}
+                {% render 'icon-library', id: 'icon-signpost-arrow' %}
+              </span>
+            {% endunless %}
+          {% elsif title_card_source == 'simple' %}
+            {% unless section.settings.cta_label == blank %}
+              <span class="featured-collection__title-card-pre-heading">
+                  {{ section.settings.cta_label }}
+              </span>
+            {% endunless %}
+
+            <span class="featured-collection__title-card-heading">
+              {{ selected_collection.title }}
+            </span>
+          {% endif %}
+        </div>
+      </a>
+    </li>
+  {% endcapture %}
+{% endif %}
+
+<section class="featured-collection__container" data-featured-collection>
+  {{ title }}
+
+  <ul
+    class="home-section--content featured-collection__content"
+    data-content
+    data-layout="{{ layout }}"
+  >
+    {% if title_card_block.type == 'title_card' %}
+      {{ title_card }}
+    {% endif %}
+
+    {% for p in products limit: product_count %}
+      {%
+        render 'product-grid-item',
+        product: p,
+      %}
+    {% else %}
+      {% for i in (1..product_count) %}
+        {%
+          render 'product-grid-item',
+          product: false,
+        %}
+      {% endfor %}
+    {% endfor %}
+
+    {% if title_card_block.type == 'view_all_card' or title_card_source == 'simple' %}
+      {{ title_card }}
+    {% endif %}
+  </ul>
+
+  {% unless disable_cta_button %}
+    {% if section.settings.cta_label != blank %}
+      <a
+        class="
+          button-{{ section.settings.cta_button_style }}
+          featured-collection__button
+        "
+        {% if selected_collection.url != blank %}href="{{ selected_collection.url }}"{% endif %}
+      >
+        {{ section.settings.cta_label | escape }}
+      </a>
+    {% endif %}
+  {% endunless %}
+</section>

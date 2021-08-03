@@ -1,0 +1,70 @@
+{% comment %}
+  @param filter_style {String}
+    Type of filtering style, 'none', 'tags', or 'groups'
+
+  @param filter_position {String}
+    Where to position filters, 'above_menus', or 'below_menus'
+
+  @param filter_limit {String}
+    How many tags (non grouped) should show
+
+  @param menu_depth {String}
+    How many child menus to show
+{% endcomment %}
+
+<div class="productgrid--sidebar">
+
+  {% if filter_position == 'above_menus' %}
+    {%
+      render 'product-grid-sidebar-filters',
+      filter_limit: filter_limit,
+      filter_style: filter_style,
+    %}
+  {% endif %}
+
+  {% comment %}
+    Collection menus
+  {% endcomment %}
+  {% if section.blocks.size > 0 %}
+    {% assign sidebar_menu_depth = menu_depth | times: 1 %}
+
+    <nav
+      aria-label="{{ 'general.accessibility.nav_sidebar' | t }}"
+      class="productgrid--sidebar-section"
+    >
+      {% for block in section.blocks %}
+        {% assign menu = block.settings.menu %}
+
+        {% if linklists[menu] == blank or linklists[menu].links.size == 0 %}
+          {% comment %}
+            Exit iteration if a menu doesn't exist, or selected menu has no links
+          {% endcomment %}
+          {% break %}
+        {% endif %}
+
+        <h2 class="productgrid--sidebar-title">
+          {{ linklists[menu].title }}
+        </h2>
+
+        <div class="productgrid--sidebar-item productgrid--sidebar-menu">
+          {%
+            render 'navlist',
+            menu_list: linklists[block.settings.menu].links,
+            depth: 1,
+            max_depth: sidebar_menu_depth,
+            aria_expanded: true,
+            show_prod_count: block.settings.show_prod_count
+          %}
+        </div>
+      {% endfor %}
+    </nav>
+  {% endif %}
+
+  {% unless filter_position == 'above_menus' %}
+    {%
+      render 'product-grid-sidebar-filters',
+      filter_limit: filter_limit,
+      filter_style: filter_style,
+    %}
+  {% endunless %}
+</div>

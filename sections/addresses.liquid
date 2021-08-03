@@ -1,0 +1,75 @@
+<section
+  class="account-page account-page-addresses"
+  data-template-account-addresses
+  data-template-account>
+  <header class="account-page-masthead">
+    <h1 class="account-page-title">
+      {{ 'customers.addresses.title' | t }}
+    </h1>
+  </header>
+
+  {% paginate customer.addresses by 4 %}
+    <article class="account-page-content">
+      <div class="account-page--two-column">
+        {% comment %}
+          Customer address list
+        {% endcomment %}
+        {% if customer.addresses.size > 0 %}
+          <div class="account-page--column-half account-addresses">
+            <h2 class="account-page-subtitle">
+              {{ 'customers.addresses.addresses_list_title' | t }}
+            </h2>
+
+            <ul class="account-address-wrapper">
+              {% for address in customer.addresses %}
+                <li class="account-address">
+                  {%
+                    render 'account-address-list',
+                    address: address
+                  %}
+
+                  {% if address == customer.default_address %}
+                    <p class="account-address-item account-address-item--default">
+                      {{ 'customers.addresses.default_address_message' | t }}
+                    </p>
+                  {% endif %}
+
+                  <div class="account-address-list-footer">
+                    <button class="button-primary" type="button" data-edit-address="{{ address.id }}">
+                      {{ 'customers.addresses.edit' | t }}
+                    </button>
+
+                    <button class="button-secondary" type="button" data-delete-address="{{ address.id }}">
+                      {{ 'customers.addresses.delete' | t }}
+                    </button>
+                  </div>
+                </li>
+              {% endfor %}
+            </ul>
+
+            {% render 'pagination', paginate: paginate %}
+          </div>
+        {% endif %}
+
+        {% comment %}
+          Customer address forms
+        {% endcomment %}
+        <div class="account-page--column-half">
+          {%
+            render 'account-address-form',
+            address: customer.new_address,
+            visible: true
+          %}
+
+          {% for address in customer.addresses %}
+            {%
+              render 'account-address-form',
+              address: address,
+              visible: false
+            %}
+          {% endfor %}
+        </div>
+      </div>
+    </article>
+  {% endpaginate %}
+</section>

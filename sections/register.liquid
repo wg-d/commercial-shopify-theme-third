@@ -1,0 +1,117 @@
+<section class="account-page account-page-register" data-template-account>
+  <header class="account-page-masthead">
+    <h1 class="account-page-title">
+      {{ 'customers.register.title' | t}}
+    </h1>
+  </header>
+
+  <article class="account-page-content">
+    {% form 'create_customer' %}
+
+      {% assign has_message = false %}
+
+      {% if form.errors != blank %}
+        {% assign has_message = true %}
+        {% assign message_type = 'error' %}
+      {% endif %}
+
+      {% if form.posted_successfully? %}
+        {% assign has_message = true %}
+        {% assign message_type = 'success' %}
+      {% endif %}
+
+      {% if has_message %}
+        <div class="account-message form-message message--{{ message_type }}">
+          {% case message_type %}
+            {% when 'success' %}
+              <p>
+                {{ 'customers.register.success' | t }}
+              </p>
+            {% when 'error' %}
+              {{ form.errors | default_errors }}
+          {% endcase %}
+        </div>
+      {% endif %}
+
+      <div class="form-fields-columns">
+        <div class="form-field form-field--half">
+          <input
+            type="text"
+            class="form-field-input form-field-text"
+            id="register_first_name"
+            name="customer[first_name]"
+            autocapitalize="words"
+            autofocus
+            {% if form.first_name %}value="{{ form.first_name }}"{% endif %}>
+
+          <label
+            class="form-field-title"
+            for="register_first_name">
+            {{ 'customers.forms.first_name' | t }}
+          </label>
+        </div>
+
+        <div class="form-field form-field--half">
+          <input
+            type="text"
+            class="form-field-input form-field-text"
+            id="register_last_name"
+            name="customer[last_name]"
+            autocapitalize="words"
+            {% if form.last_name %}value="{{ form.last_name }}"{% endif %}>
+
+          <label
+            class="form-field-title"
+            for="register_last_name">
+            {{ 'customers.forms.last_name' | t }}
+          </label>
+        </div>
+
+        <div class="form-field form-field--half">
+          <input
+            type="text"
+            class="form-field-input form-field-text {% if form.errors contains 'email' %}form-field-error{% endif %}"
+            id="register_email"
+            name="customer[email]"
+            autocorrect="off"
+            autocapitalize="off"
+            {% if form.email %}value="{{ form.email }}"{% endif %}>
+
+          <label
+            class="form-field-title"
+            for="register_email">
+            {{ 'customers.forms.email' | t }}
+          </label>
+        </div>
+
+        <div class="form-field form-field--half">
+          <input
+            type="password"
+            class="form-field-input form-field-text {% if form.errors contains 'password' %}form-field-error{% endif %}"
+            id="register_password"
+            name="customer[password]">
+
+          <label
+            class="form-field-title"
+            for="register_password">
+            {{ 'customers.forms.password' | t }}
+          </label>
+        </div>
+      </div>
+
+      <div class="form-action-row">
+        <button class="button-primary form-action--submit" type="submit">
+          {{ 'customers.register.submit' | t }}
+        </button>
+
+        <div class="form-action-row--helper">
+          <span class="form-action-row--helper-item">
+            {{ 'customers.register.returning_customer' | t }}
+            {{ 'customers.login.sign_in' | t | customer_login_link }}
+          </span>
+        </div>
+      </div>
+
+    {% endform %}
+  </article>
+</section>

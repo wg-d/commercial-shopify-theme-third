@@ -1,0 +1,274 @@
+<script
+  type="application/json"
+  data-section-id="{{ section.id }}"
+  data-section-type="static-footer">
+</script>
+
+<footer role="contentinfo" aria-label="Footer">
+  <section class="site-footer-wrapper">
+    {% if section.blocks.size %}
+      <div class="site-footer-item">
+        <div class="site-footer-blocks column-count-{{ section.blocks.size }}">
+          {% render 'footer-block' for section.blocks as block %}
+        </div>
+      </div>
+    {% endif %}
+
+    <div class="site-footer-item">
+      <div class="site-footer-information">
+        <div class="site-footer-left">
+
+          {% if linklists[section.settings.additional_menu].links != blank %}
+            <nav
+              class="site-footer-navigation"
+              aria-label="{{ 'general.accessibility.nav_footer' | t }}"
+            >
+              {%
+                render 'navlist',
+                menu_list: linklists[section.settings.additional_menu].links,
+                depth: 1,
+                max_depth: 1,
+                aria_expanded: true,
+              %}
+            </nav>
+          {% endif %}
+
+          <p class="site-footer-credits">
+            {% assign year = 'now' | date: '%Y' %}
+            {{ 'footer.general.copyright_html' | t: year: year, shop_name: shop.name }}
+          </p>
+
+          <p class="site-footer-credits">
+            
+          </p>
+        </div>
+
+        {%- assign currency_selector = section.settings.show_currency_selector -%}
+        {%- assign locale_selector = section.settings.show_locale_selector -%}
+
+        {%- if section.settings.payment_icons or currency_selector or locale_selector -%}
+          <div class="site-footer-right">
+            {% comment %}Inject @pixelunion/shopify-cross-border/cross-border begin{% endcomment %}
+            {% form 'localization' %}
+              {% if locale_selector and form.available_locales.size > 1 %}
+                {% comment %}Inject @pixelunion/shopify-cross-border/multi-language begin{% endcomment %}
+                {% comment %} Generate a "random" number so ids are unique {% endcomment %}
+                {% assign unique_id = "now" | date: "%N" | modulo: 1000 %}
+                
+                <div class="selectors-form__item">
+                  <div class="disclosure" data-disclosure-locale>
+                    <h2 class="visually-hidden" id="lang-heading-{{ unique_id }}">
+                      {{ 'general.language.dropdown_label' | t }}
+                    </h2>
+                
+                    <button
+                      type="button"
+                      class="disclosure__toggle"
+                      aria-expanded="false"
+                      aria-controls="lang-list-{{ unique_id }}"
+                      aria-describedby="lang-heading-{{ unique_id }}"
+                      data-disclosure-toggle
+                    >
+                      {{ form.current_locale.endonym_name }}
+                    </button>
+                    <ul id="lang-list-{{ unique_id }}" class="disclosure-list" data-disclosure-list>
+                      {% for locale in form.available_locales %}
+                        <li>
+                          <a class="disclosure-list__item {% if locale.iso_code == form.current_locale.iso_code %}disclosure-list__item--current{% endif %}" href="#" lang="{{ locale.iso_code }}" {% if locale.iso_code == form.current_locale.iso_code %}aria-current="true"{% endif %} data-value="{{ locale.iso_code }}" data-disclosure-option>
+                            <span class="disclosure-list__option">{{ locale.endonym_name }}</span>
+                          </a>
+                        </li>
+                      {%- endfor -%}
+                    </ul>
+                    <input type="hidden" name="locale_code" id="LocaleSelector-{{ unique_id }}" value="{{ form.current_locale.iso_code }}" data-disclosure-input/>
+                  </div>
+                </div>
+                {% comment %}Inject @pixelunion/shopify-cross-border/multi-language end{% endcomment %}
+            
+              {% endif %}
+            
+              {% if currency_selector and form.available_currencies.size > 1 %}
+                {% comment %}Inject @pixelunion/shopify-cross-border/multi-currency begin{% endcomment %}
+                {% comment %} Generate a "random" number so ids are unique {% endcomment %}
+                {% assign unique_id = "now" | date: "%N" | modulo: 1000 %}
+                
+                <div class="selectors-form__item">
+                  <div class="disclosure" data-disclosure-currency>
+                    <h2 class="visually-hidden" id="currency-heading-{{ unique_id }}">
+                      {{ 'general.currency.dropdown_label' | t }}
+                    </h2>
+                
+                    <button
+                      type="button"
+                      class="disclosure__toggle"
+                      aria-expanded="false"
+                      aria-controls="currency-list-{{ unique_id }}"
+                      aria-describedby="currency-heading-{{ unique_id }}"
+                      data-disclosure-toggle
+                    >
+                      {{ form.current_currency.iso_code }} {%- if form.current_currency.symbol -%}{{ form.current_currency.symbol }}{%- endif -%}
+                    </button>
+                    <ul id="currency-list-{{ unique_id }}" class="disclosure-list" data-disclosure-list>
+                      {% for currency in form.available_currencies %}
+                        <li>
+                          <a class="disclosure-list__item {% if currency.iso_code == form.current_currency.iso_code %}disclosure-list__item--current{% endif %}" href="#" {% if currency.iso_code == form.current_currency.iso_code %}aria-current="true"{% endif %} data-value="{{ currency.iso_code }}" data-disclosure-option>
+                            <span class="disclosure-list__option">{{ currency.iso_code }} {%- if currency.symbol -%}{{ currency.symbol }}{%- endif -%}</span>
+                          </a>
+                        </li>
+                      {%- endfor -%}
+                    </ul>
+                    <input type="hidden" name="currency_code" id="CurrencySelector-{{ unique_id }}" value="{{ form.current_currency.iso_code }}" data-disclosure-input/>
+                  </div>
+                </div>
+                {% comment %}Inject @pixelunion/shopify-cross-border/multi-currency end{% endcomment %}
+            
+              {% endif %}
+            {% endform %}
+            {% comment %}Inject @pixelunion/shopify-cross-border/cross-border end{% endcomment %}
+
+            {% if section.settings.payment_icons and shop.enabled_payment_types.size > 0 %}
+              <ul class="payment-icons">
+                {% for type in shop.enabled_payment_types %}
+                  <li class="payment-icons-item">
+                    {{ type | payment_type_svg_tag }}
+                  </li>
+                {% endfor %}
+              </ul>
+            {% endif %}
+          </div>
+        {%- endif -%}
+      </div>
+    </div>
+  </section>
+</footer>
+
+{% schema %}
+{
+  "name": "Footer",
+  "max_blocks": 5,
+  "settings": [
+    {
+      "type": "header",
+      "content": "Payment icons"
+    },
+    {
+      "type": "checkbox",
+      "id": "payment_icons",
+      "label": "Show payment icons",
+      "default": false
+    },
+    {
+      "type": "header",
+      "content": "Language Selector",
+      "info": "To add a language, go to your [language settings.](/admin/settings/languages)"
+    },
+    {
+      "type": "checkbox",
+      "id": "show_locale_selector",
+      "label": "Show language selector",
+      "default": true
+    },
+    {
+      "type": "header",
+      "content": "Currency Selector",
+      "info": "To add a currency, go to your [payment settings.](/admin/settings/payments)"
+    },
+    {
+      "type": "checkbox",
+      "id": "show_currency_selector",
+      "label": "Show currency selector",
+      "default": true
+    },
+    {
+      "type": "header",
+      "content": "Additional menu"
+    },
+    {
+      "type": "link_list",
+      "id": "additional_menu",
+      "label": "Menu",
+      "default": "footer",
+      "info": "This menu won't show dropdown items."
+    }
+  ],
+  "blocks": [
+    {
+      "type": "menu",
+      "name": "Menu",
+      "settings": [
+        {
+          "type": "link_list",
+          "id": "menu",
+          "label": "Menu",
+          "default": "main-menu",
+          "info": "This menu won't show dropdown items."
+        }
+      ]
+    },
+    {
+      "type": "rich_text",
+      "name": "Rich text",
+      "settings": [
+        {
+          "type": "text",
+          "id": "title",
+          "label": "Heading",
+          "default": "Rich text"
+        },
+        {
+          "type": "richtext",
+          "id": "text",
+          "label": "Text",
+          "default": "<p>Use this section to welcome customers to your store, say a bit about your brand, or share news and seasonal promotions.</p>"
+        }
+      ]
+    },
+    {
+      "type": "social_accounts",
+      "name": "Social accounts",
+      "limit": 1,
+      "settings": [
+       {
+         "type": "paragraph",
+         "content": "Social links can be managed in your General settings."
+       }
+      ]
+    },
+    {
+      "type": "newsletter",
+      "name": "Newsletter",
+      "limit": 1,
+      "settings": [
+        {
+          "type": "text",
+          "id": "title",
+          "label": "Heading",
+          "default": "Subscribe"
+        },
+        {
+          "type": "richtext",
+          "id": "text",
+          "label": "Text",
+          "default": "<p>Invite customers to join your mailing list.</p>"
+        }
+      ]
+    }
+  ],
+  "default": {
+    "settings": {
+      "additional_menu": "footer"
+    },
+    "blocks": [
+      {
+        "type": "menu",
+        "settings": {}
+      },
+      {
+        "type": "newsletter",
+        "settings": {}
+      }
+    ]
+  }
+}
+
+{% endschema %}

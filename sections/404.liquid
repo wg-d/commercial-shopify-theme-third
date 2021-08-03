@@ -1,0 +1,21 @@
+{% assign continue_shopping_url = routes.all_products_collection_url %}
+
+{% if settings.continue_shopping_url != blank %}
+  {% assign continue_shopping_url = settings.continue_shopping_url %}
+{% endif %}
+
+<section class="fourohfour--container">
+  <header class="fourohfour-title">
+    <h1>{{ '404.general.title' | t }}</h1>
+  </header>
+
+  <div class="fourohfour--inner">
+    <p>{{ '404.general.text' | t }}</p>
+
+    {% if settings.continue_url_404 != blank %}
+      <a class="button-primary" href="{{ continue_shopping_url }}">
+        {{ '404.general.continue_shopping' | t }}
+      </a>
+    {% endif %}
+  </div>
+</section>

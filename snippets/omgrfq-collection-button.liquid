@@ -1,0 +1,23 @@
+<div class="omgrfq-collection-button" data-product-id="{{ product.id }}"></div>
+<script type="text/javascript">
+  var product = {{ product | json }};
+  var productOfCollection = {};
+  productOfCollection.id = product.id;
+  productOfCollection.created_at = product.created_at;
+  productOfCollection.handle = product.handle;
+  productOfCollection.image = product.featured_image;
+  productOfCollection.published_at = product.published_at;
+  productOfCollection.tags = product.tags;
+  productOfCollection.title = product.title;
+  productOfCollection.type = product.type;
+  productOfCollection.variants = product.variants;
+  productOfCollection.vendor = product.vendor;
+  {% for collection in product.collections %}
+    if(typeof productOfCollection.collection === 'undefined') productOfCollection.collection = [];
+    productOfCollection.collection.push(`{{ collection.title }}`);
+  {% endfor %}
+  if (typeof omgrfq_productCollection == 'undefined'){
+    omgrfq_productCollection = [];
+  }
+  omgrfq_productCollection[{{ product.id }}] = productOfCollection;
+</script>

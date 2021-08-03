@@ -1,0 +1,39 @@
+{% capture _ %}
+  {% comment %}
+    @param search_terms {string}
+        Original search terms
+  {% endcomment %}
+
+  {% assign sanitized_terms = search_terms %}
+
+  {% comment %}
+    Remove tag filtering
+  {% endcomment %}
+  {% if sanitized_terms contains 'tag:' %}
+    {% assign sanitized_terms = sanitized_terms | split: 'tag:' | first %}
+  {% endif %}
+
+  {% comment %}
+    Remove product_type filtering
+  {% endcomment %}
+  {% if sanitized_terms contains 'product_type:' %}
+    {% assign sanitized_terms = sanitized_terms | split: 'product_type:' | first %}
+  {% endif %}
+
+  {% comment %}
+    If search terms contains a space, replace all but last occurrence of `*`
+  {% endcomment %}
+  {% if sanitized_terms contains ' ' %}
+    {% assign sanitized_terms = sanitized_terms | split: '* ' | join: ' ' %}
+  {% endif %}
+
+  {% comment %}
+    Replace last `*` in search terms
+  {% endcomment %}
+  {% if sanitized_terms contains '*' %}
+    {% comment %}Reverse the string so that the last `*` is added by the theme{% endcomment %}
+    {% assign reversed_terms = sanitized_terms | split: '' | reverse | join: '' | remove_first: '*' %}
+    {% assign sanitized_terms = reversed_terms | split: '' | reverse | join: '' %}
+  {% endif %}
+{% endcapture %}
+{{ sanitized_terms }}

@@ -1,0 +1,23 @@
+{% comment %}
+  @param id {String}
+    A unique ID for the link, used as a classname and to look up the icon.
+
+  @param url {String}
+    The URL to link to.
+
+  @param title String {Optional}
+    A user-facing name for the social platform.
+{% endcomment %}
+
+{% assign title = title | default: blank %}
+<a
+  class="social-link"
+  {% if title != blank %}title="{{ title | escape }}"{% endif %}
+  href="{{ url | escape }}"
+  target="_blank">
+  {%-
+    render 'social-icon',
+    id: id
+  -%}
+  <span class="visually-hidden">{{ 'general.accessibility.social_media_icon' | t: platform: title | escape }}</span>
+</a>

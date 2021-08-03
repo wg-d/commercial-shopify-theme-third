@@ -1,0 +1,129 @@
+{% assign additional_classes = additional_classes | default: blank %}
+
+{% assign has_link = false %}
+{% if block.settings.block_link != blank %}
+  {% assign has_link = true %}
+{% endif %}
+
+{%- capture classes -%}
+  promo-block
+  {% if block.settings.image != blank %}promo-block--image{% else %}promo-block--placeholder{% endif %}
+  promo-block--{{ block.id }}
+  promo-block--index-{{ index }}
+  promo-block--{{ background_position }}
+  {% if maintain_aspect_ratio %}promo-mosaic--maintain-aspect-ratio{% endif %}
+  {{ additional_classes | strip_newlines }}
+{%- endcapture -%}
+
+{% style %}
+.promo-block--{{ block.id }}.promo-block--top-center {
+  background-position: center top;
+}
+
+.promo-block--{{ block.id }}.promo-block--top-left {
+  background-position: left top;
+}
+
+.promo-block--{{ block.id }}.promo-block--top-right {
+  background-position: right top;
+}
+
+.promo-block--{{ block.id }}.promo-block--center-center {
+  background-position: center center;
+}
+
+.promo-block--{{ block.id }}.promo-block--center-left {
+  background-position: left center;
+}
+
+.promo-block--{{ block.id }}.promo-block--center-right {
+  background-position: right center;
+}
+
+.promo-block--{{ block.id }}.promo-block--bottom-center {
+  background-position: center bottom;
+}
+
+.promo-block--{{ block.id }}.promo-block--bottom-left {
+  background-position: left bottom;
+}
+
+.promo-block--{{ block.id }}.promo-block--bottom-right {
+  background-position: right bottom;
+}
+{% endstyle %}
+
+
+<{% if block.settings.title != blank and block.settings.text != blank %}article{% else %}div{% endif %}
+  class="{{ classes | replace: '  ', ' ' | strip_newlines }} {% if block.settings.image == blank %}onboarding-image{% endif %}"
+  {{ block.shopify_attributes }}
+  {% if block.settings.image %}
+    {%
+      render 'rimg'
+      img: block.settings.image,
+      background: true,
+      lazy: true,
+      size: '1350x1350'
+    %}
+  {% endif %}
+>
+  {% if block.settings.image %}
+    {%
+      render 'rimg'
+      img: block.settings.image,
+      lazy: true,
+      canvas: true,
+      class: 'promo-block--background',
+      size: '1350x1350'
+    %}
+  {% endif %}
+
+  {%- capture wrapper_classes -%}
+    promo-block--content
+    promo-block--content-align-{{ text_alignment }}
+    {% unless maintain_aspect_ratio %}promo-grid--maintain-aspect-ratio{% endunless %}
+    {% unless compress_blocks %}promo-block--expanded{% endunless %}
+    {% unless has_link %}promo-block--unlinked{% endunless %}
+  {%- endcapture -%}
+
+  {% if has_link %}
+    <a
+      class="{{ wrapper_classes | replace: '  ', ' ' | strip_newlines }}"
+      href="{{ block.settings.block_link }}"
+      data-promo-block-content
+    >
+  {% else %}
+    <div
+      class="{{ wrapper_classes | replace: '  ', ' ' | strip_newlines }}"
+      data-promo-block-content
+    >
+  {% endif %}
+
+  <div class="promo-block--content-wrapper">
+    {% if block.settings.title != blank %}
+      <h2 class="promo-block--header">
+        {{ block.settings.title | escape }}
+      </h2>
+    {% endif %}
+
+    {% if block.settings.text != blank %}
+      <p class="promo-block--text">
+        {{ block.settings.text | escape }}
+      </p>
+    {% endif %}
+
+    {% if block.settings.button_text != blank and block.settings.block_link != blank %}
+      <span
+        class="button-{{ block.settings.button_style }} promo-block--button">
+        {{ block.settings.button_text | escape }}
+      </span>
+    {% endif %}
+
+  </div>
+
+  {% if has_link %}
+    </a>
+  {% else %}
+    </div>
+  {% endif %}
+</{% if block.settings.title != blank and block.settings.text != blank %}article{% else %}div{% endif %}>

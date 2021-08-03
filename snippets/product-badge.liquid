@@ -1,0 +1,146 @@
+{% comment %}
+  @param class_root {String}
+    Base class root
+
+  @param product_available {Bool}
+
+  @param on_sale {Bool}
+    If a product, or one of it's variants is on sale
+
+  @param show_saved {Bool}
+    Show amount saved if is consistent across variants
+
+  @param price {Number}
+    product.price
+
+  @param compare_at_price {Number}
+    product.compare_at_price_max
+
+  @param sales_badge {Bool}
+    False: Sold out badge only
+    True: Show sale badge
+
+  @param sales_badge_style {String}
+    'percentage' or 'money'
+{% endcomment %}
+
+{% assign sales_badge = settings.product_sales_badge %}
+
+{% assign sales_badge_style = settings.product_sales_badge_style %}
+
+{% comment %}Inject @pixelunion/shopify-price-ui/sale-badge begin{% endcomment %}
+{% comment %}
+  @param product {Product}
+
+  @param class_root {String}
+    Base class root
+
+  @param product_available {Bool}
+
+  @param on_sale {Bool}
+    If a product, or one of it's variants is on sale
+
+  @param sales_badge {Bool}
+    False: Sold out badge only
+    True: Show sale badge
+
+  @param sales_badge_style
+
+  @param price_varies
+  @param compare_at_price_varies
+
+  @param include_hidden_badge
+    Include a hidden element with sale data to use in cases of unavailable variants or cases where no variant
+    is selected by default
+{% endcomment %}
+
+{% assign savings_money_range = 0 %}
+{% assign savings_percentage_range = 0 %}
+
+{% assign price_min = nil %}
+{% assign price_max = nil %}
+{% assign compare_at_price_min = nil %}
+{% assign compare_at_price_max = nil %}
+{% assign price_varies = false %}
+{% assign compare_at_price_varies = false %}
+{% for variant in product.variants %}
+  {% if price_min == nil or variant.price < price_min %}
+    {% assign price_min = variant.price %}
+  {% endif %}
+  {% if price_max == nil or variant.price > price_max %}
+    {% assign price_max = variant.price %}
+  {% endif %}
+  {% assign tmp_compare_at_price = variant.compare_at_price %}
+  {% unless variant.compare_at_price %}
+    {% assign tmp_compare_at_price = variant.price %}
+  {% endunless %}
+  {% if compare_at_price_min == nil or tmp_compare_at_price < compare_at_price_min %}
+    {% assign compare_at_price_min = tmp_compare_at_price %}
+  {% endif %}
+  {% if compare_at_price_max == nil or tmp_compare_at_price > compare_at_price_max %}
+    {% assign compare_at_price_max = tmp_compare_at_price %}
+  {% endif %}
+  {% if variant.price != price_min %}
+    {% assign price_varies = true %}
+  {% endif %}
+  {% if tmp_compare_at_price != compare_at_price_min %}
+    {% assign compare_at_price_varies = true %}
+  {% endif %}
+
+  {% assign price_difference = tmp_compare_at_price | minus: variant.price %}
+  {% if price_difference > savings_money_range %}
+    {% assign savings_money_range = price_difference %}
+    {% assign savings_percentage_range = savings_money_range | times: 1.0 | divided_by: variant.compare_at_price | times: 100.0 | round %}
+  {% endif %}
+{% endfor %}
+
+{% assign savings_money_single = selected_variant.compare_at_price | minus: selected_variant.price %}
+{% assign savings_percentage_single = savings_money_single | times: 1.0 | divided_by: selected_variant.compare_at_price | times: 100.0 | round %}
+
+{% assign product_available = product_available | default: product.available %}
+
+{%- if product_available != true -%}
+  <span class="{{ class_root }}__badge {{ class_root }}__badge--soldout">
+    {{ 'product_price.badge.sold_out' | t }}
+  </span>
+{%- elsif sales_badge -%}
+  {% assign saved_price_single = savings_money_single | money %}
+  {% assign saved_price_range = savings_money_range | money %}
+  {% assign on_sale = on_sale | default: true %}
+  {% if savings_money_range <= 0 %}
+    {% assign on_sale = false %}
+  {% endif %}
+
+  <span class="{{ class_root }}__badge {{ class_root }}__badge--sale"
+    data-badge-sales
+    {% if on_sale != true %}style="display: none;"{% endif %}
+  >
+    <span data-badge-sales-range>
+      {% if sales_badge_style == 'percent' %}
+        {% if price_varies or compare_at_price_varies %}
+          {{ 'product_price.badge.sale_percentage_range_html' | t: savings: savings_percentage_range | strip_newlines }}
+        {% else %}
+          {{ 'product_price.badge.sale_percentage_single_html' | t: savings: savings_percentage_range | strip_newlines }}
+        {% endif %}
+      {% elsif sales_badge_style == 'money' %}
+        {% if price_varies or compare_at_price_varies %}
+          {{ 'product_price.badge.sale_money_range_html' | t: savings: saved_price_range | strip_newlines }}
+        {% else %}
+          {{ 'product_price.badge.sale_money_single_html' | t: savings: saved_price_range | strip_newlines }}
+        {% endif %}
+      {% else %}
+        {{ 'product_price.badge.sale' | t }}
+      {% endif %}
+    </span>
+    <span data-badge-sales-single style="display: none;">
+      {% if sales_badge_style == 'percent' %}
+        {{ 'product_price.badge.sale_percentage_single_html' | t: savings: savings_percentage_single | strip_newlines }}
+      {% elsif sales_badge_style == 'money' %}
+        {{ 'product_price.badge.sale_money_single_html' | t: savings: saved_price_single | strip_newlines }}
+      {% else %}
+        {{ 'product_price.badge.sale' | t }}
+      {% endif %}
+    </span>
+  </span>
+{%- endif -%}
+{% comment %}Inject @pixelunion/shopify-price-ui/sale-badge end{% endcomment %}

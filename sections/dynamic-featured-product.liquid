@@ -1,0 +1,205 @@
+{% assign product = all_products[section.settings.product] %}
+{% assign onboarding = false %}
+
+{% if product.empty? %}
+  {% assign onboarding = true %}
+{% endif %}
+
+<script
+  type="application/json"
+  data-section-type="dynamic-featured-product"
+  data-section-id="{{ section.id }}"
+  data-section-data
+>
+  {
+    "settings": {
+      "cart_redirection": {{ section.settings.product_cart_redirect | json }},
+      "money_format": {{ shop.money_format | strip_html | json }},
+      "gallery_video_autoplay": {{ section.settings.gallery_video_autoplay | json }},
+      "gallery_video_looping": {{ section.settings.gallery_video_looping | json }},
+      "thumbnail_position": {{ section.settings.gallery_thumbnail_position | json }},
+      "hover_zoom": {{ section.settings.gallery_hover_zoom | json }},
+      "click_to_zoom": "disabled",
+      "swatches_enable": {{ settings.swatches_enable | json }},
+      "sold_out_options": {{ section.settings.sold_out_options | json }},
+      "select_first_available_variant": {{ section.settings.select_first_available_variant | json }}
+    },
+    "context": {
+      "select_variant": {{ 'product.general.select_variant' | t | json }},
+      "product_available": {{ 'product.buttons.add_to_cart' | t | json }},
+      "product_sold_out": {{ 'product.buttons.sold_out' | t | json }},
+      "product_unavailable": {{ 'product.buttons.unavailable' | t | json }}
+    },
+    "product": {% unless onboarding %}{{ product | json }}{% else %}false{% endunless} %}
+  }
+</script>
+
+<script type="application/pxs-animation-mapping+json">
+  {
+    "blocks": [".product-main"],
+    "elements": [
+      ".product-details",
+      "[data-product-form-area]"
+    ]
+  }
+</script>
+
+<section class="featured-product--container home-section--content" data-product-wrapper>
+  <div class="featured-product--inner">
+    {%
+      render 'product',
+      product: product,
+      is_product_modal: false,
+      hide_description: true,
+      onboarding: onboarding,
+      select_first_available_variant: section.settings.select_first_available_variant,
+      gallery_aspect_ratio: section.settings.gallery_aspect_ratio,
+      gallery_thumbnail_position: section.settings.gallery_thumbnail_position,
+      gallery_image_crop: section.settings.gallery_image_crop,
+      gallery_click_to_zoom: 'disabled',
+      gallery_hover_zoom: section.settings.gallery_hover_zoom,
+    %}
+  </div>
+</section>
+
+{% schema %}
+{
+  "name": "Featured product",
+  "class": "featured-product--section",
+  "settings": [
+    {
+      "id": "product",
+      "type": "product",
+      "label": "Product"
+    },
+    {
+      "type": "header",
+      "content": "Form"
+    },
+    {
+      "id": "sold_out_options",
+      "type": "select",
+      "label": "Sold out options",
+      "options": [
+        {
+          "value": "selectable",
+          "label": "Selectable"
+        },
+        {
+          "value": "disabled",
+          "label": "Disabled"
+        },
+        {
+          "value": "hidden",
+          "label": "Hidden"
+        }
+      ],
+      "default": "selectable",
+      "info": "Variants set to continue selling when out of stock will always be selectable."
+    },
+    {
+      "type": "checkbox",
+      "id": "select_first_available_variant",
+      "label": "Auto-select first available variant",
+      "default": true
+    },
+    {
+      "type": "checkbox",
+      "id": "show_dcb",
+      "label": "Show dynamic checkout button",
+      "info": "Each customer will see their preferred payment method from those available on your store, such as PayPal or Apple Pay. [Learn more](https://help.shopify.com/manual/using-themes/change-the-layout/dynamic-checkout)",
+      "default": true
+    },
+    {
+      "type": "checkbox",
+      "id": "product_cart_redirect",
+      "label": "Enable cart redirection",
+      "info": "Automatically sends users to the Cart page after adding a product.",
+      "default": false
+    },
+    {
+      "type": "header",
+      "content": "Media"
+    },
+    {
+      "type": "paragraph",
+      "content": "Learn more about [media types](https://help.shopify.com/en/manual/products/product-media/product-media-types)"
+    },
+    {
+      "type": "select",
+      "id": "gallery_aspect_ratio",
+      "label": "Aspect ratio",
+      "options": [
+        { "value": "natural", "label": "Natural" },
+        { "value": "short", "label": "Short (4:3)" },
+        { "value": "square", "label": "Square (1:1)" },
+        { "value": "tall", "label": "Tall (2:3)" }
+      ],
+      "default": "natural"
+    },
+    {
+      "type": "checkbox",
+      "id": "gallery_image_crop",
+      "label": "Enable image crop",
+      "info": "If disabled, white space will be applied around the image. Has no effect when media aspect ratio is set to natural.",
+      "default": false
+    },
+    {
+      "id": "gallery_thumbnail_position",
+      "type": "select",
+      "label": "Thumbnails position",
+      "options": [
+        {
+          "value": "below",
+          "label": "Below main image"
+        },
+        {
+          "value": "left",
+          "label": "Left of main image"
+        }
+      ],
+      "default": "below"
+    },
+    {
+      "type": "checkbox",
+      "id": "gallery_video_autoplay",
+      "label": "Enable video autoplay",
+      "default": true
+    },
+    {
+      "type": "checkbox",
+      "id": "gallery_video_looping",
+      "label": "Enable video looping",
+      "default": true
+    },
+    {
+      "id": "gallery_hover_zoom",
+      "type": "select",
+      "label": "Roll-over image zoom",
+      "options": [
+        {
+          "value": "disabled",
+          "label": "Disabled"
+        },
+        {
+          "value": "replace",
+          "label": "Enabled (replace main image)"
+        }
+      ],
+      "info": "Only applies to desktop screen sizes.",
+      "default": "disabled"
+    },
+    {
+      "type": "paragraph",
+      "content": "For the best zoom results, make sure your images are larger than 1600px."
+    }
+  ],
+  "presets": [
+    {
+      "name": "Featured product",
+      "category": "Product"
+    }
+  ]
+}
+
+{% endschema %}

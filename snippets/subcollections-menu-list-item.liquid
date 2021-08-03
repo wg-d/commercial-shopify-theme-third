@@ -1,0 +1,97 @@
+{% assign collection_title = 'onboarding.collection.title' | t %}
+{% capture collection_links %}
+  {% for i in (1..6) %}
+    <li class="subcollections-menu__link-item">
+      <a class="menu-list-link" href="#">
+        {{ 'onboarding.menu_list.title' | t }}
+      </a>
+    </li>
+  {% endfor %}
+{% endcapture %}
+
+{% assign image_align = section.settings.image_align %}
+{% assign cta_text = section.settings.cta | escape %}
+
+{% if link.levels == 0 %}
+    {% assign hasNoSublinks = true %}
+  {% elsif link.levels != 0 %}
+    {% assign hasSublinks = true %}
+{% endif %}
+
+{% unless onboard %}
+  {% assign current_collection = link.object %}
+
+  {% if current_collection == blank %}
+    {% continue %}
+  {% endif %}
+
+  {% assign collection_title = current_collection.title %}
+  {% assign collection_description = current_collection.description %}
+
+  {% if current_collection.image and section.settings.thumbnail_image == 'collection-image' %}
+    {% assign collection_image = current_collection.image %}
+  {% else %}
+    {% assign collection_image = current_collection.products.first.featured_media.preview_image %}
+  {% endif %}
+
+  {% capture collection_links %}
+    {% for link in link.links %}
+      <li class="subcollections-menu__link-item">
+        <a class="menu-list-link" href="{{ link.url }}">
+          {{ link.title }}
+        </a>
+      </li>
+    {% endfor %}
+  {% endcapture %}
+{% endunless %}
+
+<li class="subcollections-menu__item" {% if block %}{{ block.shopify_attributes }}{% endif %}>
+  <div class="subcollections-menu__item-wrapper subcollections-menu__item-align--{{ image_align }}">
+  {% if hasNoSublinks %}<a href="{{current_collection.url}}" class="subcollections-link-item"></a>{% endif %}
+    <div class="subcollections-menu__item-image-container">
+      <a href="{{ current_collection.url }}">
+        <figure class="subcollections-menu__item-image">
+          {% unless onboard or collection_image == blank %}
+            {%
+              render 'rimg',
+              img: collection_image,
+              alt: collection_image.alt,
+              size: '1350x',
+              lazy: true,
+              canvas: true,
+              attr: 'data-collection-image'
+            %}
+          {% else %}
+            {%- capture index -%}
+              {%- cycle '1', '2', '3', '4', '5', '6' -%}
+            {%- endcapture -%}
+            {{ 'collection-' | append: index | placeholder_svg_tag: 'placeholder--image' }}
+          {% endunless %}
+        </figure>
+      </a>
+    </div>
+
+    <div class="subcollections-menu__menu-items">
+      <a href="{{ current_collection.url }}" {% if hasSublinks %}{% unless enabled_mobile_accordion %}data-accordion-trigger{% endunless %}{% endif%}>
+        <h2>
+          {{ collection_title }}
+          <span class="mobile-accordion--icon">
+            {% render 'icon-chevron-down' %}
+          </span>
+        </h2>
+      </a>
+      
+      <ul class="subcollections-menu__link-list" {% if hasSublinks %}data-accordion-content{% endif %}>
+        {% if hasSublinks %}{{ collection_links }}{% endif %}
+        {% if cta_text != blank %}
+          <li class="subcollections-menu__link-item accordion--icon">
+            <a href="{{ current_collection.url }}">
+              {{ cta_text }}
+              {% render 'icon-library', id: 'icon-signpost-arrow' %}
+            </a>
+          </li>
+        {% endif %}
+      </ul>
+    </div>
+  </div>
+</li>

@@ -1,0 +1,201 @@
+{% assign compare_at_price = 0 %}
+
+{% for variant in item.product.variants %}
+  {% if variant.id == item.variant.id and variant.compare_at_price > item.price %}
+    {% assign compare_at_price = variant.compare_at_price %}
+    {% break %}
+  {% endif %}
+{% endfor %}
+
+{%- assign item_has_discounts = false -%}
+{%- if item.line_level_discount_allocations.size > 0 -%}
+  {%- assign item_has_discounts = true -%}
+{%- endif -%}
+
+<li
+  class="cart-item"
+  data-cartitem
+  data-cartitem-id="{{ item.variant_id }}"
+  data-cartitem-key="{{ item.key }}"
+  data-cartitem-price="{{ item.price }}">
+  <figure class="cart-item--image-wrapper">
+    <a href="{{ item.url }}">
+      {% if item.image %}
+        {%
+          render 'rimg',
+          img: item.image,
+          alt: item.title,
+          size: '120x'
+        %}
+      {% else %}
+        {{ 'image' | placeholder_svg_tag: 'placeholder--image' }}
+      {% endif %}
+    </a>
+  </figure>
+
+  <div class="cart-item--inner">
+
+    <div class="cart-item--content">
+      <h2 class="cart-item--content-title">
+        <a href="{{ item.url }}">
+          {{ item.product.title }}
+        </a>
+      </h2>
+      {% assign ancho_val = item.product.metafields.instructions['Formato del rollo']%}
+      {% unless item.product.has_only_default_variant %}
+        {% for option in item.product.options %}
+          <div class="cart-item--product-options">
+            <span style=" font-size: 1rem; font-weight: bold; color: black;">Ancho(m):&nbsp;<span style="color: #999; font-size: 16px; font-weight: lighter;">{{ ancho_val | slice:0 }}</span></span>
+            <div class="clear"></div>
+            <span class="cart-item--option-name" style=" font-size: 1rem; font-weight: bold; color: black;">{{ option }}</span>
+            {{ item.variant.options[forloop.index0] }}
+           
+          </div>
+        {% endfor %}
+      {% endunless %}
+
+      <div class="cart-item--content-price"
+          {% if item.product.title contains 'Alfombra' or item.product.title contains 'Pasto Sintético'%}
+          {% unless item.product.title contains 'Instalación de' %}
+          style="display:none"
+          {% endunless%}
+          {% endif%}
+      >
+        <span class="cart-item--price-title">
+          {{ 'cart.general.price' | t }}
+        </span>
+
+        {% if compare_at_price > item.price or item.original_price > item.final_price %}
+          <span class="visually-hidden">{{ 'product_price.price.original' | t }}</span>
+          <s class="cart-item--sale-price money">
+            {%- if item_has_discounts -%}
+              {{ item.original_price | money }}
+            {%- else -%}
+              {{ compare_at_price | money }}
+            {%- endif %}
+          </s>
+          <span class="visually-hidden">{{ 'product_price.price.current' | t }}</span>
+        {% endif %}
+
+        <span class="money {% if item_has_discounts %}cart-item--discount-price{% endif %}">
+          {%- if item_has_discounts -%}
+            {{ item.final_price | money }}
+          {%- else -%}
+            {{ item.original_price | money }}
+          {%- endif %}
+        </span>
+      </div>
+
+      {% capture total_quantity %}<span class="cart-item--total-quantity" data-total-quantity>{{ item.unit_price_measurement.quantity_value }}{{ item.unit_price_measurement.quantity_unit }}</span>{% endcapture %}
+      {% capture unit_price %}<span class="cart-item--unit-price-amount money" data-unit-price-amount>{{ item.unit_price | money }}</span>{% endcapture %}
+      {% capture unit_measure %}<span class="cart-item--unit-price-measure" data-unit-price-measure>{%- if item.unit_price_measurement.reference_value != 1 -%}{{ item.unit_price_measurement.reference_value }}{%- endif %}{{ item.unit_price_measurement.reference_unit }}</span>{% endcapture %}
+
+      {% if item.unit_price_measurement %}
+        <div class="cart-item--unit-price">
+          {{ 'product_price.price.price_per_unit_html' | t: total_quantity: total_quantity, unit_price: unit_price, unit_measure: unit_measure | strip_newlines }}
+        </div>
+      {% endif %}
+
+      {%- if item_has_discounts -%}
+        <ul class="discount-list" aria-label="{{ 'product.general.discounts' | t }}">
+          {% for discount_allocation in item.line_level_discount_allocations %}
+            <li class="discount-list-item">
+              {% render 'icon-library', id: 'icon-sale-tag' %}
+              {{ discount_allocation.discount_application.title }}
+              (-<span class="money">{{ discount_allocation.amount | money }}</span>)
+            </li>
+          {% endfor %}
+        </ul>
+      {% endif %}
+
+      {% if settings.product_show_sku == true %}
+        <div
+          class="
+            cart-item--sku
+            {% if item.sku == empty %}cart-item--sku-empty{% endif %}
+          "
+        >
+          {{ 'product.general.sku_html' | t: sku: item.sku | strip_newlines }}
+        </div>
+      {% endif %}
+    </div>
+
+    <div class="cart-item--info">
+      <div
+        class="cart-item--quantity form-fields--qty"
+        data-quantity-wrapper
+        >
+        <div class="form-field form-field--qty-select {% if item.quantity < 10 %}visible{% else %}hidden{% endif %}">
+          <div class="form-field-select-wrapper">
+            <select
+              class="form-field-input form-field-select form-field-filled"
+              id="quantity_{{ item.key | replace: ':', '_' }}"
+              {% if item.quantity >= 10 %}tabindex="-1"{% endif %}
+              aria-label="{{ 'general.general.quantity' | t }}"
+              data-quantity-select
+              data-cartitem-quantity>
+              {% for i in (1..9) %}
+                <option {% if i == item.quantity %}selected {% endif %}value="{{ i }}">
+                  {{ i }}
+                </option>
+              {% endfor %}
+              <option value="10">
+                10+
+              </option>
+            </select>
+            <label class="form-field-title" for="quantity_{{ item.key | replace: ':', '_' }}">
+              {{ 'general.general.quantity' | t }}
+            </label>
+            {% render 'icon-chevron-down-small' %}
+            </div>
+        </div>
+
+        <div class="form-field form-field--qty-input {% if item.quantity < 10 %}hidden{% else %}visible{% endif %}">
+          <input
+            class="form-field-input form-field-number form-field-filled"
+            value="{{ item.quantity }}"
+            name="updates[]"
+            id="updates_{{ item.key }}"
+            type="text"
+            pattern="\d*"
+            {% if item.quantity < 10 %}tabindex="-1"{% endif %}
+            aria-label="{{ 'general.general.quantity' | t }}"
+            data-quantity-input
+            data-cartitem-quantity>
+          <label class="form-field-title" for="updates_{{ item.key }}">
+            {{ 'general.general.quantity' | t }}
+          </label>
+        </div>
+      </div>
+
+      <div class="cart-item--total">
+        <span class="visually-hidden">{{ 'cart.general.total_line_price' | t }}</span>
+        {%- if item_has_discounts -%}
+          <span class="visually-hidden">{{ 'product_price.price.original' | t }}</span>
+          <s class="original-price money">{{ item.original_line_price | money }}</s>
+          <span class="visually-hidden">{{ 'product_price.price.current' | t }}</span>
+        {%- endif -%}
+        <div
+          class="money {% if item_has_discounts %}cart-item--discount-price{% endif %}"
+          aria-live="polite"
+          data-cartitem-total
+        >
+          {{ item.final_line_price | money }}
+        </div>
+      </div>
+
+      <div class="cart-item--remove">
+        <a
+          href="{{ routes.cart_change_url }}?line={{ item_index }}&amp;quantity=0"
+          class="cart-item--remove-link"
+          data-cartitem-remove
+          data-no-instant
+          aria-label="remove {{ item.product.title | escape }}"
+        >
+          {% render 'icon-remove' %}
+        </a>
+      </div>
+
+    </div>
+  </div>
+</li>

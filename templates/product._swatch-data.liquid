@@ -1,0 +1,37 @@
+{% layout none %}
+
+{% capture to_hash %}
+  {{ shop.money_format | strip_html }}
+  {{ settings | json }}
+  {{ 'product.buttons.add_to_cart' | t }}
+  {{ 'product.buttons.sold_out' | t  }}
+  {{ product | json }}
+{% endcapture %}
+{% assign to_hash = to_hash | replace: ' ', '' | sha256 %}
+
+<template data-options>
+  {
+    "hash": {{ to_hash | json }}
+  }
+</template>
+
+{% for option in product.options_with_values %}
+    {%- assign swatch_trigger = settings.swatches_swatch_trigger | strip | downcase -%}
+    {% assign option_name = option.name | downcase %}
+    {% if option_name == swatch_trigger %}
+      {% assign swatch_values = option.values %}
+      {% assign swatch_option_key = 'option' | append: forloop.index %}
+      {% break %}
+    {% endif %}
+{% endfor %}
+
+<template data-data>
+  {
+    {%
+      render 'swatch-data',
+      product: product,
+      swatch_values: swatch_values,
+      swatch_option_key: swatch_option_key,
+    %}
+  }
+</template>

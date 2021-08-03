@@ -1,0 +1,140 @@
+{% assign onboard = true %}
+
+{% if linklists[collection.handle].links.size > 0 %}
+  {% assign onboard = false %}
+{% endif %}
+
+{% style %}
+  #shopify-section-{{ section.id }} .subcollections-list__content {
+    grid-template-columns: repeat({{ section.settings.thumbnail_columns_desktop }}, minmax(auto, 1fr));
+  }
+
+  @media only screen and (max-width: 860px) {
+    #shopify-section-{{ section.id }} .subcollections-list__content {
+      grid-template-columns: repeat({{ section.settings.thumbnail_columns_mobile }}, minmax(auto, 1fr));
+    }
+  }
+{% endstyle %}
+
+<div
+  data-section-id="{{ section.id }}"
+  data-section-type="static-subcollections-grid"
+>
+  {% if section.settings.show_breadcrumbs %}
+    {% render 'breadcrumbs' %}
+  {% endif %}
+
+  {% 
+    render 'subcollections-banner', 
+    heading: collection.title, 
+    description: collection.description, 
+    image: collection.image
+  %}
+
+  {% 
+    render 'subcollections-collection', 
+    onboard: onboard, 
+    layout_type: 'grid' 
+  %}
+</div>
+
+{% schema %}
+{
+  "name": "Subcollections grid",
+  "settings": [
+    {
+      "type": "paragraph",
+      "content": "Page is empty? [Learn how to add collections to your subcollections template](https://support.pixelunion.net/hc/en-us/articles/1500007721682)"
+    },
+    {
+      "type": "header",
+      "content": "Header"
+    },
+    {
+      "type": "checkbox",
+      "id": "show_breadcrumbs",
+      "label": "Show breadcrumbs",
+      "default": true
+    },
+    {
+      "type": "checkbox",
+      "id": "show_description",
+      "label": "Show collection description",
+      "default": true
+    },
+    {
+      "type": "checkbox",
+      "id": "show_collection_image",
+      "label": "Show collection image",
+      "default": true
+    },
+    {
+      "type": "header",
+      "content": "Subcollections"
+    },
+    {
+      "type": "checkbox",
+      "id": "show_product_count",
+      "label": "Show product counts",
+      "default": false
+    },
+    {
+      "type": "range",
+      "id": "thumbnail_columns_desktop",
+      "label": "Columns per row",
+      "min": 3,
+      "max": 6,
+      "step": 1,
+      "default": 5
+    },
+    {
+      "type": "range",
+      "id": "thumbnail_columns_mobile",
+      "label": "Columns per row on mobile",
+      "min": 1,
+      "max": 3,
+      "step": 1,
+      "default": 2
+    },
+    {
+      "type": "select",
+      "id": "thumbnail_image",
+      "label": "Grid image",
+      "options": [
+        {
+          "value": "product-image",
+          "label": "Product image"
+        },
+        {
+          "value": "collection-image",
+          "label": "Collection image"
+        }
+      ],
+      "default": "product-image"
+    },
+    {
+      "type": "select",
+      "id": "image_crop",
+      "label": "Image crop",
+      "options": [
+        {
+          "value": "original",
+          "label": "Original"
+        },
+        {
+          "value": "circle",
+          "label": "Circle"
+        },
+        {
+          "value": "square",
+          "label": "Square"
+        },
+        {
+          "value": "round",
+          "label": "Rounded rectangle"
+        }
+      ]
+    }
+  ]
+}
+{% endschema %}

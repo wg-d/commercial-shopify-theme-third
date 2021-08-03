@@ -1,0 +1,99 @@
+{% assign using_linklist = false %}
+{% assign pagination = 12 %}
+{% assign linklist = 'all-collections' %}
+
+{% if linklists[linklist] and linklists[linklist].links.size > 0 %}
+  {% assign using_linklist = true %}
+  {% assign pagination = 48 %}
+{% endif %}
+
+{% render 'breadcrumbs' %}
+
+<script type="application/pxs-animation-mapping+json">
+  {
+    "blocks": [".collection__item"],
+    "elements": [
+      ".collection__item-info"
+    ]
+  }
+</script>
+
+{% style %}
+  #shopify-section-{{ section.id }} .collection-list__content {
+    grid-template-columns: repeat({{ section.settings.thumbnail_columns_desktop }}, minmax(auto, 1fr));
+  }
+
+  @media only screen and (max-width: 860px) {
+    #shopify-section-{{ section.id }} .collection-list__content {
+      grid-template-columns: repeat({{ section.settings.thumbnail_columns_mobile }}, minmax(auto, 1fr));
+    }
+  }
+{% endstyle %}
+
+<h1 class="visually-hidden">{{ 'general.breadcrumbs.collections' | t }}</h1>
+{% paginate collections by pagination %}
+  <div class="collection-list__container">
+    <ul class="collection-list__content collection--image-crop-{{ section.settings.image-crop }}" data-layout="grid">
+      {% if using_linklist %}
+        {% for link in linklists[linklist].links %}
+          {% assign link_handle = link.handle %}
+          {% assign collection = collections[link_handle] %}
+          {% render 'collection-list-item', collection: collection %}
+        {% endfor %}
+      {% else %}
+        {% for collection in collections %}
+          {% render 'collection-list-item', collection: collection %}
+        {% endfor %}
+      {% endif %}
+    </div>
+  </ul>
+
+  {% render 'pagination', paginate: paginate %}
+{% endpaginate %}
+
+{% schema %}
+{
+  "name": "Collections",
+  "class": "listcollections--section section--canonical",
+  "settings": [
+    {
+      "type": "range",
+      "id": "thumbnail_columns_desktop",
+      "label": "Columns per row",
+      "min": 3,
+      "max": 6,
+      "step": 1,
+      "default": 5
+    },
+    {
+      "type": "range",
+      "id": "thumbnail_columns_mobile",
+      "label": "Columns per row on mobile",
+      "min": 1,
+      "max": 3,
+      "step": 1,
+      "default": 2
+    },
+    {
+      "type": "select",
+      "id": "image-crop",
+      "label": "Image crop",
+      "info": "840px by 840px image recommended with 'Circle'",
+      "options": [
+        {
+          "value": "original",
+          "label": "Original"
+        },
+        {
+          "value": "circle",
+          "label": "Circle"
+        },
+        {
+          "value": "round",
+          "label": "Rounded rectangle"
+        }
+      ]
+    }
+  ]
+}
+{% endschema %}

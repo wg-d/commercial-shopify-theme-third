@@ -1,0 +1,70 @@
+{% assign grid_list = grid_list | default: nil %}
+
+{% if paginate.previous or paginate.next %}
+  <nav class="pagination--container" aria-label="Pagination">
+    <ul class="pagination--inner">
+
+      {% if paginate.previous %}
+        <li class="pagination--previous">
+          <a
+            class="pagination--item"
+            href="{{- paginate.previous.url -}}{%- if grid_list -%}&grid_list{%- endif -%}"
+            aria-label="Go to previous page"
+          >
+            <span class="pagination--chevron-left" aria-hidden="true">
+              {% render 'icon-chevron-down-small' %}
+            </span>
+
+            {{ 'general.pagination.prev' | t }}
+          </a>
+        </li>
+      {% endif %}
+
+      {% for part in paginate.parts %}
+        {% if part.is_link %}
+          <li>
+            <a
+              class="pagination--item"
+              href="{{ part.url }}{% if grid_list %}&grid_list{% endif %}"
+              aria-label="Go to page {{ part.title }}"
+            >
+              {{ part.title }}
+            </a>
+          </li>
+        {% else %}
+          {% if part.title == '&hellip;' %}
+            <li class="pagination--ellipsis">
+              <span class="pagination--item">
+                {{ part.title }}
+              </span>
+            </li>
+          {% else %}
+            <li
+              class="pagination--active"
+              aria-label="Page {{ part.title }}"
+              aria-current="true"
+            >
+              <span class="pagination--item">
+                {{ part.title }}
+              </span>
+            </li>
+          {% endif %}
+        {% endif %}
+      {% endfor %}
+      {% if paginate.next %}
+        <li class="pagination--next">
+          <a
+            class="pagination--item"
+            href="{{- paginate.next.url -}}{%- if grid_list -%}&grid_list{%- endif -%}"
+            aria-label="Go to next page"
+          >
+            {{ 'general.pagination.next' | t }}
+            <span class="pagination--chevron-right" aria-hidden="true">
+              {% render 'icon-chevron-down-small' %}
+            </span>
+          </a>
+        </li>
+      {% endif %}
+    </ul>
+  </nav>
+{% endif %}

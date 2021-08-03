@@ -1,0 +1,117 @@
+<script
+  type="application/json"
+  data-section-id="{{ section.id }}"
+  data-section-type="static-announcement">
+</script>
+
+{% assign show_everywhere = false %}
+{% assign homepage_only = false %}
+
+{% if
+  section.settings.show_announcement and
+  section.settings.homepage_announcement == false
+%}
+  {% assign show_everywhere = true %}
+{% endif %}
+
+{% if
+  section.settings.show_announcement and
+  section.settings.homepage_announcement and
+  template == 'index'
+%}
+  {% assign homepage_only = true %}
+{% endif %}
+
+{% if show_everywhere or homepage_only %}
+  {% if
+    section.settings.announcement_text != blank or
+    section.settings.announcement_text_mobile != blank
+  %}
+    <div
+      class="
+        announcement-bar
+        {% if section.settings.announcement_text == blank and section.settings.announcement_text_mobile != blank %}
+          only-mobile
+        {% endif %}
+      "
+      style="
+        margin-bottom: -1px;
+        color: {{ section.settings.announcement_color }};
+        background: {{ section.settings.announcement_background }};
+      ">
+      {% if section.settings.announcement_link != blank %}
+        <a
+          class="announcement-bar-link"
+          href="{{ section.settings.announcement_link }}"
+          ></a>
+      {% endif %}
+
+      {% if section.settings.announcement_text != blank %}
+        <div class="announcement-bar-text">
+          {{ section.settings.announcement_text }}
+        </div>
+      {% endif %}
+
+      <div class="announcement-bar-text-mobile">
+        {% if section.settings.announcement_text_mobile != blank %}
+          {{ section.settings.announcement_text_mobile }}
+        {% else %}
+          {{ section.settings.announcement_text }}
+        {% endif %}
+      </div>
+    </div>
+  {% endif %}
+{% endif %}
+
+{% schema %}
+{
+  "name": "Announcement bar",
+  "class": "site-announcement",
+  "settings": [
+    {
+      "type": "header",
+      "content": "Announcement Bar"
+    },
+    {
+      "type": "checkbox",
+      "id": "show_announcement",
+      "label": "Show announcement"
+    },
+    {
+      "type": "checkbox",
+      "id": "homepage_announcement",
+      "label": "Show on home page only"
+    },
+    {
+      "id": "announcement_text",
+      "type": "textarea",
+      "label": "Text",
+      "default": "Announce something here"
+    },
+    {
+      "id": "announcement_text_mobile",
+      "type": "textarea",
+      "label": "Text (mobile)",
+      "info": "Use this option if you want to display alternate text in mobile. Recommended for shortening announcement text to make suitable for mobile."
+    },
+    {
+      "id": "announcement_link",
+      "type": "url",
+      "label": "Link"
+    },
+    {
+      "id": "announcement_color",
+      "type": "color",
+      "label": "Text color",
+      "default": "#000000"
+    },
+    {
+      "id": "announcement_background",
+      "type": "color",
+      "label": "Background color",
+      "default": "#ffffff"
+    }
+  ]
+}
+
+{% endschema %}

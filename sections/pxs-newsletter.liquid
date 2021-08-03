@@ -1,0 +1,139 @@
+{% assign pxs_newsletter_form_success = 'form.success' | t %}
+{% assign pxs_newsletter_form_placeholder = 'form.placeholder' | t %}
+{% assign pxs_newsletter_form_submit = 'form.submit' | t %}
+{% assign pxs_newsletter_form_id = 'pxs-newsletter-' | append: section.id %}
+
+<script
+  type="application/json"
+  data-section-type="pxs-newsletter"
+  data-section-id="{{ section.id }}"
+>
+</script>
+
+<script type="application/pxs-animation-mapping+json">
+  {
+    "blocks": [".pxs-newsletter-content"],
+    "elements": [
+      ".pxs-newsletter-header",
+      ".pxs-newsletter-text",
+      ".pxs-newsletter-form-fields"
+    ]
+  }
+</script>
+
+<section
+  class="
+    pxs-newsletter
+    pxs-newsletter-desktop-alignment-{{ section.settings.desktop_alignment }}
+    pxs-newsletter-mobile-alignment-{{ section.settings.mobile_alignment }}
+  "
+>
+  {% if section.settings.image %}
+    <figure
+      class="pxs-newsletter-figure"
+      {%
+        include 'rimg',
+        img: section.settings.image,
+        size: '500x',
+        background: true,
+        lazy: true
+      %}
+    >
+      {%
+        include 'rimg',
+        img: section.settings.image,
+        class: 'pxs-newsletter-image',
+        size: '500x',
+        canvas: true,
+        lazy: true
+      %}
+    </figure>
+  {% endif %}
+
+  <div class="pxs-newsletter-content">
+    <div class="pxs-newsletter-header">
+      {% if section.settings.title != blank %}
+        <h2 class="pxs-newsletter-heading">
+          {{ section.settings.title | escape }}
+        </h2>
+      {% endif %}
+
+      {% if section.settings.text != blank %}
+        <div class="pxs-newsletter-text">
+          {{ section.settings.text }}
+        </div>
+      {% endif %}
+    </div>
+
+    {%
+      include 'newsletter',
+      pxs_newsletter_image: pxs_newsletter_image,
+      pxs_newsletter_form_success: pxs_newsletter_form_success,
+      pxs_newsletter_form_placeholder: pxs_newsletter_form_placeholder,
+      pxs_newsletter_form_submit: pxs_newsletter_form_submit,
+      pxs_newsletter_form_id: pxs_newsletter_form_id
+    %}
+  </div>
+</section>
+
+{% schema %}
+{
+  "name": "Newsletter",
+  "class": "pxs-newsletter-section",
+  "settings": [
+    {
+      "type": "text",
+      "id": "title",
+      "label": "Heading",
+      "default": "Newsletter"
+    },
+    {
+      "type": "richtext",
+      "id": "text",
+      "label": "Text",
+      "default": "<p>Invite customers to join your mailing list.</p>"
+    },
+    {
+      "type": "image_picker",
+      "id": "image",
+      "label": "Image"
+    },
+    {
+      "type": "select",
+      "id": "desktop_alignment",
+      "label": "Desktop image alignment",
+      "options": [
+        { "label": "Left", "value": "left" },
+        { "label": "Right", "value": "right" }
+      ],
+      "default": "left"
+    },
+    {
+      "type": "select",
+      "id": "mobile_alignment",
+      "label": "Mobile image alignment",
+      "options": [
+        { "label": "Top", "value": "top" },
+        { "label": "Bottom", "value": "bottom" }
+      ],
+      "default": "top"
+    }
+  ],
+  "presets": [
+    {
+      "name": "Newsletter",
+      "category": "Promotional"
+    }
+  ],
+  "locales": {
+    "en": {
+      "form": {
+        "placeholder": "Email address",
+        "submit": "Subscribe",
+        "success": "Thanks for subscribing!"
+      }
+    }
+  }
+}
+
+{% endschema %}

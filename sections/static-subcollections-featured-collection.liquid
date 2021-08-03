@@ -1,0 +1,292 @@
+<script
+  type="application/json"
+  data-section-id="{{ section.id }}"
+  data-section-type="static-subcollections-featured-collection"
+  data-section-data
+>
+  {
+    "context": {
+      "see_more": {{ 'general.general.see_more' | t | json }},
+      "see_less": {{ 'general.general.see_less' | t | json }}
+    }
+  }
+</script>
+
+<script type="application/pxs-animation-mapping+json">
+  {
+    "blocks": [
+      ".featured-collection__title-card"
+    ],
+    "elements": [
+      ".featured-collection__title-card-pre-heading",
+      ".featured-collection__title-card-heading",
+      ".featured-collection__title-card-button"
+    ]
+  }
+</script>
+
+{% assign subcollection_links = linklists[collection.handle].links | where: 'type', 'collection_link' %}
+
+{% if section.settings.shop_all_card_enable %}
+  {% assign title_card_source = 'simple' %}
+  {% style %}
+    #shopify-section-{{ section.id }} .featured-collection__title-card {
+      color: {{ section.settings.shop_all_card_text_color }};
+    }
+
+    #shopify-section-{{ section.id }} .featured-collection__title-card-outer::before {
+      background-color: {{ section.settings.shop_all_card_background_color }};
+    }
+  {% endstyle %}
+{% endif %}
+
+{% if section.settings.show_breadcrumbs %}
+  {% render 'breadcrumbs' %}
+{% endif %}
+
+<div class="subcollections-featured-collection__header">
+  <h1 class="subcollections-featured-collection__title">
+  {{ collection.title }}
+  </h1>
+
+  {% if section.settings.show_collection_description %}
+    <div class="subcollections-featured-collection__description rte">
+      {{ collection.description }}
+    </div>
+  {% endif %}
+
+  {% assign banner_element = 'div' %}
+  {% if section.settings.show_subcollection_menu %}
+    {% assign banner_element = 'nav' %}
+  {% endif %}
+
+  {% assign items_per_column = 7.0 %}
+
+  <{{ banner_element }}
+    class="
+      subcollections-featured-collection__banner
+      {% if section.settings.show_subcollection_menu %}
+        subcollections-featured-collection__banner--menu-enabled
+      {% endif %}
+      {% if section.settings.show_collection_image and collection.image %}
+        subcollections-featured-collection__banner--image-enabled
+      {% endif %}
+    "
+    {% if section.settings.show_subcollection_menu %}
+      {% assign column_count = subcollection_links.size | divided_by: items_per_column | ceil | at_most: 3 %}
+      style="--subcollection-menu-column-count: {{ column_count }};"
+    {% endif %}
+  >
+    {% if section.settings.show_collection_image and collection.image %}
+      <div class="subcollections-featured-collection__banner-image-wrapper">
+        {%
+          render 'rimg',
+          img: collection.image,
+          size: '1350x',
+          lazy: true,
+          canvas: true,
+          class: 'subcollections-featured-collection__banner-image',
+        %}
+      </div>
+    {% endif %}
+    {% if section.settings.show_subcollection_menu %}
+      <div
+        class="
+          subcollections-featured-collection__subcollection-menu-wrapper
+          {% if subcollection_links.size > items_per_column %}
+            subcollections-featured-collection__subcollection-menu-wrapper--more-than-1-column
+          {% endif %}
+          {% if column_count > 2 %}
+            subcollections-featured-collection__subcollection-menu-wrapper--more-than-2-columns
+          {% endif %}
+        "
+        data-subcollection-menu-wrapper
+      >
+        <ul class="subcollections-featured-collection__subcollection-menu">
+          {% for subcollection_link in subcollection_links %}
+            <li>
+              <a
+                href="{{ subcollection_link.url }}"
+                class="
+                  subcollections-featured-collection__subcollection-menu-link
+                  {% if forloop.last %}
+                    subcollections-featured-collection__subcollection-menu-link--last
+                  {% endif %}
+                "
+              >
+                {{ subcollection_link.title }}
+              </a>
+            </li>
+          {% endfor %}
+        </ul>
+        {% if subcollection_links.size > items_per_column %}
+          <div class="subcollections-featured-collection__menu-toggle-more-wrapper">
+            <button class="subcollections-featured-collection__menu-toggle-more" data-subcollection-menu-toggle-more>
+              {{ 'general.general.see_more' | t }}
+            </button>
+          </div>
+        {% endif %}
+      </div>
+    {% endif %}
+  </{{ banner_element }}>
+</div>
+
+{% if linklists[collection.handle].links.size > 0 %}
+  {% for subcollection_link in subcollection_links %}
+    {% assign subcollection = subcollection_link.object %}
+    {% capture title %}
+      <div class="subcollections-featured-collection__subcollection-header">
+        <h3 class="subcollections-featured-collection__subcollection-title">
+          {{ subcollection.title }}
+        </h3>
+        {% unless section.settings.cta_label == blank %}
+          <a class="subcollections-featured-collection__subcollection-cta" href="{{ subcollection.url }}">
+            {{ section.settings.cta_label }}
+            {% render 'icon-library', id: 'icon-signpost-arrow' %}
+          </a>
+        {% endunless %}
+      </div>
+    {% endcapture %}
+
+    {% assign item_count = section.settings.product_count | at_most: subcollection.products_count %}
+    {% if section.settings.shop_all_card_enable %}
+      {% assign item_count = item_count | plus: 1 %}
+    {% endif %}
+
+    {%
+      render 'featured-collection',
+      selected_collection: subcollection,
+      section: section,
+      item_count: item_count,
+      title_card_source: title_card_source,
+      title: title,
+      disable_cta_button: true,
+    %}
+  {% endfor %}
+  {% render 'quick-shop' %}
+{% else %}
+    {% capture title %}
+      <div class="subcollections-featured-collection__subcollection-header">
+        <h3 class="subcollections-featured-collection__subcollection-title">
+          {{ 'onboarding.featured_collection.title' | t }}
+        </h3>
+      </div>
+    {% endcapture %}
+
+
+    {% assign item_count = section.settings.product_count %}
+    {% if section.settings.shop_all_card_enable %}
+      {% assign item_count = item_count | plus: 1 %}
+    {% endif %}
+
+    {%
+      render 'featured-collection',
+      selected_collection: nil,
+      section: section,
+      item_count: item_count,
+      title_card_source: title_card_source,
+      title: title,
+      disable_cta_button: true,
+    %}
+{% endif %}
+
+{% schema %}
+{
+  "name": "Subcollections",
+  "class": "subcollections-featured-collection--section",
+  "settings": [
+    {
+      "type": "paragraph",
+      "content": "Page is empty? [Learn how to add collections to your subcollections template](https://support.pixelunion.net/hc/en-us/articles/1500007721682)"
+    },
+    {
+      "type": "header",
+      "content": "Header"
+    },
+    {
+      "type": "checkbox",
+      "id": "show_breadcrumbs",
+      "label": "Show breadcrumbs",
+      "default": true
+    },
+    {
+      "type": "checkbox",
+      "id": "show_collection_description",
+      "label": "Show collection description",
+      "default": true
+    },
+    {
+      "type": "checkbox",
+      "id": "show_collection_image",
+      "label": "Show collection image",
+      "default": true
+    },
+    {
+      "type": "checkbox",
+      "id": "show_subcollection_menu",
+      "label": "Show subcollections menu",
+      "info": "Displays the subcollection links in the header.",
+      "default": true
+    },
+    {
+      "type": "header",
+      "content": "Subcollections"
+    },
+    {
+      "type": "select",
+      "id": "layout",
+      "label": "Layout",
+      "options": [
+        {
+          "value": "grid",
+          "label": "Grid"
+        },
+        {
+          "value": "slideshow",
+          "label": "Slideshow"
+        }
+      ],
+      "default": "slideshow"
+    },
+    {
+      "type": "range",
+      "id": "product_count",
+      "min": 1,
+      "max": 10,
+      "step": 1,
+      "label": "Number of products",
+      "default": 4
+    },
+    {
+      "type": "text",
+      "id": "cta_label",
+      "label": "Call to action",
+      "default": "Shop all"
+    },
+    {
+      "type": "header",
+      "content": "“Shop all” card",
+      "info": "Displays a call to action card at the end of each subcollection."
+    },
+    {
+      "type": "checkbox",
+      "id": "shop_all_card_enable",
+      "label": "Enable “Shop All” cards",
+      "default": true
+    },
+    {
+      "type":      "color",
+      "id":        "shop_all_card_text_color",
+      "label":     "Text",
+      "default":   "#ffffff"
+    },
+    {
+      "type":      "color",
+      "id":        "shop_all_card_background_color",
+      "label":     "Background",
+      "default":   "#047084"
+    }
+  ]
+}
+
+{% endschema %}

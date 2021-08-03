@@ -1,0 +1,56 @@
+<section
+  class="account-page account-page-activate"
+  data-template-account>
+  <header class="account-page-masthead">
+    <h1 class="account-page-title">
+      {{ 'customers.activate_account.title' | t }}
+    </h1>
+  </header>
+
+  <article class="account-page-content">
+    {% form 'activate_customer_password' %}
+
+      {% if form.errors != blank  %}
+        <div class="account-message message--error">
+          {{ form.errors | default_errors }}
+        </div>
+      {% endif %}
+
+      <div class="form-field">
+        <input
+          class="form-field-input form-field-text"
+          id="password"
+          name="customer[password]"
+          type="password">
+        <label
+          class="form-field-title"
+          for="password">
+          {{ 'customers.forms.password' | t }}
+        </label>
+      </div>
+
+      <div class="form-field">
+        <input
+          class="form-field-input form-field-text"
+          id="password_repeat"
+          name="customer[password_confirmation]"
+          type="password">
+        <label
+          class="form-field-title"
+          for="password_repeat">
+          {{ 'customers.forms.repeat_password' | t }}
+        </label>
+      </div>
+
+      <div class="form-action-row">
+        <button class="button-primary" type="submit">
+          {{ 'customers.activate_account.submit' | t }}
+        </button>
+
+        <a class="button-secondary" href="{{ routes.root_url }}">
+          {{ 'customers.activate_account.decline_activation' | t }}
+        </a>
+      </div>
+    {% endform %}
+  </article>
+</section>

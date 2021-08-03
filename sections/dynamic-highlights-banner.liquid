@@ -1,0 +1,393 @@
+<script
+  type="application/json"
+  data-section-type="dynamic-highlights-banner"
+  data-section-id="{{ section.id }}">
+</script>
+
+<style>
+
+  {% if section.settings.section_width == "content-width" %}
+    .highlights-banner__{{- section.id }} .highlights-banner__content {
+      background-color: {{ section.settings.background_color }};
+    }
+  {% else %}
+    .highlights-banner__{{- section.id }}.highlights-banner__container {
+      background-color: {{ section.settings.background_color }};
+    }
+  {% endif %}
+
+  .highlights-banner__{{- section.id }} .highlights-banner__content:before {
+    background: linear-gradient( to right, {{ section.settings.background_color }} 10%, {{ section.settings.background_color | color_modify: 'alpha', 0 }} 100%);
+  }
+
+  .highlights-banner__{{- section.id }} .highlights-banner__content:after {
+    background: linear-gradient( to left, {{ section.settings.background_color }} 10%, {{ section.settings.background_color | color_modify: 'alpha', 0 }} 100%);
+  }
+
+  .highlights-banner__{{- section.id }} .highlights-banner__block {
+    color: {{ section.settings.color }};
+  }
+
+  .highlights-banner__{{- section.id }} .highlights-banner__icon {
+    color: {{ section.settings.icon_color }};
+  }
+</style>
+
+<script type="application/pxs-animation-mapping+json">
+  {
+    "blocks": [".highlights-banners-block"],
+    "elements": []
+  }
+</script>
+
+<div class="
+  highlights-banner__{{ section.id }}
+  highlights-banner__container
+  highlights-banner__mobile-layout--{{ section.settings.mobile_layout }}
+  {{ section.settings.section_width }}
+  {% if section.settings.section_spacing %}section-spacing{% endif %}"
+>
+  <div class="highlights-banner__content highlight-banner__count-{{ section.blocks.size }}" 
+  {% if section.settings.mobile_layout == 'slider' %} data-highlights-slider {% endif %}
+  >
+    {% for block in section.blocks %}
+      {% if block.settings.text != blank or block.settings.title != blank %}
+        <div
+          class="highlights-banner__block highlights-banner__align-{{ section.settings.icon_layout }}"
+          {{ block.shopify_attributes }}
+          data-highlights-block
+        >
+          {% if block.settings.icon != 'none' or block.settings.image != blank %}
+            <div class="highlights-banner__icon">
+              {% if block.settings.image != blank %}
+                {%
+                  render 'rimg',
+                  class: 'highlights-banner__custom-icon',
+                  img: block.settings.image,
+                  size: '150x'
+                %}
+              {% else %}
+                {% render 'icon-library', id: block.settings.icon %}
+              {% endif %}
+            </div>
+          {% endif %}
+
+          <div class="highlights-banner__text">
+            {% if block.settings.title != blank %}
+              <span class="highlights-banner__heading">
+                {{ block.settings.title | escape }}
+              </span>
+            {% endif %}
+
+            {% if block.settings.text != blank %}
+              {{ block.settings.text }}
+            {% endif %}
+          </div>
+          {% if block.settings.link != blank %}
+            <a
+              class="highlights-banner__block-link"
+              href="{{ block.settings.link }}"
+              {{ block.shopify_attributes }}
+            >
+            </a>
+          {% endif %}
+        </div>
+      {% endif %}
+    {% endfor %}
+  </div>
+</div>
+
+{% schema %}
+{
+  "name": "Highlights banner",
+  "class": "highlights-banner",
+  "settings": [
+    {
+      "type": "checkbox",
+      "id": "section_spacing",
+      "label": "Show section spacing"
+    },
+    {
+      "type": "select",
+      "id": "section_width",
+      "label": "Section width",
+      "options": [
+        {
+          "value": "content-width",
+          "label": "Content width"
+        },
+        {
+          "value": "full-width",
+          "label": "Full width"
+        }
+      ],
+      "default": "full-width"
+    },
+    {
+      "type": "select",
+      "id": "icon_layout",
+      "label": "Icon layout",
+      "options": [
+        {
+          "value": "center",
+          "label": "Center"
+        },
+        {
+          "value": "left",
+          "label": "Left"
+        }
+      ],
+      "default": "left"
+    },
+    {
+      "type": "color",
+      "id": "color",
+      "label": "Text color",
+      "default": "#4d4d4d"
+    },
+    {
+      "type": "color",
+      "id": "icon_color",
+      "label": "Icon color",
+      "default": "#4d4d4d"
+    },
+    {
+      "type": "color",
+      "id": "background_color",
+      "label": "Background color",
+      "default": "#f8f8f8"
+    },
+    {
+      "type": "header",
+      "content": "Mobile"
+    },
+    {
+      "type": "select",
+      "id": "mobile_layout",
+      "label": "Layout",
+      "options": [
+        {
+          "value": "grid",
+          "label": "Grid"
+        },
+        {
+          "value": "slider",
+          "label": "Slider"
+        }
+      ],
+      "default": "slider"
+    }
+  ],
+  "blocks": [
+    {
+      "type": "highlight",
+      "name": "Highlight",
+      "settings": [
+        {
+          "type": "select",
+          "id": "icon",
+          "label": "Icon",
+          "options": [
+            {
+              "value": "none",
+              "label": "No icon"
+            },
+            {
+              "value": "icon-award-trophy",
+              "label": "Award trophy"
+            },
+            {
+              "value": "icon-car",
+              "label": "Car"
+            },
+            {
+              "value": "icon-cell-phone",
+              "label": "Cell phone"
+            },
+            {
+              "value": "icon-chat",
+              "label": "Chat"
+            },
+            {
+              "value": "icon-chat-alternate",
+              "label": "Chat alternate"
+            },
+            {
+              "value": "icon-credit-card",
+              "label": "Credit card"
+            },
+            {
+              "value": "icon-delivery",
+              "label": "Delivery"
+            },
+            {
+              "value": "icon-delivery-cart",
+              "label": "Delivery cart"
+            },
+            {
+              "value": "icon-delivery-door",
+              "label": "Delivery door"
+            },
+            {
+              "value": "icon-delivery-handoff",
+              "label": "Delivery hand off"
+            },
+            {
+              "value": "icon-delivery-package",
+              "label": "Delivery package"
+            },
+            {
+              "value": "icon-discount",
+              "label": "Discount"
+            },
+            {
+              "value": "icon-email",
+              "label": "Email"
+            },
+            {
+              "value": "icon-envelope",
+              "label": "Envelope"
+            },
+            {
+              "value": "icon-gift-card",
+              "label": "Gift card"
+            },
+            {
+              "value": "icon-heart",
+              "label": "Heart"
+            },
+            {
+              "value": "icon-information",
+              "label": "Information"
+            },
+            {
+              "value": "icon-label-tag",
+              "label": "Label tag"
+            },
+            {
+              "value": "icon-lock",
+              "label": "Lock"
+            },
+            {
+              "value": "icon-number-14",
+              "label": "Number 14"
+            },
+            {
+              "value": "icon-number-24",
+              "label": "Number 24"
+            },
+            {
+              "value": "icon-number-30",
+              "label": "Number 30"
+            },
+            {
+              "value": "icon-people",
+              "label": "People"
+            },
+            {
+              "value": "icon-pin",
+              "label": "Pin"
+            },
+            {
+              "value": "icon-question-mark",
+              "label": "Question mark"
+            },
+            {
+              "value": "icon-rating-five-star",
+              "label": "Rating 5 star"
+            },
+            {
+              "value": "icon-rating-star",
+              "label": "Rating star"
+            },
+            {
+              "value": "icon-smile",
+              "label": "Smile"
+            },
+            {
+              "value": "icon-store",
+              "label": "Store"
+            },
+            {
+              "value": "icon-tape-measure",
+              "label": "Tape measure"
+            },
+            {
+              "value": "icon-thumbs-up",
+              "label": "Thumbs up"
+            },
+            {
+              "value": "icon-transfer",
+              "label": "Transfer"
+            }
+          ],
+          "default": "none"
+        },
+        {
+          "type": "image_picker",
+          "id": "image",
+          "label": "Image",
+          "info": "50x50 recommended. Uploading an image will override any icon selected above."
+        },
+        {
+          "type": "text",
+          "id": "title",
+          "label": "Heading"
+        },
+        {
+          "type": "richtext",
+          "id": "text",
+          "label": "Text"
+        },
+        {
+          "type": "url",
+          "id": "link",
+          "label": "Link"
+        }
+      ],
+      "limit": 4
+    }
+  ],
+  "presets": [
+    {
+      "category": "Store information",
+      "name": "Highlights banner",
+      "blocks": [
+        {
+          "type": "highlight",
+          "settings": {
+            "icon": "icon-delivery",
+            "title": "Free Shipping",
+            "text": "<p>When you spend $100+</p>"
+          }
+        },
+        {
+          "type": "highlight",
+          "settings": {
+            "icon": "icon-cell-phone",
+            "title": "Give Us A Call",
+            "text": "<p>+1 (201) 555-5555</p>"
+          }
+        },
+        {
+          "type": "highlight",
+          "settings": {
+            "icon": "icon-chat-alternate",
+            "title": "Chat With Us",
+            "text": "<p>We offer 24-hour chat support</p>"
+          }
+        },
+        {
+          "type": "highlight",
+          "settings": {
+            "icon": "icon-pin",
+            "title": "Locations",
+            "text": "<p>Find a store near you</p>"
+          }
+        }
+      ]
+    }
+  ]
+}
+
+{% endschema %}

@@ -1,0 +1,321 @@
+{% comment %}
+  @param class_root {String}
+    Base class root
+
+  @param show_range {Bool}
+    Show price range
+
+  @param price_range_format {String}
+    'range' or 'from', defaults to 'range'
+
+  @param product {Product}
+    Product to reference for price
+
+  @param compare_at_price_varies {Bool}
+    Displays a range price if a product's variants have differing prices
+
+  @param on_sale {Bool}
+    If a product, or one of it's variants is on sale
+
+  @param emphasize_price {Bool}
+    Used in product grid item to add placeholder space
+
+  @param show_original {Bool}
+    Show original price if is consistent across all variants
+
+  @param show_savings {Bool}
+    Line of text indicating maximum savings on sale items (ex. "Save up to 20%")
+
+  @param savings_format {String}
+    Percentage or money for show_savings line
+{% endcomment %}
+
+{% assign include_hidden_price = include_hidden_price | default: true %}
+{% comment %}Inject @pixelunion/shopify-price-ui/price begin{% endcomment %}
+{% comment %}
+  @param class_root {String}
+    Base class root
+
+  @param show_range {Bool}
+    Show price range
+
+  @param price_range_format {String}
+      'range' or 'from', defaults to 'range'
+
+  @param product {Product}
+      Product to reference for price
+
+  @param compare_at_price_varies {Bool}
+    Displays a range price if a product's variants have differing prices
+
+  @param on_sale {Bool}
+    If a product, or one of it's variants is on sale
+
+  @param emphasize_price {Bool}
+    Used in product grid item to add placeholder space
+
+  @param show_original {Bool}
+    Show original price if is consistent across all variants
+
+  @param show_savings {Bool}
+    Line of text indicating maximum savings on sale items (ex. "Save up to 20%")
+
+  @param savings_format {String}
+    Percentage or money for show_savings line
+
+  @param include_spacer {Bool}
+    Include a spacer div above the price when emphasize price is enabled and there is no 'compare-at' price
+
+  @param include_unit_price
+    Include the unit price line
+
+  @param include_tax_line
+    Include tax line
+
+  @param include_hidden_price
+    Include a hidden element with price data to use in cases of unavailable variants or cases where no variant
+    is selected by default
+
+  @param include_compare_price
+    Show compare at price
+{% endcomment %}
+
+{% assign price_min = nil %}
+{% assign price_max = nil %}
+{% assign compare_at_price_min = nil %}
+{% assign compare_at_price_max = nil %}
+{% assign price_varies = false %}
+{% assign compare_at_price_varies = false %}
+{% for variant in product.variants %}
+  {% if price_min == nil or variant.price < price_min %}
+    {% assign price_min = variant.price %}
+  {% endif %}
+  {% if price_max == nil or variant.price > price_max %}
+    {% assign price_max = variant.price %}
+  {% endif %}
+  {% assign tmp_compare_at_price = variant.compare_at_price %}
+  {% unless variant.compare_at_price %}
+    {% assign tmp_compare_at_price = variant.price %}
+  {% endunless %}
+  {% if compare_at_price_min == nil or tmp_compare_at_price < compare_at_price_min %}
+    {% assign compare_at_price_min = tmp_compare_at_price %}
+  {% endif %}
+  {% if compare_at_price_max == nil or tmp_compare_at_price > compare_at_price_max %}
+    {% assign compare_at_price_max = tmp_compare_at_price %}
+  {% endif %}
+  {% if variant.price != price_min %}
+    {% assign price_varies = true %}
+  {% endif %}
+  {% if tmp_compare_at_price != compare_at_price_min %}
+    {% assign compare_at_price_varies = true %}
+  {% endif %}
+{% endfor %}
+
+{% assign show_range = show_range | default: false %}
+{% assign price = product.price %}
+{% assign compare_at_price = product.compare_at_price %}
+{% assign variants = product.variants %}
+{% assign price_range_format = price_range_format | default: 'range' %}
+{% assign savings_format = savings_format | default: 'percentage' %}
+{% assign on_sale = on_sale | default: false %}
+{% assign emphasize_price = emphasize_price | default: false %}
+{% assign show_original = show_original | default: false %}
+{% assign show_savings = show_savings | default: false %}
+{% assign class_root = class_root | default: 'product' %}
+{% assign include_spacer = include_spacer | default: false %}
+{% assign include_unit_price = include_unit_price | default: false %}
+{% assign include_tax_line = include_tax_line | default: false %}
+{% assign include_compare_price = include_compare_price | default: true %}
+
+<div class="price {{ class_root }}__price {% if compare_at_price_varies %}price--varies{% endif %}">
+  {% if include_compare_price %}
+    <div
+      class="price__compare-at {% if emphasize_price or on_sale and show_original %}visible{% endif %}"
+      data-price-compare-container
+    >
+      {%- capture compare_at_price_html -%}
+        <span class="visually-hidden">{{ 'product_price.price.original' | t }}</span>
+        <span class="money price__compare-at--single" data-price-compare>
+          {{ compare_at_price | money }}
+        </span>
+      {%- endcapture -%}
+
+      {% if compare_at_price_varies %}
+        {%- capture compare_at_price_range_html -%}
+          {% if price_range_format == 'range' %}
+            <span class="visually-hidden">{{ 'product_price.price.original' | t }}</span>
+            <span class="money price__compare-at--min" data-price-compare-min>
+              {{ compare_at_price_min | money }}
+            </span>
+            -
+            <span class="visually-hidden">{{ 'product_price.price.original' | t }}</span>
+            <span class="money price__compare-at--max" data-price-compare-max>
+              {{ compare_at_price_max | money }}
+            </span>
+          {% else %}
+            {{ 'product_price.item.price.range_html' | t: price: compare_at_price_html | strip_newlines }}
+          {% endif %}
+        {% endcapture %}
+      {% endif %}
+
+      {% if compare_at_price_varies and on_sale and show_original and show_range %}
+        {{ compare_at_price_range_html }}
+      {% elsif on_sale and show_original %}
+        {{ compare_at_price_html }}
+      {% elsif emphasize_price and include_spacer %}
+        <span class="price__spacer"></span>
+      {% elsif show_original %}
+        <span class="money price__original" data-price-original></span>
+      {% endif %}
+    </div>
+
+
+    {% if include_hidden_price %}
+      {% comment %}
+        Hide an element containing compare at price info to fill in the price when no variant is selected
+      {% endcomment %}
+      <div class="price__compare-at--hidden" data-compare-price-range-hidden>
+        {% if price_range_format == 'range' %}
+          <span class="visually-hidden">{{ 'product_price.price.original' | t }}</span>
+          <span class="money price__compare-at--min" data-price-compare-min>
+            {{ compare_at_price_min | money }}
+          </span>
+          -
+          <span class="visually-hidden">{{ 'product_price.price.original' | t }}</span>
+          <span class="money price__compare-at--max" data-price-compare-max>
+            {{ compare_at_price_max | money }}
+          </span>
+        {% else %}
+          {{ 'product_price.item.price.range_html' | t: price: compare_at_price_html | strip_newlines }}
+        {% endif %}
+      </div>
+      <div class="price__compare-at--hidden" data-compare-price-hidden>
+        <span class="visually-hidden">{{ 'product_price.price.original' | t }}</span>
+        <span class="money price__compare-at--single" data-price-compare>
+          {{ compare_at_price | money }}
+        </span>
+      </div>
+    {% endif %}
+  {% endif %}
+
+  <div class="price__current {% if emphasize_price %}price__current--emphasize{% endif %} {% if on_sale %}price__current--on-sale{% endif %}" data-price-container>
+    {%- capture price_html -%}
+      <span class="money"  id = "current-price" data-price
+        {%if product.title contains 'Alfombra' or product.title contains 'Pasto'%}
+        {% unless product.title contains 'Instalación de' %}
+          style="font-weight: bold; font-size:25px"
+        {% endunless %} 
+        {% endif%}  
+      >
+        {% if product.title contains 'Caja' %}
+          {% assign product_title_split = product.title | split: "Caja" %}
+          {% assign average_string = product_title_split[1] | replace: "M²", "" | strip | replace: ",", "." %}
+          {% assign avarage_num = average_string | plus: 0 %}
+          {% assign sqm_price = price | divided_by: avarage_num %}
+          {% assign sqm_symbol = " M²" %}
+          <p class="price_current-sqm-price">{{sqm_price | abs | money }}{{sqm_symbol}}</p>
+        {% endif %}
+        <span id = 'price_current-caja-price'>{{ price | money  }}</span>
+        {% if product.title contains 'Caja' %}
+          <span style="font-size: 21px" class="price_current-caja-symbol">CAJA</span>
+        {% endif %}
+        {%if product.title contains 'Instalación de'%}
+          {% unless product.title contains 'Caja' %}
+            <span style="font-size: 21px" class="price_current-caja-symbol">M²</span>
+          {% endunless %} 
+        {% endif%}        
+        {%if product.title contains 'Alfombra'%}
+          {% unless product.title contains 'Instalación de' %}
+            <span style="font-size: 21px" class="price_current-caja-symbol">M²</span>
+          {% endunless %} 
+        {% endif%}        
+        {%if product.title contains 'Pasto Sintético'%}
+          {% unless product.title contains 'Instalación de' %}
+            <span style="font-size: 21px" class="price_current-caja-symbol">M²</span>
+          {% endunless %} 
+        {% endif%}        
+        
+        
+      </span>
+    {%- endcapture -%}
+
+    {% capture current_price_range_html %}
+      {% if price_varies %}
+        {% if price_range_format == 'range' %}
+          <span class="money price__current--min" data-price-min>{{ price_min | money}}M²</span>
+          <!-- <span class="money price__current--max" data-price-max>{{ price_max | money }}</span> -->
+        {% else %}
+          {{ 'product_price.price.range_html' | t: price: price_html | strip_newlines }}
+        {% endif %}
+      {% endif %}
+    {% endcapture %}
+
+    {% capture current_price_html %}
+      {% if on_sale and show_original %}
+        <span class="visually-hidden">{{ 'product_price.price.current' | t }}</span>
+      {% endif %}
+      {{ price_html }}
+    {% endcapture %}
+
+    {% if show_range and price_varies %}
+      {{ current_price_range_html }}
+    {% else %}
+      {{ current_price_html }}
+    {% endif %}
+  </div>
+
+  {% if include_hidden_price %}
+    {% comment %}
+      Hide an element containing current price info to fill in the price when no variant is selected
+    {% endcomment %}
+    <div class="price__current--hidden" data-current-price-range-hidden>
+      {% if price_range_format == 'range' %}
+        <span class="money price__current--min" data-price-min>{{ price_min | money}}</span>
+        -
+        <span class="money price__current--max" data-price-max>{{ price_max | money }}</span>
+      {% else %}
+        {{ 'product_price.price.range_html' | t: price: price_html | strip_newlines }}
+      {% endif %}
+    </div>
+    <div class="price__current--hidden" data-current-price-hidden>
+      <span class="visually-hidden">{{ 'product_price.price.current' | t }}</span>
+      {{ price_html }}
+    </div>
+  {% endif %}
+
+  {% if include_unit_price %}
+    {% assign variant = product.selected_or_first_available_variant %}
+    {% capture total_quantity %}<span class="{{ class_root }}__total-quantity" data-total-quantity>{{ variant.unit_price_measurement.quantity_value }}{{ variant.unit_price_measurement.quantity_unit }}</span>{% endcapture %}
+    {% capture unit_price %}<span class="{{ class_root }}__unit-price--amount money" data-unit-price-amount>{{ variant.unit_price | money }}</span>{% endcapture %}
+    {% capture unit_measure %}<span class="{{ class_root }}__unit-price--measure" data-unit-price-measure>{%- if variant.unit_price_measurement.reference_value != 1 -%}{{ variant.unit_price_measurement.reference_value }}{%- endif %}{{ variant.unit_price_measurement.reference_unit }}</span>{% endcapture %}
+
+    <div
+      class="
+        {{ class_root }}__unit-price
+        {% unless variant.unit_price_measurement %}hidden{% endunless %}
+      "
+      data-unit-price
+    >
+      {{ 'product_price.price.price_per_unit_html' | t: total_quantity: total_quantity, unit_price: unit_price, unit_measure: unit_measure | strip_newlines }}
+    </div>
+  {% endif %}
+
+  {% if include_tax_line %}
+    {%- capture tax_text -%}
+      {{ 'product_price.price.tax_line_html' | t }}
+    {%- endcapture -%}
+
+    {%- if tax_text != blank and class_root != 'productitem' -%}
+      <div class="
+          {{ class_root }}__tax
+          {% unless variant.taxable %}hidden{% endunless %}
+        "
+        data-tax-line
+      >
+        {{ tax_text }}
+      </div>
+    {%- endif -%}
+  {% endif %}
+
+</div>
+{% comment %}Inject @pixelunion/shopify-price-ui/price end{% endcomment %}

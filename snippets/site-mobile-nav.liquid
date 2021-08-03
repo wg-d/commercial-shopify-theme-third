@@ -1,0 +1,38 @@
+<div class="site-mobile-nav" id="site-mobile-nav" data-mobile-nav tabindex="0">
+  <div class="mobile-nav-panel" data-mobile-nav-panel>
+
+    {% render 'site-header-actions' %}
+
+    <a
+      class="mobile-nav-close"
+      href="#site-header-nav"
+      data-mobile-nav-close>
+      {% render 'icon-menu-close' %}
+      <span class="visually-hidden">{{ 'general.accessibility.close' | t }}</span>
+    </a>
+
+    <div class="mobile-nav-content" data-mobile-nav-content>
+      {%
+        render 'mobile-nav-list',
+        menu: section.settings.menu,
+        blocks: blocks,
+      %}
+
+      {% if section.settings.secondary_menu != blank %}
+        <span class="mobile-nav-content__border"></span>
+        <div class="mobile-nav-content__secondary-menu">
+          {%
+            render 'navlist',
+            menu_list: linklists[section.settings.secondary_menu].links,
+            depth: 1,
+            max_depth: 1,
+            aria_expanded: true,
+          %}
+        </div>
+      {% endif %}
+    </div>
+    <div class="utility-bar__mobile-disclosure" data-utility-mobile></div>
+  </div>
+
+  <div class="mobile-nav-overlay" data-mobile-nav-overlay></div>
+</div>

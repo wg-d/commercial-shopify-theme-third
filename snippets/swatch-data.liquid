@@ -1,0 +1,68 @@
+{%- capture _ -%}
+  {% comment %}
+    @param product - product to parse
+
+    @param swatch_values - Array of all swatch values
+
+    @param swatch_option_key - option that contains swatch variants, one of `option1`, `option2`, or `option3`
+
+    Generates a JSON array of swatch objects with rimg strings for swatch images, and variant IDs
+  {% endcomment %}
+
+  {% assign remaining_swatch_values = swatch_values | join: '::' %}
+  {% assign remaining_swatch_values = ':' | append: remaining_swatch_values | append: ':' %}
+  {% assign images_json = '' %}
+
+  {% for variant in product.variants %}
+    {% assign current_swatch_value = ':' | append: variant[swatch_option_key] | append: ':' %}
+
+    {% if remaining_swatch_values contains current_swatch_value %}
+      {% if variant.image != blank %}
+        {% capture current_rimg %}
+          {%
+            render 'rimg',
+            img: variant.image,
+            size: '384x',
+            lazy: true,
+            class: 'productitem--image-swatch',
+            canvas: true,
+            disable_noscript: true,
+          %}
+        {% endcapture %}
+      {% else %}
+        {% assign current_rimg = nil %}
+      {% endif %}
+
+      {% capture current_json %}
+        ,{
+          "swatchValue": {{ variant[swatch_option_key] | json }},
+          "imageString": {{ current_rimg | json }},
+          "variantId": {{ variant.id | json }}
+         }
+      {% endcapture %}
+
+      {% assign images_json = images_json | append: current_json %}
+      {% assign remaining_swatch_values = remaining_swatch_values | remove: current_swatch_value %}
+    {% endif %}
+    {% if remaining_swatch_values == blank %}
+      {% break %}
+    {% endif %}
+  {% endfor %}
+
+  {% assign featured_image = nil %}
+  {%- if product.featured_image != blank -%}
+    {%- capture featured_image -%}
+      {%
+        render 'rimg',
+        img: product.featured_image,
+        size: '384x',
+        lazy: true,
+        class: 'productitem--image-swatch',
+        canvas: true,
+        disable_noscript: true,
+      %}
+    {%- endcapture -%}
+  {%- endif -%}
+{%- endcapture -%}
+"swatches": [{{ images_json | remove_first: ','}}],
+"featuredImage": {{ featured_image | json }}

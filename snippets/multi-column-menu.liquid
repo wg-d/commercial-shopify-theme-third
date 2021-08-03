@@ -1,0 +1,66 @@
+{% comment %}
+  This is the layout for the multi-column meganav menu on desktop
+
+  @param menu LinkList
+    List of menu items
+
+  @param meganav_block Block
+    The block with the meganav properties
+
+{% endcomment %}
+
+{%- capture meganav_classes -%}
+  navmenu-submenu
+  navmenu-meganav
+  navmenu-meganav--desktop
+{%- endcapture -%}
+
+{% assign total_links = 0 %}
+
+{% for menu_item in menu.links %}
+  {% assign total_links = total_links | plus: 1 %}
+  {% if linklists[menu_item.handle] %}
+    {% assign total_links = total_links | plus: linklists[menu_item.handle].links.size %}
+  {% endif %}
+{% endfor %}
+
+{% assign column_count = 5 %}
+{% if total_links <= 35 %}
+  {% assign column_count = 4 %}
+{% endif %}
+
+<div
+  class="{{ meganav_classes | strip_newlines }}"
+  data-navmenu-submenu
+  data-meganav-menu
+  data-meganav-id="{{ block.id }}"
+>
+  <div class="navmenu-meganav-wrapper navmenu-multi-column-items">
+    <ul class="navmenu navmenu-depth-2 multi-column-count-{{ column_count }}">
+      {% for menu_item in menu.links %}
+        {% if linklists[menu_item.handle] %}
+          <li class="navmenu-item">
+            <a href="{{ menu_item.url }}" class="navmenu-link navmenu-link-parent">
+              {{ menu_item.title }}
+            </a>
+            <ul>
+            {% for sub_item in linklists[menu_item.handle].links %}
+              <li class="navmenu-item">
+                <a href="{{ sub_item.url }}" class="navmenu-link">
+                  {{ sub_item.title }}
+                </a>
+              </li>
+            {% endfor %}
+            </ul>
+          </li>
+        {% else %}
+          <li class="navmenu-item">
+            <a href="{{ menu_item.url }}" class="navmenu-link">
+              {{ menu_item.title }}
+            </a>
+          </li>
+        {% endif %}
+      {% endfor %}
+    </ul>
+  </div>
+</div>

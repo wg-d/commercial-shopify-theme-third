@@ -1,0 +1,291 @@
+{% assign onboarding = false %}
+
+{% if section.settings.image == blank %}
+  {% assign onboarding = true %}
+{% endif %}
+
+<script type="application/pxs-animation-mapping+json">
+  {
+    "blocks": [".pxs-image-with-text-content-wrapper"],
+    "elements": [
+      ".pxs-image-with-text-heading",
+      ".pxs-image-with-text-subheading",
+      ".pxs-image-with-text-button",
+      ".pxs-image-with-text-link"
+    ]
+  }
+</script>
+
+<section
+  class="
+    pxs-image-with-text
+    pxs-image-with-text-section-height-{{ section.settings.section_height }}
+  "
+>
+  <div class="pxs-image-with-text-wrapper">
+    <div
+      class="pxs-image-with-text-background"
+      {% if section.settings.image != blank %}
+        {% capture background_style %}
+          {% if section.settings.section_height == 'original' %}
+            padding-bottom: {{- 100 | divided_by: section.settings.image.aspect_ratio -}}%;
+          {% endif %}
+          background-position: {{ section.settings.position }};
+        {% endcapture %}
+
+        {%
+          include 'rimg',
+          img: section.settings.image,
+          size: '1400x',
+          crop: 'center',
+          style: background_style,
+          lazy: true,
+          background: true
+        %}
+      {% endif %}
+      >
+      {% if onboarding %}
+        {{ 'lifestyle-1' | placeholder_svg_tag }}
+      {% endif %}
+    </div>
+
+    {% if section.settings.overlay_opacity != 0 and section.settings.overlay_background != 'rgba(0,0,0,0)' %}
+      {% assign opacity = section.settings.overlay_opacity | times: 0.01 %}
+      {% assign overlay = section.settings.overlay_background | color_modify: 'alpha', opacity %}
+
+      <div
+        class="pxs-image-with-text-overlay"
+        style="background-color: {{ overlay }};"
+      ></div>
+    {% endif %}
+
+    <div
+      class="
+        pxs-image-with-text-content-wrapper
+        pxs-image-with-text-content-position-y-{{ section.settings.content_position | split: '-' | first }}
+        pxs-image-with-text-content-position-x-{{ section.settings.content_position | split: '-' | last }}
+      "
+    >
+        <div
+          class="pxs-image-with-text-content"
+          style="color: {{ section.settings.color }};"
+        >
+        {% if section.settings.title != blank %}
+          <h2
+            class="pxs-image-with-text-heading"
+          >
+            {{ section.settings.title | escape }}
+          </h2>
+        {% endif %}
+
+        {% if section.settings.text != blank %}
+          <div
+            class="pxs-image-with-text-subheading rte"
+          >
+            {{ section.settings.text }}
+          </div>
+        {% endif %}
+
+        {% if section.settings.button_text != blank %}
+          <span class="pxs-image-with-text-button">
+            {{ section.settings.button_text | escape }}
+          </span>
+        {% endif %}
+
+        {% if section.settings.link != blank %}
+          <a
+            class="pxs-image-with-text-link"
+            href="{{ section.settings.link }}"
+          ></a>
+        {% endif %}
+        </div>
+    </div>
+  </div>
+</section>
+
+{% schema %}
+{
+  "name": "Image with text overlay",
+  "class": "pxs-image-with-text-section",
+  "settings": [
+    {
+      "type": "select",
+      "id": "section_height",
+      "label": "Section height",
+      "options": [
+        {
+          "value": "small",
+          "label": "Small"
+        },
+        {
+          "value": "medium",
+          "label": "Medium"
+        },
+        {
+          "value": "large",
+          "label": "Large"
+        },
+        {
+          "value": "original",
+          "label": "Original aspect ratio"
+        }
+      ],
+      "default": "medium"
+    },
+    {
+      "type": "header",
+      "content": "Image"
+    },
+    {
+      "type": "image_picker",
+      "id": "image",
+      "label": "Image"
+    },
+    {
+      "type": "select",
+      "id": "position",
+      "label": "Position",
+      "info": "Adjust the focal point of the image. Note: This setting will not have much of an impact if your background image's dimensions are roughly the same size as the section.",
+      "options": [
+        {
+          "label": "Top left",
+          "value": "top left"
+        },
+        {
+          "label": "Top center",
+          "value": "top center"
+        },
+        {
+          "label": "Top right",
+          "value": "top right"
+        },
+        {
+          "label": "Center left",
+          "value": "center left"
+        },
+        {
+          "label": "Center",
+          "value": "center center"
+        },
+        {
+          "label": "Center right",
+          "value": "center right"
+        },
+        {
+          "label": "Bottom left",
+          "value": "bottom left"
+        },
+        {
+          "label": "Bottom center",
+          "value": "bottom center"
+        },
+        {
+          "label": "Bottom right",
+          "value": "bottom right"
+        }
+      ],
+      "default": "center center"
+    },
+    {
+      "type": "header",
+      "content": "Overlay"
+    },
+    {
+      "type": "text",
+      "id": "title",
+      "label": "Heading",
+      "default": "Image with text overlay"
+    },
+    {
+      "type": "richtext",
+      "id": "text",
+      "label": "Text",
+      "default": "<p>Say a bit about your brand, a specific product, or promotion.</p>"
+    },
+    {
+      "type": "select",
+      "id": "content_position",
+      "label": "Content position",
+      "options": [
+        {
+          "value": "top-left",
+          "label": "Top left"
+        },
+        {
+          "value": "top-center",
+          "label": "Top center"
+        },
+        {
+          "value": "top-right",
+          "label": "Top right"
+        },
+        {
+          "value": "center-left",
+          "label": "Center left"
+        },
+        {
+          "value": "center-center",
+          "label": "Center center"
+        },
+        {
+          "value": "center-right",
+          "label": "Center right"
+        },
+        {
+          "value": "bottom-left",
+          "label": "Bottom left"
+        },
+        {
+          "value": "bottom-center",
+          "label": "Bottom center"
+        },
+        {
+          "value": "bottom-right",
+          "label": "Bottom right"
+        }
+      ],
+      "default": "center-center"
+    },
+    {
+      "type": "color",
+      "id": "color",
+      "label": "Text color",
+      "default": "#ffffff"
+    },
+    {
+      "type": "color",
+      "id": "overlay_background",
+      "label": "Background color",
+      "default": "#000000"
+    },
+    {
+      "type": "range",
+      "id": "overlay_opacity",
+      "label": "Background color opacity",
+      "min": 0,
+      "max": 100,
+      "step": 1,
+      "unit": "%",
+      "default": 50
+    },
+    {
+      "type": "url",
+      "id": "link",
+      "label": "Link"
+    },
+    {
+      "type": "text",
+      "id": "button_text",
+      "label": "Button text",
+      "default": "Button"
+    }
+  ],
+  "presets": [
+    {
+      "category": "Image",
+      "name": "Image with text overlay"
+    }
+  ]
+}
+
+{% endschema %}

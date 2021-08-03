@@ -1,0 +1,199 @@
+<script
+  type="application/json"
+  data-section-id="{{ section.id }}"
+  data-section-type="dynamic-menu-list"
+  data-section-data>
+  {
+    "context": {
+      "see_more": {{ 'general.general.see_more' | t | json }},
+      "see_less": {{ 'general.general.see_less' | t | json }}
+    }
+  }
+</script>
+
+<script type="application/pxs-animation-mapping+json">
+  {
+    "blocks": [".menulist-item"],
+    "elements": [
+      ".menulist-item__image"
+    ]
+  }
+</script>
+
+<section class="menulist-container">
+  {% if section.settings.title != blank %}
+    <h2 class="home-section--title">
+      {{ section.settings.title | escape }}
+    </h2>
+  {% endif %}
+
+  {% if section.blocks.size > 0 %}
+    <div class="home-section--content menulist-inner menulist--blocks-count-{{ section.blocks.size }}" >
+      {% for block in section.blocks %}
+        {% assign menu = block.settings.menu %}
+        {% assign onboard = false %}
+        {% assign image = false %}
+
+        {% if menu == '' or linklists[menu].links.size == 0 %}
+          {% assign onboard = true %}
+          {% assign menu_title = 'onboarding.menu_list.title' | t %}
+        {% else %}
+          {% assign menu_title = linklists[menu].title %}
+        {% endif %}
+
+        {% if block.settings.image %}
+          {% assign image = block.settings.image %}
+        {% elsif menu %}
+          {% for link in linklists[menu].links %}
+            {% if link.object.image %}
+              {% assign image = link.object.image %}
+              {% break %}
+            {% elsif link.object.featured_image %}
+              {% assign image = link.object.featured_image %}
+            {% elsif collections[link.object.handle].products.first.featured_media.preview_image %}
+              {% assign image = collections[link.object.handle].products.first.featured_media.preview_image %}
+              {% break %}
+            {% endif %}
+          {% endfor %}
+        {% endif %}
+
+        <article class="menulist-item menulist-item-{{ forloop.index }}" {{ block.shopify_attributes }}>
+          <div class="menulist-item-inner">
+            <div class="menulist-item__image">
+              {% if image %}
+                {%
+                  render 'rimg',
+                  img: image,
+                  size: '180x180',
+                  crop: 'center',
+                  lazy: true,
+                  canvas: true
+                %}
+              {% else %}
+                {{ 'image' | placeholder_svg_tag: 'placeholder--image' }}
+              {% endif %}
+            </div>
+
+            <div class="menulist-item__content">
+              <h2 class="menulist-item__title" data-accordion-trigger>
+                {% if onboard %}
+                  {{ 'onboarding.menu_list.title' | t }}
+                {% else %}
+                  {{ linklists[menu].title }}
+                {% endif %}
+
+                <span class="menulist-item__title-icon accordion--icon">
+                  {% render 'icon-chevron-down' %}
+                </span>
+              </h2>
+              {% assign show_max_items = 6 %}
+              <ul class="menulist-menu menulist-menu--initial" data-accordion-content>
+                {% for link in linklists[menu].links %}
+                  {% if forloop.index > show_max_items %}
+                    <li class="menulist-menu__item menulist-menu__item--last">
+                      <ul class="menulist-menu menulist-menu--show-more" data-accordion-content>
+                        {% for hidden_link in linklists[menu].links %}
+                          {% if forloop.index <= show_max_items %}
+                            {% continue %}
+                          {% endif %}
+                          <li
+                            class="menulist-menu__item"
+                          >
+                            <a class="menulist-menu__link" href="{{ hidden_link.url }}">
+                              {{ hidden_link.title }}
+                            </a>
+                          </li>
+                        {% endfor %}
+                      </ul>
+                      <a class="menulist-menu__show-more-trigger menulist-menu__link" href="#" data-menulist-toggle>
+                        {{ 'general.general.see_more' | t }}
+                      </a>
+                    </li>
+                    {% break %}
+                  {% endif %}
+                  <li
+                    class="menulist-menu__item {% if forloop.last %}menulist-menu__item--last{% endif %}"
+                  >
+                    <a class="menulist-menu__link" href="{{ link.url }}">
+                      {{ link.title }}
+                    </a>
+                  </li>
+                {% else %}
+                  {% for i in (1..6) %}
+                    <li class="menulist-menu__item {% if forloop.last %}menulist-menu__item--last{% endif %}">
+                      <a class="menulist-menu__link" href="#">
+                        {{ 'onboarding.menu_list.link_text' | t }}
+                      </a>
+                    </li>
+                  {% endfor %}
+                {% endfor %}
+              </ul>
+            </div>
+          </div>
+        </article>
+      {% endfor %}
+    </div>
+  {% endif %}
+</section>
+
+{% schema %}
+{
+  "name": "Menu list",
+  "class": "menulist--section",
+  "max_blocks": 6,
+  "settings": [
+    {
+      "type": "text",
+      "id": "title",
+      "label": "Heading",
+      "default": "Menu list"
+    }
+  ],
+  "blocks": [
+    {
+      "type": "menu",
+      "name": "Menu",
+      "settings": [
+        {
+          "id": "menu",
+          "type": "link_list",
+          "label": "Menu"
+        },
+        {
+          "id": "image",
+          "type": "image_picker",
+          "label": "Image",
+          "info": "360 x 360px .jpg recommended"
+        }
+      ]
+    }
+  ],
+  "presets": [
+    {
+      "name": "Menu list",
+      "category": "Text",
+      "blocks": [
+        {
+          "type": "menu"
+        },
+        {
+          "type": "menu"
+        },
+        {
+          "type": "menu"
+        },
+        {
+          "type": "menu"
+        },
+        {
+          "type": "menu"
+        },
+        {
+          "type": "menu"
+        }
+      ]
+    }
+  ]
+}
+
+{% endschema %}

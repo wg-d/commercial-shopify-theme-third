@@ -1,0 +1,108 @@
+{% comment %}
+  @param menu LinkList
+    List of menu items
+
+  @param block Block
+    The block with the meganav properties
+
+{% endcomment %}
+
+{%- capture meganav_classes -%}
+  navmenu-submenu
+  navmenu-meganav
+  navmenu-meganav--desktop
+{%- endcapture -%}
+
+{%- capture navmenu_classes -%}
+  navmenu
+  navmenu-depth-2
+  navmenu-meganav-standard__items
+{%- endcapture -%}
+
+{% comment %}
+Determine if we need to set a max width for the menus. This is usually the case
+when there are only a few menus. We'd like them to be closer to each other.
+{% endcomment %}
+{% assign list_max_width = 0 %}
+{% if menu.links.size <= 4 %}
+  {% assign available_width = 1000 %}
+  {% if block.settings.image_1 %}
+    {% case block.settings.size_1 %}
+      {% when 'small' %}{% assign available_width = available_width | minus: 200 %}
+      {% when 'medium' %}{% assign available_width = available_width | minus: 300 %}
+      {% when 'large' %}{% assign available_width = available_width | minus: 400 %}
+    {% endcase %}
+  {% endif %}
+  {% if block.settings.image_2 %}
+    {% case block.settings.size_2 %}
+      {% when 'small' %}{% assign available_width = available_width | minus: 200 %}
+      {% when 'medium' %}{% assign available_width = available_width | minus: 300 %}
+      {% when 'large' %}{% assign available_width = available_width | minus: 400 %}
+    {% endcase %}
+  {% endif %}
+
+  {% assign desired_width = 225 | times: menu.links.size %}
+
+  {% if desired_width < available_width %}
+    {% assign list_max_width = desired_width %}
+  {% endif %}
+{% endif %}
+
+<div
+  class="{{ meganav_classes | strip_newlines }}"
+  data-navmenu-submenu
+  data-meganav-menu
+  data-meganav-id="{{ block.id }}"
+>
+  <div class="navmenu-meganav-wrapper navmenu-meganav-standard__wrapper">
+    {%
+      render 'meganav-promo',
+      block: block,
+      position: 'first'
+    %}
+    <ul
+      class="{{ navmenu_classes | strip_newlines }}"
+      {% if list_max_width > 0 %}style="max-width: {{ list_max_width }}px"{% endif %}
+    >
+      {% for menu_item in menu.links %}
+        {%- capture navmenu_item_classes -%}
+          navmenu-item
+          navmenu-item-parent
+          navmenu-id-{{ menu_item.title | handle }}
+          navmenu-meganav-standard__item
+        {%- endcapture -%}
+
+        <li
+          class="{{ navmenu_item_classes | strip_newlines }}"
+          {% if menu_item.links.size > 0 %}data-navmenu-trigger{% endif %}
+          {% if linklists[menu_item.handle] != blank %}data-navmenu-parent{% endif %}
+          {{ block.shopify_attributes }}>
+          <a href="{{ menu_item.url }}" class="navmenu-item-text navmenu-link-parent">
+            {{ menu_item.title }}
+          </a>
+
+          {% if menu_item.links.size > 0 %}
+            {%
+              render 'mobile-navmenu-button',
+              button_label: menu_item.title,
+            %}
+          {% endif %}
+
+          {%
+            render 'navlist',
+            menu_list: linklists[menu_item.handle].links,
+            depth: 3,
+            max_depth: 3,
+            aria_expanded: true,
+            is_mobile: false,
+          %}
+        </li>
+      {% endfor %}
+    </ul>
+    {%
+      render 'meganav-promo',
+      block: block,
+      position: 'last'
+    %}
+  </div>
+</div>

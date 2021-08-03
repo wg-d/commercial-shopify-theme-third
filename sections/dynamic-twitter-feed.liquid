@@ -1,0 +1,98 @@
+{% assign onboarding = true %}
+
+{% if section.settings.username != blank %}
+  {% assign onboarding = false %}
+{% endif %}
+
+{% if onboarding %}
+  {% assign username = 'onboarding.twitter.username' | t %}
+{% elsif section.settings.username != blank %}
+  {% assign username = section.settings.username | remove: '@' | escape %}
+{% endif %}
+
+{%- capture tweet_template -%}
+  {%-
+    render 'tweet'
+    onboarding: false,
+    username: false
+  -%}
+{%- endcapture %}
+
+<script
+  type="application/json"
+  data-section-id="{{ section.id }}"
+  data-section-type="dynamic-twitter-feed"
+  data-section-data>
+  {
+    "onboarding": {{ onboarding | json }},
+    "username": {{ username | json }},
+    "retweets": {{ section.settings.retweets | json }},
+    "images": {{ section.settings.images | json }},
+    "locale": "en",
+    "template": {{ tweet_template | strip_newlines | json }}
+  }
+</script>
+
+<script type="application/pxs-animation-mapping+json">
+  {
+    "blocks": [".tweet--wrapper"],
+    "elements": []
+  }
+</script>
+
+<section class="twitter--container tweet--count-3" data-twitter-wrapper>
+  {% if section.settings.title != blank %}
+    <h2 class="home-section--title">
+      {{ section.settings.title | escape }}
+    </h2>
+  {% endif %}
+
+  <div class="home-section--content twitter--inner" data-twitter-content>
+    {% for i in (1..3) %}
+      {%-
+        render 'tweet',
+        onboarding: onboarding,
+        username: username
+      -%}
+    {% endfor %}
+  </div>
+</section>
+
+{% schema %}
+{
+  "name": "Twitter feed",
+  "class": "twitter--section",
+  "settings": [
+    {
+      "type": "text",
+      "id": "title",
+      "label": "Heading",
+      "default": "Twitter feed"
+    },
+    {
+      "type": "text",
+      "id": "username",
+      "label": "Username"
+    },
+    {
+      "type": "checkbox",
+      "id": "retweets",
+      "label": "Show retweets",
+      "default": false
+    },
+    {
+      "type": "checkbox",
+      "id": "images",
+      "label": "Show images",
+      "default": false
+    }
+  ],
+  "presets": [
+    {
+      "name": "Twitter feed",
+      "category": "Social media"
+    }
+  ]
+}
+
+{% endschema %}

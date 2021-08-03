@@ -1,0 +1,177 @@
+<script
+  type="application/json"
+  data-section-type="static-subcollections-menu"
+  data-section-id="{{ section.id }}"
+  data-section-data
+>
+  {
+    "context": {
+      "see_more": {{ 'general.general.see_more' | t | json }},
+      "see_less": {{ 'general.general.see_less' | t | json }},
+      "grid_list": {{ section.settings.default_view | json }},
+      "collection_url": {{ collection.url | default: routes.all_products_collection_url | json }}
+    }
+  }
+</script>
+
+<script type="application/pxs-animation-mapping+json">
+  {
+    "blocks": [
+      ".subcollections-menu__item"
+    ],
+    "elements": [
+      ".subcollections-menu__menu-items"
+    ]
+  }
+</script>
+
+{% assign onboard = true %}
+
+{% if linklists[collection.handle].links.size > 0 %}
+  {% assign onboard = false %}
+{% endif %}
+
+{% style %}
+  #shopify-section-{{ section.id }} .subcollections-list__content {
+    grid-template-columns: repeat({{ section.settings.thumbnail_columns_desktop }}, minmax(auto, 1fr));
+  }
+
+  @media only screen and (min-width: 720px) and (max-width: 860px) {
+    #shopify-section-{{ section.id }} .subcollections-list__content {
+      grid-template-columns: repeat(2, minmax(auto, 1fr));
+    }
+  }
+
+  @media only screen and (max-width: 720px) {
+    #shopify-section-{{ section.id }} .subcollections-list__content {
+      grid-template-columns: repeat(1, minmax(auto, 1fr));
+    }
+  }
+{% endstyle %}
+
+<div
+  data-section-id="{{ section.id }}"
+  data-section-type="static-subcollections-menu"
+>
+  {% if section.settings.show_breadcrumbs %}
+    {% render 'breadcrumbs' %}
+  {% endif %}
+
+  {% 
+    render 'subcollections-banner', 
+    heading: collection.title, 
+    description: collection.description, 
+    image: collection.image
+  %}
+
+  {% 
+    render 'subcollections-collection', 
+    onboard: onboard, 
+    layout_type: 'menu' 
+  %}
+</div>
+
+{% schema %}
+{
+  "name": "Subcollections menu list",
+  "settings": [
+    {
+      "type": "paragraph",
+      "content": "Page is empty? [Learn how to add collections to your subcollections template](https://support.pixelunion.net/hc/en-us/articles/1500007721682)"
+    },
+    {
+      "type": "header",
+      "content": "Header"
+    },
+    {
+      "type": "checkbox",
+      "id": "show_breadcrumbs",
+      "label": "Show breadcrumbs",
+      "default": true
+    },
+    {
+      "type": "checkbox",
+      "id": "show_description",
+      "label": "Show collection description",
+      "default": true
+    },
+    {
+      "type": "checkbox",
+      "id": "show_collection_image",
+      "label": "Show collection image",
+      "default": true
+    },
+    {
+      "type": "header",
+      "content": "Subcollections"
+    },
+    {
+      "type": "select",
+      "id": "thumbnail_columns_desktop",
+      "label": "Layout",
+      "options": [
+        {
+          "value": "2",
+          "label": "2 columns"
+        },
+        {
+          "value": "3",
+          "label": "3 columns"
+        }
+      ],
+      "default": "3"
+    },
+    {
+      "type": "select",
+      "id": "thumbnail_image",
+      "label": "Thumbnail image",
+      "options": [
+        {
+          "value": "product-image",
+          "label": "Product image"
+        },
+        {
+          "value": "collection-image",
+          "label": "Collection image"
+        }
+      ],
+      "default": "product-image"
+    },
+    {
+      "type": "select",
+      "id": "image_align",
+      "label": "Image alignment",
+      "options": [
+        {
+          "value": "left",
+          "label": "Left"
+        },
+        {
+          "value": "right",
+          "label": "Right"
+        }
+      ],
+      "default": "left",
+      "info": "Only applies to desktop screen sizes."
+    },
+    {
+      "type": "text",
+      "id": "cta",
+      "label": "Call to action",
+      "default": "Shop all",
+      "placeholder": "Shop all"
+    },
+    {
+      "type": "header",
+      "content": "Mobile"
+    },
+    {
+      "type": "checkbox",
+      "id": "expand_mobile_menus",
+      "label": "Expand all menus",
+      "default": false
+    }
+  ]
+}
+
+{% endschema %}

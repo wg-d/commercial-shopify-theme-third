@@ -1,0 +1,105 @@
+{% comment %}
+  This is the nav list for the mobile menu.
+
+  @param menu LinkedList
+    The menu handle to look up.
+
+  @param blocks Array
+    Array of blocks possibly containing meganav information
+
+{% endcomment %}
+
+{% assign menu_list = linklists[menu].links %}
+{% assign menu_title = linklists[menu].title %}
+
+<ul
+  class="navmenu navmenu-depth-1"
+  data-navmenu
+  {% if menu_title %}aria-label="{{ menu_title }}"{% endif %}
+>
+  {% for menu_item in menu_list %}
+    {% assign show_subnav = true %}
+    {% if linklists[menu_item.handle] == blank %}
+      {% assign show_subnav = false %}
+    {% endif %}
+
+    {% assign meganav_block = null %}
+    {% assign meganav_trigger = null %}
+    {% if blocks.size > 0 %}
+      {% for block in blocks %}
+        {% if block.type == 'meganav_images' %}
+          {% assign meganav_trigger = block.settings.meganav_trigger | handle | strip %}
+
+          {% if menu_item.handle == meganav_trigger and menu_item.links.size > 0 %}
+            {% assign meganav_block = block %}
+          {% elsif menu_item.title == meganav_trigger %}
+            {% assign meganav_block = block %}
+          {% endif %}
+        {% endif %}
+      {% endfor %}
+    {% endif %}
+
+    {%- capture navmenu_item_classes -%}
+      navmenu-item
+      {% if show_subnav %}navmenu-item-parent{% endif %}
+      navmenu-id-{{ menu_item.handle }}
+    {%- endcapture -%}
+
+    <li
+      class="{{ navmenu_item_classes | strip_newlines }}"
+      {% if show_subnav %}data-navmenu-parent{% endif %}
+    >
+      <a
+        class="navmenu-link {% if show_subnav %}navmenu-link-parent{% endif %} {% if menu_item.active %}navmenu-link-active{% endif %}"
+        href="{{ menu_item.url }}"
+        {% if show_subnav %}
+          aria-haspopup="true"
+          aria-expanded="false"
+        {% endif %}
+      >
+        {{ menu_item.title }}
+      </a>
+
+      {% if show_subnav %}
+        {%
+          render 'mobile-navmenu-button',
+          button_label: menu_item.title,
+        %}
+      {% endif %}
+
+      {% assign accordion_level = 2 %}
+      {% if meganav_block %}
+        {% assign accordion_level = 3 %}
+        <div class="navmenu-submenu navmenu-meganav" data-navmenu-submenu data-accordion-content>
+        {%
+          render 'meganav-promo',
+          block: meganav_block,
+          position: 'first'
+        %}
+      {% endif %}
+
+      {% if show_subnav %}
+        {%
+          render 'navlist',
+          menu_list: linklists[menu_item.handle].links,
+          menu_title: menu_title,
+          depth: 2,
+          max_depth: 3,
+          show_arrows: true,
+          aria_expanded: false,
+          is_mobile: true,
+          accordion_level: accordion_level,
+        %}
+      {% endif %}
+
+      {% if meganav_block %}
+        {%
+          render 'meganav-promo',
+          block: meganav_block,
+          position: 'last'
+        %}
+        </div>
+      {% endif %}
+    </li>
+  {% endfor %}
+</ul>

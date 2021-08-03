@@ -1,0 +1,30 @@
+{% assign tag_limit = filter_limit | times: 1 %}
+
+{% comment %}
+  Collection filters
+{% endcomment %}
+{% if collection.all_tags.size > 0 and filter_style != 'none' %}
+  {% capture cat_array %}{%- render 'advanced-tag-loop' -%}{% endcapture %}
+  {% assign cat_array = cat_array | split: '|' %}
+  <div class="productgrid--sidebar-section" data-productgrid-filters-content>
+    <nav
+      aria-label="Collection filters"
+    >
+      {% if filter_style == 'groups' %}
+        {%
+          render 'product-grid-tag-groups',
+          tag_limit: tag_limit,
+          cat_array: cat_array,
+        %}
+      {% endif %}
+
+      {% if filter_style == 'tags' %}
+        {%
+          render 'product-grid-tags',
+          tag_limit: tag_limit,
+          cat_array: cat_array,
+        %}
+      {% endif %}
+    </nav>
+  </div>
+{% endif %}

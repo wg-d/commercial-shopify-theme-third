@@ -1,0 +1,38 @@
+{%- comment -%}
+
+  Outputs a placeholder SVG as a data-uri. This allows us to use Shopify's
+  placeholder images as background images.
+
+  See: https://codepen.io/tigt/post/optimizing-svgs-in-data-uris
+  See: https://help.shopify.com/themes/liquid/filters/additional-filters#placeholder_svg_tag
+
+  @param placeholder {string}
+    The placeholder image name to load. For example: 'product-1'.
+  @param color_string {string
+    Hexadecimal color value, defaults to currentColor
+{%- endcomment -%}
+{%- capture datauri -%}
+  {% assign color_text = settings.color_text %}
+  {% assign color_background = settings.color_background %}
+  {% assign placeholder_fill = color_text | color_mix: color_background, 35 %}
+
+  {%- capture svg_fill -%}fill="{{ placeholder_fill }}" xmlns {%- endcapture -%}
+  {%- assign svg = placeholder
+    | placeholder_svg_tag
+    | strip
+    | replace: 'xmlns', svg_fill
+    | replace: '\n', ' '
+    | replace: '\r', ' '
+    | replace: '%', '%25'
+    | replace: '"', '%22'
+    | replace: "'", '%27'
+    | replace: '&', '%26'
+    | replace: '#', '%23'
+    | replace: '{', '%7B'
+    | replace: '}', '%7D'
+    | replace: '<', '%3C'
+    | replace: '>', '%3E'
+  -%}
+  data:image/svg+xml,{{- svg -}}
+{%- endcapture -%}
+{{- datauri | strip -}}

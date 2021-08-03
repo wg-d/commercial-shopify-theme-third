@@ -1,0 +1,137 @@
+{% comment %}
+  @param section Object
+         Required section containing settings
+
+  @param onboarding Bool
+         Triggers onboarding helper class and functionality
+
+  @param article Object
+{% endcomment %}
+
+{% assign article = article | default: nil %}
+{% assign onboarding = onboarding | default: false %}
+
+{%- capture excerpt_class -%}
+  article--excerpt-wrapper
+  {% unless article.image or onboarding %}
+    article--excerpt-wrapper--centered
+  {% endunless %}
+{%- endcapture -%}
+
+<li class="{{ excerpt_class | strip_newlines }}">
+<article class="article-list-item">
+
+  {% unless onboarding %}
+    {% if article.image %}
+      <a
+        class="article--excerpt-image" href="{{ article.url }}"
+        {%
+          render 'rimg',
+          img: article.image,
+          size: '700x700',
+          crop: 'center',
+          lazy: true,
+          background: true
+        %}
+      >
+        {%
+          render 'rimg',
+          img: article.image,
+          size: '700x700',
+          crop: 'center',
+          lazy: true,
+          canvas: true
+        %}
+      </a>
+    {% endif %}
+
+    <div class="article--excerpt-content">
+      {% if section.settings.show_date or section.settings.show_author %}
+        <div class="article--excerpt-meta">
+          {% if section.settings.show_date %}
+            <span class="article--excerpt-meta-item">
+              {{ article.published_at | date: format: 'month_day_year' }}
+            </span>
+          {% endif %}
+
+          {% if section.settings.show_author %}
+            <span class="article--excerpt-meta-item">
+              {{ article.author }}
+            </span>
+          {% endif %}
+        </div>
+      {% endif %}
+
+      <h2 class="article--excerpt-title">
+        <a href="{{ article.url }}">
+          {{ article.title }}
+        </a>
+      </h2>
+
+      {%- if section.settings.show_excerpt -%}
+        <div class="article--excerpt-text rte">
+          {%- if article.excerpt == blank -%}
+            <p>{{ article.content | strip_html | truncatewords: 40 }}</p>
+          {%- else -%}
+            {{ article.excerpt }}
+          {%- endif -%}
+        </div>
+      {%- endif -%}
+
+      <a class="article--excerpt-readmore" href="{{ article.url }}" aria-label="read {{ article.title }}">
+        {{ 'blog.general.read_more' | t }}
+
+        <span class="article--excerpt-readmore--icon">
+          {% render 'icon-library', id: 'icon-signpost-arrow' %}
+        </span>
+      </a>
+    </div>
+  {% else %}
+    {%- capture background_image -%}
+      {%-
+        render 'placeholder_svg_uri'
+        placeholder: 'image'
+       -%}
+    {%- endcapture -%}
+    <a
+      class="article--excerpt-image placeholder--image"
+      href="{{ article.url }}"
+      style="background-image: url('{{ background_image | strip_newlines }}');"
+    >
+    </a>
+
+    <div class="article--excerpt-content">
+      {% if section.settings.show_date or section.settings.show_author %}
+        <div class="article--excerpt-meta">
+          {% if section.settings.show_date %}
+            <span class="article--excerpt-meta-item">
+              {{ 'now' | date: format: 'month_day_year' }}
+            </span>
+          {% endif %}
+
+          {% if section.settings.show_author %}
+            <span class="article--excerpt-meta-item">
+              {{ 'onboarding.article.author_name' | t }}
+            </span>
+          {% endif %}
+        </div>
+      {% endif %}
+
+      <h2 class="article--excerpt-title">
+        <a href="#">
+          {{ 'onboarding.article.title' | t }}
+        </a>
+      </h2>
+
+      <a class="article--excerpt-readmore" href="#">
+        {{ 'blog.general.read_more' | t }}
+
+        <span class="article--excerpt-readmore--icon">
+          {% render 'icon-library', id: 'icon-signpost-arrow' %}
+        </span>
+      </a>
+    </div>
+  {% endunless %}
+
+</article>
+</li>

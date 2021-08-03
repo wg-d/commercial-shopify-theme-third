@@ -1,0 +1,88 @@
+{% assign default_province = '' %}
+{% assign default_zip = '' %}
+
+{% if section.settings.shipping_calc_default_country != '' %}
+  {% assign default_country = section.settings.shipping_calc_default_country | escape %}
+{% else %}
+  {% assign default_country = '' %}
+{% endif %}
+
+{% if shop.customer_accounts_enabled and customer %}
+  {% if customer.default_address.country != '' %}
+    {% assign default_country = customer.default_address.country %}
+  {% endif %}
+
+  {% if customer.default_address.province != '' %}
+    {% assign default_province = customer.default_address.province %}
+  {% endif %}
+
+  {% if customer.default_address.zip != '' %}
+    {% assign default_zip = customer.default_address.zip %}
+  {% endif %}
+{% endif %}
+
+{% if cart.requires_shipping %}
+  <button
+    class="cart-shipping-toggle"
+    type="button"
+    data-cartshipping-toggle="{{ 'cart.shipping.hide_shipping_calculator' | t | escape }}">
+    {{ 'cart.shipping.calculate_shipping' | t }}
+  </button>
+
+  <div class="cart-shippingcalc--container" id="shipping-calculator" data-cartshipping>
+    <div class="cart-shippingcalc-form">
+      <div class="cart-shippingcalc--inner">
+
+        <div class="form-field">
+          <div class="form-field-select-wrapper">
+            <select
+              class="form-field-input form-field-select"
+              name="address[country]"
+              id="address_country"
+              data-default="{{ default_country }}">{{ country_option_tags }}</select>
+            <label class="form-field-title" for="address_country">
+              {{ 'cart.shipping.country' | t }}
+            </label>
+            {% render 'icon-chevron-down-small' %}
+          </div>
+        </div>
+
+        <div class="form-field" id="address_province_container" style="display:none;">
+          <div class="form-field-select-wrapper">
+            <select class="form-field-input form-field-select form-field-filled" name="address[province]" id="address_province" data-default="{{ default_province }}"><option value=""></option></select>
+            <label class="form-field-title" for="address_province">
+              {{ 'cart.shipping.province' | t }}
+            </label>
+            {% render 'icon-chevron-down-small' %}
+          </div>
+        </div>
+
+        <div class="form-field">
+          <input
+            class="form-field-input form-field-text"
+            type="text"
+            id="address_zip"
+            name="address[zip]"
+            value="{{ default_zip }}">
+          <label class="form-field-title" for="address_zip">
+            {{ 'cart.shipping.zip' | t }}
+          </label>
+        </div>
+
+      </div>
+
+      <button class="button-primary" type="button" data-cartshipping-submit>
+        {{ 'cart.shipping.calculate_shipping' | t }}
+      </button>
+    </div>
+
+    <div class="cart-shippingcalc-response" aria-live="polite" data-cartshipping-response>
+      <div class="cart-shippingcalc-message" data-cartshipping-message></div>
+      <ul class="cart-shippingcalc-rates" data-cartshipping-rates></ul>
+    </div>
+  </div>
+{% else %}
+  <p class="cart-shippingcalc-nonene">
+    {{ 'cart.shipping.no_shipping_required' | t }}
+  </p>
+{% endif %}

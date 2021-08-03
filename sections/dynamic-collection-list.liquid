@@ -1,0 +1,211 @@
+<script
+  type="application/json"
+  data-section-id="{{ section.id }}"
+  data-section-type="dynamic-collection-list">
+</script>
+
+<script type="application/pxs-animation-mapping+json">
+  {
+    "blocks": [".collection__item"],
+    "elements": [
+      ".collection__item-info"
+    ]
+  }
+</script>
+
+{% style %}
+  #shopify-section-{{ section.id }} .collection-list__content {
+    grid-template-columns: repeat({{ section.settings.thumbnail_columns_desktop }}, minmax(auto, 1fr));
+  }
+
+  @media only screen and (max-width: 860px) {
+    #shopify-section-{{ section.id }} .collection-list__content {
+      grid-template-columns: repeat({{ section.settings.thumbnail_columns_mobile }}, minmax(auto, 1fr));
+    }
+  }
+{% endstyle %}
+
+<section class="collection-list__container">
+  {% if section.settings.title != blank %}
+    <h2 class="home-section--title">
+      {{ section.settings.title | escape }}
+    </h2>
+  {% endif %}
+
+  {% if section.blocks.size > 0 %}
+    <ul
+      class="
+        home-section--content
+        collection-list__content
+        collection--image-crop-{{ section.settings.image-crop }}
+        {% if section.settings.cta_label == blank %}no-cta{% endif %}
+      "
+      data-layout="grid"
+    >
+      {% for block in section.blocks %}
+        {% assign collection = collections[block.settings.collection] %}
+        {% assign collection_title = collection.title %}
+        {% assign collection_url = collection.url %}
+
+        {% assign featured_image = false %}
+        {% assign featured_image_alt = '' %}
+
+        {% if block.settings.image %}
+          {% assign featured_image = block.settings.image %}
+          {% assign featured_image_alt = block.settings.image.alt | escape %}
+        {% endif %}
+
+        {%
+          render 'collection-list-item',
+          block: block,
+          collection: collection,
+          collection_image: featured_image,
+          collection_image_alt: featured_image_alt
+        %}
+      {% endfor %}
+    </ul>
+
+    {% if section.settings.cta_label != blank %}
+      <a
+        class="
+          button-{{ section.settings.cta_button_style }}
+          collection-list__button
+        "
+        {% if section.settings.cta_link != blank %}href="{{ section.settings.cta_link }}"{% endif %}
+      >
+        {{ section.settings.cta_label | escape }}
+      </a>
+    {% endif %}
+  {% endif %}
+</section>
+
+{% schema %}
+{
+  "name": "Collection list",
+  "class": "collection-list--section",
+  "max_blocks": 20,
+  "settings": [
+    {
+      "type": "text",
+      "id": "title",
+      "label": "Heading",
+      "default": "Collection list"
+    },
+    {
+      "type": "range",
+      "id": "thumbnail_columns_desktop",
+      "label": "Columns per row",
+      "min": 3,
+      "max": 6,
+      "step": 1,
+      "default": 5
+    },
+    {
+      "type": "range",
+      "id": "thumbnail_columns_mobile",
+      "label": "Columns per row on mobile",
+      "min": 1,
+      "max": 3,
+      "step": 1,
+      "default": 2
+    },
+    {
+      "type": "select",
+      "id": "image-crop",
+      "label": "Image crop",
+      "info": "840px by 840px image recommended with 'Circle'",
+      "options": [
+        {
+          "value": "original",
+          "label": "Original"
+        },
+        {
+          "value": "circle",
+          "label": "Circle"
+        },
+        {
+          "value": "round",
+          "label": "Rounded rectangle"
+        }
+      ]
+    },
+    {
+      "type": "header",
+      "content": "Call to action"
+    },
+    {
+      "type": "text",
+      "id": "cta_label",
+      "label": "Label",
+      "default": "View All"
+    },
+    {
+      "type": "url",
+      "id": "cta_link",
+      "label": "Link"
+    },
+    {
+      "id": "cta_button_style",
+      "type": "select",
+      "label": "Button style",
+      "options": [
+        {
+          "value": "primary",
+          "label": "Primary"
+        },
+        {
+          "value": "secondary",
+          "label": "Secondary"
+        }
+      ],
+      "default": "primary"
+    }
+  ],
+  "blocks": [
+    {
+      "type": "collection",
+      "name": "Collection",
+      "settings": [
+        {
+          "id": "collection",
+          "type": "collection",
+          "label": "Collection"
+        },
+        {
+          "id": "image",
+          "type": "image_picker",
+          "label": "Image"
+        },
+        {
+          "id": "title",
+          "type": "text",
+          "label": "Custom title"
+        }
+      ]
+    }
+  ],
+  "presets": [
+    {
+      "name": "Collection list",
+      "category": "Collection",
+      "blocks": [
+        {
+          "type": "collection"
+        },
+        {
+          "type": "collection"
+        },
+        {
+          "type": "collection"
+        },
+        {
+          "type": "collection"
+        },
+        {
+          "type": "collection"
+        }
+      ]
+    }
+  ]
+}
+{% endschema %}

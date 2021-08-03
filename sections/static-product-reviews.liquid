@@ -1,0 +1,21 @@
+{% if settings.product_ratings_reviews %}
+  <section class="product-section--container" data-product-reviews>
+    <div class="product-section--content product-reviews--content">
+      <div id="shopify-product-reviews" data-id="{{product.id}}">{{ product.metafields.spr.reviews }}</div>
+    </div>
+  </section>
+{% endif %}
+
+{% schema %}
+{
+  "name": "Product reviews",
+  "class": "product-reviews--section",
+  "settings": [
+    {
+      "type": "paragraph",
+      "content": "This section becomes visible by turning on \"Enable product reviews and ratings\" in the Theme settings."
+    }
+  ]
+}
+
+{% endschema %}

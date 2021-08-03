@@ -1,0 +1,123 @@
+{% assign comment_count = article.comments_count %}
+
+{% if comment and comment.created_at %}
+  {% assign comment_count = article.comments_count | plus: 1 %}
+{% endif %}
+
+{% if blog.comments_enabled? %}
+  {% paginate article.comments by 10 %}
+    <section class="article--comments" id="comments">
+      {% if comment_count > 0 %}
+        <h2 class="article--comments-title">
+          {{ 'blog.comments.title' | t }}
+        </h2>
+
+        {% render 'article-comment-item' for article.comments as comment %}
+
+        {% if paginate.pages > 1 %}
+          {% render 'pagination', paginate: paginate %}
+        {% endif %}
+      {% endif %}
+
+      <div class="article--comments-form"
+           id="comment_form"
+           data-articlecomments-form>
+
+        <h2 class="article--comments-title">
+          {{ 'blog.comments.leave_comment' | t }}
+        </h2>
+
+        {% form 'new_comment', article %}
+
+          {% assign has_message = false %}
+
+          {% if comment and comment.created_at %}
+            {% assign has_message = true %}
+            {% assign message_type = 'success' %}
+          {% endif %}
+
+          {% if form.errors != blank %}
+            {% assign has_message = true %}
+            {% assign message_type = 'error' %}
+          {% endif %}
+
+          {% if blog.moderated? %}
+            <div class="article--comments-moderated">
+              <p>{{ 'blog.comments.moderated' | t }}</p>
+            </div>
+          {% endif %}
+
+          {% if has_message %}
+            <div class="article--comments-message message--{{ message_type }}">
+              {% case message_type %}
+                {% when 'success' %}
+                  <p>
+                    {% if blog.moderated? %}
+                      {{ 'blog.comments.success_moderated' | t }}
+                    {% else %}
+                      {{ 'blog.comments.success' | t }}
+                    {% endif %}
+                  </p>
+                {% when 'error' %}
+                  {{ form.errors | default_errors }}
+              {% endcase %}
+            </div>
+          {% endif %}
+
+          <div class="form-fields-columns">
+            <div class="form-field form-field--half">
+              <input
+                type="text"
+                class="form-field-input form-field-text"
+                id="article_comment_author"
+                name="comment[author]"
+                autocapitalize="words"
+                value="{{ form.author }}"
+                required>
+              <label class="form-field-title" for="article_comment_author">
+                {{ 'blog.comments.name' | t }} *
+              </label>
+            </div>
+
+            <div class="form-field form-field--half">
+              <input
+                class="form-field-input form-field-text"
+                id="article_comment_email"
+                name="comment[email]"
+                type="email"
+                autocorrect="off"
+                autocapitalize="off"
+                value="{{ form.email }}"
+                required>
+              <label class="form-field-title" for="article_comment_email">
+                {{ 'blog.comments.email' | t }} *
+              </label>
+            </div>
+          </div>
+
+          <div class="form-field">
+            <textarea
+              class="form-field-input form-field-textarea"
+              id="article_comment_message"
+              name="comment[body]"
+              required>
+              {{- form.body -}}
+            </textarea>
+            <label class="form-field-title" for="article_comment_message">
+              {{ 'blog.comments.message' | t }} *
+            </label>
+          </div>
+
+          <p class="article--comments-required">
+            {{ 'blog.comments.required_fields' | t }}
+          </p>
+
+          <button class="button-primary" type="submit">
+            {{ 'blog.comments.submit' | t }}
+          </button>
+        {% endform %}
+      </div>
+
+    </section>
+  {% endpaginate %}
+{% endif %}

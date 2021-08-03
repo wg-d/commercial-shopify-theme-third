@@ -1,0 +1,25 @@
+{% comment %}
+  @param block Block
+    The block with the meganav properties
+
+  @param position String
+    The string for the position variables to match on
+
+{% endcomment %}
+
+{% if block.settings.image_1 or block.settings.image_2 %}
+  {% if block.settings.position_1 == position %}
+    {%
+      render 'meganav-image-block'
+      id: 1,
+      settings: block.settings
+    %}
+  {% endif %}
+  {% if block.settings.position_2 == position %}
+    {%
+      render 'meganav-image-block'
+      id: 2,
+      settings: block.settings
+    %}
+  {% endif %}
+{% endif %}

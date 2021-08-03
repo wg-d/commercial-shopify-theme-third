@@ -1,0 +1,107 @@
+<script
+  type="application/json"
+  data-section-type="static-blog"
+  data-section-id="{{ section.id }}">
+</script>
+
+{% assign featured_post = section.settings.featured_post %}
+{% assign paginate_by = section.settings.posts_per_page_range | times: 1 %}
+
+{% assign show_featured = false %}
+{% if featured_post != '' and featured_post != blank %}
+  {% assign show_featured = true %}
+
+  {% comment %}
+    Don't show highlighted post if is not first page, or if tags are active
+  {% endcomment %}
+  {% if paginate.current_page != 1 and current_tags != blank %}
+    {% assign show_featured = false %}
+  {% endif %}
+{% endif %}
+
+<section class="blog--container">
+  <header class="blog-title">
+    <h1>{{ blog.title }}</h1>
+    {% if section.settings.show_rss_link %}
+      <a href="{{ blog.url }}.atom">
+        {% render 'icon-rss' %}
+        <span class="visually-hidden">{{ 'general.accessibility.rss' | t: platform: title | escape }}</span>
+      </a>
+    {% endif %}
+  </header>
+
+  {% paginate blog.articles by paginate_by %}
+
+    {% if show_featured %}
+      {%
+        render 'article-excerpt-featured',
+        article: articles[featured_post]
+      %}
+    {% endif %}
+
+    <ul class="blog--inner">
+      {% for article in blog.articles %}
+        {%
+          render 'article-excerpt',
+          article: article
+          %}
+      {% else %}
+        <article class="blog--no-results">
+          <h2 class="blog--no-results-title">
+            {{ 'blog.general.empty_blog' | t }}
+          </h2>
+        </article>
+      {% endfor %}
+    </ul>
+
+    {% render 'pagination', paginate: paginate %}
+  {% endpaginate %}
+</section>
+
+{% schema %}
+{
+  "name": "Blog pages",
+  "class": "blog--section section--canonical",
+  "settings": [
+    {
+      "type": "checkbox",
+      "id": "show_rss_link",
+      "label": "Show RSS link",
+      "default": true
+    },
+    {
+      "type": "checkbox",
+      "id": "show_date",
+      "label": "Show date published",
+      "default": true
+    },
+    {
+      "type": "checkbox",
+      "id": "show_author",
+      "label": "Show post author",
+      "default": true
+    },
+    {
+      "type": "checkbox",
+      "id": "show_excerpt",
+      "label": "Show post excerpt",
+      "default": true
+    },
+    {
+      "type": "article",
+      "id": "featured_post",
+      "label": "Featured post"
+    },
+    {
+      "type": "range",
+      "id": "posts_per_page_range",
+      "label": "Posts per page",
+      "min": 6,
+      "max": 12,
+      "step": 3,
+      "default": 9
+    }
+  ]
+}
+
+{% endschema %}

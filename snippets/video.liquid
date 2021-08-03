@@ -1,0 +1,87 @@
+{% comment %}
+  @param url {String}
+    Video URL
+  @param aspect_ratio {String}
+    Video element aspect ratio
+  @param overlay {Bool}
+    Overlay image option for Dynamic Video section
+  @param cover {String}
+    Cover/overlay image path
+  @param slideshow {Bool}
+    Indicates slideshow container, such as product gallery
+{% endcomment %}
+
+{% assign overlay = overlay | default: nil %}
+{% assign slideshow = slideshow | default: nil %}
+
+{% assign platform = '' %}
+{%- if url contains 'youtube' or url contains 'youtu.be' -%}
+  {% assign platform = 'youtube' %}
+{% elsif url contains 'vimeo' -%}
+  {% assign platform = 'vimeo' %}
+{% endif %}
+
+<div
+  class="
+    video
+    video-aspect-ratio-{{ aspect_ratio }}
+  "
+  data-video="{{ platform }}"
+>
+  {% if cover or slideshow or overlay %}
+    <div
+      class="video-cover"
+      {% if cover %}
+        {%
+          render 'rimg',
+          img: cover,
+          size: '1800x1000',
+          crop: 'center',
+          background: true,
+          lazy: true
+        %}
+      {% endif %}
+      data-video-cover
+    >
+      {% if cover %}
+        {%
+          render 'rimg',
+          img: cover,
+          size: '1800x1000',
+          crop: 'center',
+          canvas: true,
+          lazy: true
+        %}
+      {% endif %}
+
+      <div
+        class="video-overlay"
+        {% if overlay %}
+          style="background-color: {{ overlay }}"
+        {% endif %}
+      >
+        <button
+          class="
+            video-play-button
+          "
+          aria-label="play"
+          data-video-play-button
+        >
+          {% render 'icon-library', id: 'icon-play' %}
+          {% render 'icon-library', id: 'icon-loading' %}
+        </button>
+      </div>
+    </div>
+  {% endif %}
+
+  {% comment %}
+    The outer <div> is used to maintain the data attributes. There is an inner <div> hich both
+    Youtube and Vimeo end up replacing with their own content. In order to allow for users
+    to close and reopen the Quickshop, we need to maintain these attributes.
+  {% endcomment %}
+  <div
+    class="{{ platform }} {% if slideshow %}hide-player{% endif %}"
+    data-video-element
+    data-video-url="{{ url }}"
+  ><div></div></div>
+</div>

@@ -1,0 +1,44 @@
+<script
+  type="application/json"
+  data-section-id="{{ section.id }}"
+  data-section-type="dynamic-html"
+></script>
+
+<section class="custom-html--container">
+  {% if section.settings.title != blank %}
+    <h2 class="home-section--title" >
+      {{ section.settings.title | escape }}
+    </h2>
+  {% endif %}
+  <div class="rte" data-rte>
+    {{ section.settings.custom_html }}
+  </div>
+</section>
+
+{% schema %}
+{
+  "name": "Custom HTML",
+  "class": "html--section",
+  "settings": [
+    {
+      "type": "text",
+      "id": "title",
+      "label": "Heading",
+      "default": "Custom HTML"
+    },
+    {
+      "type": "html",
+      "id": "custom_html",
+      "label": "HTML",
+      "default": "<p>Write or paste your HTML code here</p>"
+    }
+  ],
+  "presets": [
+    {
+      "category": "Advanced",
+      "name": "Custom HTML"
+    }
+  ]
+}
+
+{% endschema %}

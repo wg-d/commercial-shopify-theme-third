@@ -1,0 +1,475 @@
+{% comment %}
+  @param layout {String}
+    Layout type
+
+  @param is_product_modal {Bool}
+    Is the snippet being loaded in a QuickShop
+
+  @param hide_description {Bool}
+    If true, hide the product description
+
+  @param gallery_aspect_ratio {string}
+    This is the gallery aspect ratio, can be one of 'natural', 'short', 'square', 'long'
+
+  @param gallery_thumbnail_position {string}
+    This is the gallery thumbnail position, can be one of 'below', or 'left'
+
+  @param gallery_image_crop {boolean}
+    Whether to crop images
+
+  @param gallery_hover_zoom {String}
+    This is the hover zoom setting, which is either 'disabled', 'separate', or 'replace'
+
+  @param gallery_click_to_zoom {String}
+    This is the click to zoom setting, which is either 'disabled', 'mobile', 'desktop', or 'always'
+{% endcomment %}
+
+{% assign onboarding = onboarding | default: false %}
+{% assign layout = layout | default: nil %}
+{% assign hide_description = hide_description | default: false %}
+
+{% assign enable_social_sharing = settings.product_social_sharing %}
+{% liquid
+  assign selected_variant = product.selected_variant
+
+  if product.variants.size == 1 or select_first_available_variant
+    assign selected_variant = product.selected_or_first_available_variant
+  endif
+%}
+{% assign compare_at_price = selected_variant.compare_at_price %}
+{% assign price = selected_variant.price %}
+{% assign sku = selected_variant.sku %}
+{% assign product_available = product.available %}
+
+{% comment %}For a potential divider in the product.description we need to split the content{% endcomment %}
+{% assign readmore_split = product.description | split: '<!-- more -->' %}
+
+{% if onboarding %}
+  {% assign compare_at_price = 2999 %}
+  {% assign price = 1999 %}
+{% endif %}
+
+{% assign on_sale = false %}
+{% if compare_at_price > price %}
+  {% assign on_sale = true %}
+{% endif %}
+
+{% assign consistent_saved = false %}
+{% capture consistent_savings %}
+  {%
+    render 'consistent-savings',
+    variants: product.variants,
+    on_sale: on_sale
+  %}
+{% endcapture %}
+{% if consistent_savings contains 'true' %}
+  {% assign consistent_saved = true %}
+{% endif %}
+
+
+{%- capture share_buttons -%}
+  {% assign social_image = false %}
+  {% if product.featured_image %}
+    {% assign social_image = product.featured_image | img_url: '1024x' %}
+  {% endif %}
+  {% assign social_url = shop.url | append: product.url %}
+  {%-
+    render 'share-buttons',
+    snippet_title: 'general.share_buttons.title',
+    social_image: social_image,
+    social_title: product.title,
+    social_url: social_url
+  -%}
+{%- endcapture  -%}
+
+<article class="product--outer">
+  {% comment %}
+    Product slideshow, never moves
+  {% endcomment %}
+  {%
+    render 'product-gallery',
+    product: product,
+    aspect_ratio: gallery_aspect_ratio,
+    thumbnail_position: gallery_thumbnail_position,
+    image_crop: gallery_image_crop,
+    click_to_zoom: gallery_click_to_zoom,
+    hover_zoom: gallery_hover_zoom
+  %}
+  <div class="product-main">
+    <div class="product-details" data-product-details>
+      {% if is_product_modal %}
+        <h2 class="product-title">
+          <a href="{{ product.url }}">{{ product.title }}</a>
+        </h2>
+      {% else %}
+        {% if template == 'index' %}
+          <h2 class="product-title">
+        {% else %}
+          <h1 class="product-title">
+        {% endif %}
+          {% unless onboarding %}
+            {{ product.title }}
+          {% else %}
+            {{ 'onboarding.product.title' | t }}
+          {% endunless %}
+        {% if template == 'index' %}
+          </h2>
+        {% else %}
+          </h1>
+        {% endif %}
+      {% endif %}
+
+      {% if settings.product_show_vendor and product.vendor != blank or onboarding %}
+        <div class="product-vendor">
+          {% unless onboarding %}
+            {%- capture vendor_link -%}
+              {{ product.vendor | link_to_vendor }}
+            {%- endcapture -%}
+            {{ 'product.general.by_vendor_html' | t: vendor_link: vendor_link }}
+          {% else %}
+            {{ 'onboarding.product.by_vendor' | t }}
+          {% endunless %}
+        </div>
+      {% endif %}
+
+      {% if settings.product_ratings_reviews %}
+        <div class="product-ratings">
+          <span class="shopify-product-reviews-badge" data-id="{{ product.id }}">
+            <span class="spr-badge">
+              <span class="spr-starrating spr-badge-starrating">
+                <i class="spr-icon spr-icon-star-empty"></i>
+                <i class="spr-icon spr-icon-star-empty"></i>
+                <i class="spr-icon spr-icon-star-empty"></i>
+                <i class="spr-icon spr-icon-star-empty"></i>
+                <i class="spr-icon spr-icon-star-empty"></i>
+              </span>
+            </span>
+          </span>
+        </div>
+      {% endif %}
+
+      <div class="product-pricing" aria-live="polite" data-product-pricing>
+        {%
+          render 'product-badge',
+          class_root: 'product',
+          product: product,
+          product_available: product_available,
+          on_sale: on_sale,
+          price: price,
+          compare_at_price: compare_at_price,
+          show_saved: true,
+          include_range: false,
+          selected_variant: selected_variant,
+        %}
+
+        {%
+          render 'product-price',
+          product: product,
+          class_root: 'product',
+          price: price,
+          price_varies: false,
+          compare_at_price: compare_at_price,
+          compare_at_price_varies: false,
+          on_sale: on_sale,
+          emphasize_price: false,
+          show_original: true,
+          show_range: false,
+          include_unit_price: true,
+          include_tax_line: true,
+          include_hidden_price: true
+        %}
+
+        <form data-payment-terms-target style="display: none;"></form>
+      </div>
+      
+
+
+      {% if settings.product_show_sku == true %}
+        {% unless onboarding %}
+          <div
+            class="
+              product-sku
+              {% if sku == empty %}product-sku--empty{% endif %}
+            "
+          >
+            {{ 'product.general.sku_html' | t: sku: sku | strip_newlines }}
+          </div>
+        {% endunless %}
+      {% endif %}
+    </div>
+
+    {% comment %}
+      Product form original location, will remain unless is 3 column layout
+    {% endcomment %}
+    <div class="product-form--regular" data-product-form-regular>
+      <div data-product-form-area>
+        {% if is_product_modal %}
+          <div data-product-quickshop-message class="product-message--container"></div>
+        {% endif %}
+
+        {% unless onboarding %}
+          {%
+            render 'product-form',
+            product: product,
+            selected_variant: selected_variant,
+            is_product_modal: is_product_modal,
+          %}
+        {% endunless %}
+
+        {% if hide_description %}
+          <a
+            href="{{ product.url }}"
+            class="product-link"
+            data-product-details-link
+          >
+            {{ 'product.buttons.view_details' | t }}
+          </a>
+        {% endif %}
+
+        {% if enable_social_sharing and is_product_modal == false %}
+          {{ share_buttons | strip_newlines }}
+        {% endif %}
+      </div>
+    </div>
+
+    {% comment %}
+      Product description field, never moves
+    {% endcomment %}
+
+
+    {% if enable_social_sharing and is_product_modal %}
+      {{ share_buttons | strip_newlines }}
+    {% endif %}
+  </div>
+
+  {% comment %}
+    If is a 3 column layout, the form will move here at $bp-large (layout.isBreakpoint('L'))
+  {% endcomment %}
+  {% if layout == 'layout--three-col' %}
+    <div class="product-form--alt" data-product-form-alt></div>
+  {% endif %}
+</article>
+{% if readmore_split[0] != blank and hide_description != true %}
+<div class="product-description-content">
+  <div class="product-description-title title-active">
+    <p>Descripción del producto</p>
+  </div>
+  <div class="product-description rte" data-product-description>
+    {{ readmore_split[0] }}
+  </div>
+</div>
+{% endif %}
+{% assign instructions = product.metafields.instructions %}
+  {% if instructions != blank %}
+<div class="metafield-data-content">
+  <div class="metafield-data-title">
+  	<p>información adicional</p>
+  </div>
+  <table class="metafield-data hidden" width="100%">
+    {% assign key = 'SKU' %}
+    {% if instructions[key] != null %}
+    <tr>
+      <td>{{ key }}</td>
+      <td>{{ instructions[key] }}</td>
+    </tr>
+    {% endif %}
+    {% assign key = 'Tipo' %}
+    {% if instructions[key] != null %}
+    <tr>
+      <td>{{ key }}</td>
+      <td>{{ instructions[key] }}</td>
+    </tr>
+    {% endif %}
+    {% assign key = 'Nombre' %}
+    {% if instructions[key] != null %}
+    <tr>
+      <td>{{ key }}</td>
+      <td>{{ instructions[key] }}</td>
+    </tr>
+    {% endif %}
+    {% assign key = 'NOMBRE' %}
+    {% if instructions[key] != null %}
+    <tr>
+      <td>{{ key }}</td>
+      <td>{{ instructions[key] }}</td>
+    </tr>
+    {% endif %}
+    {% assign key = 'Certificaciones' %}
+    {% if instructions[key] != null %}
+    <tr>
+      <td>{{ key }}</td>
+      <td>{{ instructions[key] }}</td>
+    </tr>
+    {% endif %}
+    {% assign key = 'Rendimiento en M²' %}
+    {% if instructions[key] != null %}
+    <tr>
+      <td>{{ key }}</td>
+      <td>{{ instructions[key] }}</td>
+    </tr>
+    {% endif %}
+    {% assign key = 'Espesor' %}
+    {% if instructions[key] != null %}
+    <tr>
+      <td>{{ key }}</td>
+      <td>{{ instructions[key] }}</td>
+    </tr>
+    {% endif %}
+    {% assign key = 'Peso kg' %}
+    {% if instructions[key] != null %}
+    <tr>
+      <td>{{ key }}</td>
+      <td>{{ instructions[key] }}</td>
+    </tr>
+    {% endif %}
+    {% assign key = 'Resistencia al desgaste' %}
+    {% if instructions[key] != null %}
+    <tr>
+      <td>{{ key }}</td>
+      <td>{{ instructions[key] }}</td>
+    </tr>
+    {% endif %}
+    {% assign key = 'Gramaje del hilado' %}
+    {% if instructions[key] != null %}
+    <tr>
+      <td>{{ key }}</td>
+      <td>{{ instructions[key] }}</td>
+    </tr>
+    {% endif %}
+    {% assign key = 'Peso total (de 1M²)' %}
+    {% if instructions[key] != null %}
+    <tr>
+      <td>{{ key }}</td>
+      <td>{{ instructions[key] }}</td>
+    </tr>
+    {% endif %}
+    {% assign key = 'Uso| Calidad' %}
+    {% if instructions[key] != null %}
+    <tr>
+      <td>{{ key }}</td>
+      <td>{{ instructions[key] }}</td>
+    </tr>
+    {% endif %}
+    {% assign key = 'Clase de uso | Calidad' %}
+    {% if instructions[key] != null %}
+    <tr>
+      <td>{{ key }}</td>
+      <td>{{ instructions[key] }}</td>
+    </tr>
+    {% endif %}
+    {% assign key = 'Formato de venta' %}
+    {% if instructions[key] != null %}
+    <tr>
+      <td>{{ key }}</td>
+      <td>{{ instructions[key] }}</td>
+    </tr>
+    {% endif %}
+    {% assign key = 'Formato del rollo' %}
+    {% if instructions[key] != null %}
+    <tr>
+      <td>{{ key }}</td>
+      <td>{{ instructions[key] }}</td>
+    </tr>
+    {% endif %}
+    {% assign key = 'Dinner del pelo' %}
+    {% if instructions[key] != null %}
+    <tr>
+      <td>{{ key }}</td>
+      <td>{{ instructions[key] }}</td>
+    </tr>
+    {% endif %}
+    {% assign key = 'Número de puntadas' %}
+    {% if instructions[key] != null %}
+    <tr>
+      <td>{{ key }}</td>
+      <td>{{ instructions[key] }}</td>
+    </tr>
+    {% endif %}
+    {% assign key = 'Resistencia a la Luz' %}
+    {% if instructions[key] != null %}
+    <tr>
+      <td>{{ key }}</td>
+      <td>{{ instructions[key] }}</td>
+    </tr>
+    {% endif %}
+    {% assign key = 'Resistencia al agua' %}
+    {% if instructions[key] != null %}
+    <tr>
+      <td>{{ key }}</td>
+      <td>{{ instructions[key] }}</td>
+    </tr>
+    {% endif %}
+    {% assign key = 'Construcción' %}
+    {% if instructions[key] != null %}
+    <tr>
+      <td>{{ key }}</td>
+      <td>{{ instructions[key] }}</td>
+    </tr>
+    {% endif %}
+    {% assign key = 'Tablas x caja' %}
+    {% if instructions[key] != null %}
+    <tr>
+      <td>{{ key }}</td>
+      <td>{{ instructions[key] }}</td>
+    </tr>
+    {% endif %}
+    {% assign key = 'Sistema de anclaje' %}
+    {% if instructions[key] != null %}
+    <tr>
+      <td>{{ key }}</td>
+      <td>{{ instructions[key] }}</td>
+    </tr>
+    {% endif %}
+    {% assign key = 'Dimensiones tabla' %}
+    {% if instructions[key] != null %}
+    <tr>
+      <td>{{ key }}</td>
+      <td>{{ instructions[key] }}</td>
+    </tr>
+    {% endif %}
+    {% assign key = 'Canto | Borde' %}
+    {% if instructions[key] != null %}
+    <tr>
+      <td>{{ key }}</td>
+      <td>{{ instructions[key] }}</td>
+    </tr>
+    {% endif %}
+    {% assign key = 'Sistema anclaje' %}
+    {% if instructions[key] != null %}
+    <tr>
+      <td>{{ key }}</td>
+      <td>{{ instructions[key] }}</td>
+    </tr>
+    {% endif %}
+    
+    {% assign key = 'Formato' %}
+    {% if instructions[key] != null %}
+    <tr>
+      <td>{{ key }}</td>
+      <td>{{ instructions[key] }}</td>
+    </tr>
+    {% endif %}
+    {% assign key = 'Material' %}
+    {% if instructions[key] != null %}
+    <tr>
+      <td>{{ key }}</td>
+      <td>{{ instructions[key] }}</td>
+    </tr>
+    {% endif %}
+    {% assign key = 'Origen' %}
+    {% if instructions[key] != null %}
+    <tr>
+      <td>{{ key }}</td>
+      <td>{{ instructions[key] }}</td>
+    </tr>
+    {% endif %}
+  </table>
+</div>
+{% endif %}
+{% if readmore_split[1] != blank and hide_description != true and is_product_modal != true %}
+  <div class="product-readmore rte" data-product-readmore>
+    {{ readmore_split[1] }}
+  </div>
+{% endif %}
+
+{% render "custom-attributes" %}

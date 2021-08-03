@@ -1,0 +1,47 @@
+{% capture cat_array %}{%- render 'advanced-tag-loop' -%}{% endcapture %}
+{% assign cat_array = cat_array | split: '|' %}
+
+{%- capture tag_icon -%}
+  <span class="filter-icon--remove">
+    {% render 'icon-remove' %}
+    <span class="visually-hidden">
+      {{ 'product_grid.filters.remove_filter' | t }}
+    </span>
+  </span>
+{%- endcapture -%}
+
+<ul class="filter-group--grid">
+  {% for tag in current_tags %}
+    {% assign is_advanced_tag = false %}
+    {% assign cat = tag | split: '_' | first %}
+    {% unless cat == tag %}
+      {% if cat_array contains cat %}
+        {% assign is_advanced_tag = true %}
+      {% endif %}
+    {% endunless %}
+
+    <li class="filter-item--grid">
+      {%- capture tag_text -%}
+        <span class="filter-text">
+          {%- if is_advanced_tag -%}
+            {{ tag | replace_first: '_', ' - ' }}
+          {%- else -%}
+            {{ tag }}
+          {%- endif -%}
+        </span>
+
+        {{- tag_icon -}}
+      {%- endcapture -%}
+
+      {{ tag_text | link_to_remove_tag: tag | replace: '" title="', '&grid_list" title=""' }}
+    </li>
+  {% endfor %}
+
+  {% if current_tags.size > 1 %}
+    <li class="filter-item--grid-simple">
+      <a href="{{ collection.url }}">
+        {{ 'product_grid.filters.remove_all' | t }}
+      </a>
+    </li>
+  {% endif %}
+</ul>

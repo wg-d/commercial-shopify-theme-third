@@ -1,0 +1,10 @@
+{%- for discount_application in cart.cart_level_discount_applications -%}
+  <li class="discount-list-item cart-discount">
+    <span class="cart-discount-title">
+      {% render 'icon-library', id: 'icon-sale-tag' %}
+      {{- discount_application.title -}}
+    </span>
+    <span class="cart-discount-price">-<span class="money">{{ discount_application.total_allocated_amount | money }}</span></span>
+  </li>
+{%- endfor -%}
+

@@ -1,0 +1,916 @@
+{% assign enable_text_box = true %}
+{% if section.settings.textbox_title == blank and section.settings.textbox_subheading == blank %}
+  {% assign enable_text_box = false %}
+{% endif %}
+{% capture root_class %}
+  shoppable-image-section
+  {% unless section.settings.image_width == 'full' %}
+    shoppable-image--text-position-{{ section.settings.textbox_text_position }}
+  {% endunless %}
+  {% if enable_text_box %}
+    shoppable-image--{{ section.settings.image_width }}-width-image
+  {% else %}
+    shoppable-image--full-width-image
+  {% endif %}
+{% endcapture %}
+{% assign title = section.settings.title %}
+{% assign background_image = section.settings.image %}
+{% assign tooltip_link_text = section.settings.link_text %}
+{% assign x_axis_id = 'x_axis' %}
+{% assign y_axis_id = 'y_axis' %}
+{% assign hotspot_product_id = 'product' %}
+{% assign show_tooltip_image = true %}
+{% assign show_vendor = settings.product_show_vendor %}
+{% assign show_compare_at_price = true %}
+{% assign show_sale_badge = settings.product_sales_badge %}
+{% assign include_range = true %}
+{% assign show_range = true %}
+{% assign sales_badge_style = settings.product_sales_badge_style %}
+{% capture text_box_root_class %}
+  text-box--align-{{ section.settings.textbox_text_alignment }}
+{% endcapture %}
+{% assign text_box_heading = section.settings.textbox_title %}
+{% assign text_box_subheading = section.settings.textbox_subheading %}
+{% assign text_box_button_label = section.settings.textbox_button_label %}
+{% assign text_box_button_link = section.settings.textbox_button_link %}
+{% capture text_box_button_class %}
+  button-{{ section.settings.textbox_button_style }}
+{% endcapture %}
+
+
+{% if sales_badge_style == 'percentile' %}
+  {% assign sales_badge_style = 'percentage' %}
+{% endif %}
+
+<script type="application/pxs-animation-mapping+json">
+  {
+    "blocks": [".shoppable-image"],
+    "elements": [
+      ".shoppable-image__hotspot",
+      ".shoppable-image__text-box-title",
+      ".shoppable-image__text-box-subheading",
+      ".shoppable-image__text-box-button"
+    ]
+  }
+</script>
+
+{% comment %}Inject @pixelunion/pxs-shoppable-image/dynamic-shoppable-image begin{% endcomment %}
+{%- comment -%}
+  @param section {Object}
+    Section object
+
+  @param root_class {String}
+    Class applied to the top level section element
+
+  @param title {String}
+    Section title
+
+  @param background_image {Image}
+    Background image
+
+  @param image_crop {String}
+    Image crop setting
+
+  @param tooltip_link_text {String}
+    Text in the tooltip link
+
+  @param x_axis_id {String}
+    The block setting name for the horizontal position of hotspot
+
+  @param y_axis_id {String}
+    The block setting name for the vertical position of hotspot
+
+  @param hotspot_product_id {String}
+    The block setting name for the hotspot product
+
+  @param show_tooltip_image {Bool}
+    Show a product image in the tooltip
+
+  @param show_vendor {Bool}
+    Show the vendor name on the tooltip
+
+  @param show_compare_at_price {Bool}
+    Show the compare-at price on the tooltip
+
+  @param show_sale_badge {Bool}
+    Show sale badge on the tooltip
+
+  @param enable_text_box {Bool}
+    Show text content beside hotspot image
+
+  @param text_box_root_class {String}
+    Class applied to the text box wrapper
+
+  @param text_box_heading {String}
+    Heading in the text box component
+
+  @param text_box_subheading {String}
+    Subheading in the text box component
+
+  @param text_box_button_label {String}
+    Button label in text box component
+
+  @param text_box_button_class {String}
+    Class applied to the link/button in the text box component
+
+  @param text_box_button_link {String}
+    Link for button in text box component
+{%- endcomment -%}
+
+<script
+  type="application/json"
+  data-section-type="pxs-shoppable-image"
+  data-section-id="{{ section.id }}"
+>
+</script>
+
+<section class="shoppable-image {{ root_class }} {% if title == blank %}no-section-heading{% endif %}" data-shoppable-image-container>
+  {% if title != blank %}
+    <h2 class="shoppable-image__section-heading">{{ title | escape }}</h2>
+  {% endif %}
+
+  {% if enable_text_box %}
+    <div class="shoppable-image__section-content-wrapper">
+  {% endif %}
+  <div class="shoppable-image__wrapper" data-shoppable-image-wrapper>
+    {% if background_image != blank %}
+      {%
+        include 'rimg',
+        img: background_image,
+        size: '1400x',
+        class: 'shoppable-image__image',
+        crop: 'center',
+        lazy: true,
+        canvas: true,
+        attr: 'data-shoppable-image-img'
+      %}
+    {% else %}
+      {{ 'lifestyle-1' | placeholder_svg_tag: 'shoppable-image__image shoppable-image__placeholder-image' }}
+    {% endif %}
+
+    {% for block in section.blocks %}
+      {% assign hotspot_product = all_products[block.settings[hotspot_product_id]] %}
+
+      {% if hotspot_product != empty %}
+        <div
+          class="shoppable-image__hotspot"
+          style="
+            left: {{ block.settings[x_axis_id] }}%;
+            bottom: {{ block.settings[y_axis_id] }}%;
+            visibility: hidden;
+            "
+          data-hotspot-x-axis="{{ block.settings[x_axis_id] }}"
+          data-hotspot-y-axis="{{ block.settings[y_axis_id] }}"
+          data-hotspot
+          data-hotspot-product="{{ hotspot_product.id }}"
+          aria-label="Product hotspot"
+          tabindex=0
+          {{ block.shopify_attributes }}
+        >
+          <div class="shoppable-image__hotspot-inner"></div>
+          <div
+            class="hotspot__tooltip-wrapper"
+            data-tooltip-wrapper
+            role="tooltip"
+          >
+            <a
+              href="{{ hotspot_product.url }}"
+              class="hotspot__tooltip"
+              data-tooltip
+              tabindex=0
+            >
+              {% if show_tooltip_image %}
+                <div class="hotspot__tooltip-image-wrapper">
+                  {%
+                    include 'rimg',
+                    img: hotspot_product.featured_media.preview_image,
+                    size: '800x',
+                    class: 'tooltip__image',
+                    crop: 'center',
+                    lazy: true,
+                    canvas: true
+                  %}
+                </div>
+              {% endif %}
+              <div class="hotspot__tooltip-content">
+                {% assign class_root = 'hotspot' %}
+                {% if show_sale_badge %}
+                  <div class="hotspot__tooltip-sale">
+                    {% assign product = hotspot_product %}
+                    {% assign sales_badge = true %}
+                    {% comment %}Inject @pixelunion/shopify-price-ui/sale-badge begin{% endcomment %}
+                    {% comment %}
+                      @param product {Product}
+                    
+                      @param class_root {String}
+                        Base class root
+                    
+                      @param product_available {Bool}
+                    
+                      @param on_sale {Bool}
+                        If a product, or one of it's variants is on sale
+                    
+                      @param sales_badge {Bool}
+                        False: Sold out badge only
+                        True: Show sale badge
+                    
+                      @param sales_badge_style
+                    
+                      @param price_varies
+                      @param compare_at_price_varies
+                    
+                      @param include_hidden_badge
+                        Include a hidden element with sale data to use in cases of unavailable variants or cases where no variant
+                        is selected by default
+                    {% endcomment %}
+                    
+                    {% assign savings_money_range = 0 %}
+                    {% assign savings_percentage_range = 0 %}
+                    
+                    {% assign price_min = nil %}
+                    {% assign price_max = nil %}
+                    {% assign compare_at_price_min = nil %}
+                    {% assign compare_at_price_max = nil %}
+                    {% assign price_varies = false %}
+                    {% assign compare_at_price_varies = false %}
+                    {% for variant in product.variants %}
+                      {% if price_min == nil or variant.price < price_min %}
+                        {% assign price_min = variant.price %}
+                      {% endif %}
+                      {% if price_max == nil or variant.price > price_max %}
+                        {% assign price_max = variant.price %}
+                      {% endif %}
+                      {% assign tmp_compare_at_price = variant.compare_at_price %}
+                      {% unless variant.compare_at_price %}
+                        {% assign tmp_compare_at_price = variant.price %}
+                      {% endunless %}
+                      {% if compare_at_price_min == nil or tmp_compare_at_price < compare_at_price_min %}
+                        {% assign compare_at_price_min = tmp_compare_at_price %}
+                      {% endif %}
+                      {% if compare_at_price_max == nil or tmp_compare_at_price > compare_at_price_max %}
+                        {% assign compare_at_price_max = tmp_compare_at_price %}
+                      {% endif %}
+                      {% if variant.price != price_min %}
+                        {% assign price_varies = true %}
+                      {% endif %}
+                      {% if tmp_compare_at_price != compare_at_price_min %}
+                        {% assign compare_at_price_varies = true %}
+                      {% endif %}
+                    
+                      {% assign price_difference = tmp_compare_at_price | minus: variant.price %}
+                      {% if price_difference > savings_money_range %}
+                        {% assign savings_money_range = price_difference %}
+                        {% assign savings_percentage_range = savings_money_range | times: 1.0 | divided_by: variant.compare_at_price | times: 100.0 | round %}
+                      {% endif %}
+                    {% endfor %}
+                    
+                    {% assign savings_money_single = selected_variant.compare_at_price | minus: selected_variant.price %}
+                    {% assign savings_percentage_single = savings_money_single | times: 1.0 | divided_by: selected_variant.compare_at_price | times: 100.0 | round %}
+                    
+                    {% assign product_available = product_available | default: product.available %}
+                    
+                    {%- if product_available != true -%}
+                      <span class="{{ class_root }}__badge {{ class_root }}__badge--soldout">
+                        {{ 'product_price.badge.sold_out' | t }}
+                      </span>
+                    {%- elsif sales_badge -%}
+                      {% assign saved_price_single = savings_money_single | money %}
+                      {% assign saved_price_range = savings_money_range | money %}
+                      {% assign on_sale = on_sale | default: true %}
+                      {% if savings_money_range <= 0 %}
+                        {% assign on_sale = false %}
+                      {% endif %}
+                    
+                      <span class="{{ class_root }}__badge {{ class_root }}__badge--sale"
+                        data-badge-sales
+                        {% if on_sale != true %}style="display: none;"{% endif %}
+                      >
+                        <span data-badge-sales-range>
+                          {% if sales_badge_style == 'percent' %}
+                            {% if price_varies or compare_at_price_varies %}
+                              {{ 'product_price.badge.sale_percentage_range_html' | t: savings: savings_percentage_range | strip_newlines }}
+                            {% else %}
+                              {{ 'product_price.badge.sale_percentage_single_html' | t: savings: savings_percentage_range | strip_newlines }}
+                            {% endif %}
+                          {% elsif sales_badge_style == 'money' %}
+                            {% if price_varies or compare_at_price_varies %}
+                              {{ 'product_price.badge.sale_money_range_html' | t: savings: saved_price_range | strip_newlines }}
+                            {% else %}
+                              {{ 'product_price.badge.sale_money_single_html' | t: savings: saved_price_range | strip_newlines }}
+                            {% endif %}
+                          {% else %}
+                            {{ 'product_price.badge.sale' | t }}
+                          {% endif %}
+                        </span>
+                        <span data-badge-sales-single style="display: none;">
+                          {% if sales_badge_style == 'percent' %}
+                            {{ 'product_price.badge.sale_percentage_single_html' | t: savings: savings_percentage_single | strip_newlines }}
+                          {% elsif sales_badge_style == 'money' %}
+                            {{ 'product_price.badge.sale_money_single_html' | t: savings: saved_price_single | strip_newlines }}
+                          {% else %}
+                            {{ 'product_price.badge.sale' | t }}
+                          {% endif %}
+                        </span>
+                      </span>
+                    {%- endif -%}
+                    {% comment %}Inject @pixelunion/shopify-price-ui/sale-badge end{% endcomment %}
+
+                  </div>
+                {% endif %}
+
+                <div class="hotspot__tooltip-title">
+                  {{ hotspot_product.title }}
+                </div>
+
+                {% if show_vendor %}
+                  <div class="hotspot__tooltip-vendor">
+                    {{ hotspot_product.vendor }}
+                  </div>
+                {% endif %}
+
+                <div class="hotspot__tooltip-price">
+                  {% assign product = hotspot_product %}
+                  {% assign include_compare_price = show_compare_price %}
+                  {% comment %}Inject @pixelunion/shopify-price-ui/price begin{% endcomment %}
+                  {% comment %}
+                    @param class_root {String}
+                      Base class root
+                  
+                    @param show_range {Bool}
+                      Show price range
+                  
+                    @param price_range_format {String}
+                        'range' or 'from', defaults to 'range'
+                  
+                    @param product {Product}
+                        Product to reference for price
+                  
+                    @param compare_at_price_varies {Bool}
+                      Displays a range price if a product's variants have differing prices
+                  
+                    @param on_sale {Bool}
+                      If a product, or one of it's variants is on sale
+                  
+                    @param emphasize_price {Bool}
+                      Used in product grid item to add placeholder space
+                  
+                    @param show_original {Bool}
+                      Show original price if is consistent across all variants
+                  
+                    @param show_savings {Bool}
+                      Line of text indicating maximum savings on sale items (ex. "Save up to 20%")
+                  
+                    @param savings_format {String}
+                      Percentage or money for show_savings line
+                  
+                    @param include_spacer {Bool}
+                      Include a spacer div above the price when emphasize price is enabled and there is no 'compare-at' price
+                  
+                    @param include_unit_price
+                      Include the unit price line
+                  
+                    @param include_tax_line
+                      Include tax line
+                  
+                    @param include_hidden_price
+                      Include a hidden element with price data to use in cases of unavailable variants or cases where no variant
+                      is selected by default
+                  
+                    @param include_compare_price
+                      Show compare at price
+                  {% endcomment %}
+                  
+                  {% assign price_min = nil %}
+                  {% assign price_max = nil %}
+                  {% assign compare_at_price_min = nil %}
+                  {% assign compare_at_price_max = nil %}
+                  {% assign price_varies = false %}
+                  {% assign compare_at_price_varies = false %}
+                  {% for variant in product.variants %}
+                    {% if price_min == nil or variant.price < price_min %}
+                      {% assign price_min = variant.price %}
+                    {% endif %}
+                    {% if price_max == nil or variant.price > price_max %}
+                      {% assign price_max = variant.price %}
+                    {% endif %}
+                    {% assign tmp_compare_at_price = variant.compare_at_price %}
+                    {% unless variant.compare_at_price %}
+                      {% assign tmp_compare_at_price = variant.price %}
+                    {% endunless %}
+                    {% if compare_at_price_min == nil or tmp_compare_at_price < compare_at_price_min %}
+                      {% assign compare_at_price_min = tmp_compare_at_price %}
+                    {% endif %}
+                    {% if compare_at_price_max == nil or tmp_compare_at_price > compare_at_price_max %}
+                      {% assign compare_at_price_max = tmp_compare_at_price %}
+                    {% endif %}
+                    {% if variant.price != price_min %}
+                      {% assign price_varies = true %}
+                    {% endif %}
+                    {% if tmp_compare_at_price != compare_at_price_min %}
+                      {% assign compare_at_price_varies = true %}
+                    {% endif %}
+                  {% endfor %}
+                  
+                  {% assign show_range = show_range | default: false %}
+                  {% assign price = product.price %}
+                  {% assign compare_at_price = product.compare_at_price %}
+                  {% assign variants = product.variants %}
+                  {% assign price_range_format = price_range_format | default: 'range' %}
+                  {% assign savings_format = savings_format | default: 'percentage' %}
+                  {% assign on_sale = on_sale | default: false %}
+                  {% assign emphasize_price = emphasize_price | default: false %}
+                  {% assign show_original = show_original | default: false %}
+                  {% assign show_savings = show_savings | default: false %}
+                  {% assign class_root = class_root | default: 'product' %}
+                  {% assign include_spacer = include_spacer | default: false %}
+                  {% assign include_unit_price = include_unit_price | default: false %}
+                  {% assign include_tax_line = include_tax_line | default: false %}
+                  {% assign include_compare_price = include_compare_price | default: true %}
+                  
+                  <div class="price {{ class_root }}__price {% if compare_at_price_varies %}price--varies{% endif %}">
+                    {% if include_compare_price %}
+                      <div
+                        class="price__compare-at {% if emphasize_price or on_sale and show_original %}visible{% endif %}"
+                        data-price-compare-container
+                      >
+                        {%- capture compare_at_price_html -%}
+                          <span class="visually-hidden">{{ 'product_price.price.original' | t }}</span>
+                          <span class="money price__compare-at--single" data-price-compare>
+                            {{ compare_at_price | money }}
+                          </span>
+                        {%- endcapture -%}
+                  
+                        {% if compare_at_price_varies %}
+                          {%- capture compare_at_price_range_html -%}
+                            {% if price_range_format == 'range' %}
+                              <span class="visually-hidden">{{ 'product_price.price.original' | t }}</span>
+                              <span class="money price__compare-at--min" data-price-compare-min>
+                                {{ compare_at_price_min | money }}
+                              </span>
+                              -
+                              <span class="visually-hidden">{{ 'product_price.price.original' | t }}</span>
+                              <span class="money price__compare-at--max" data-price-compare-max>
+                                {{ compare_at_price_max | money }}
+                              </span>
+                            {% else %}
+                              {{ 'product_price.item.price.range_html' | t: price: compare_at_price_html | strip_newlines }}
+                            {% endif %}
+                          {% endcapture %}
+                        {% endif %}
+                  
+                        {% if compare_at_price_varies and on_sale and show_original and show_range %}
+                          {{ compare_at_price_range_html }}
+                        {% elsif on_sale and show_original %}
+                          {{ compare_at_price_html }}
+                        {% elsif emphasize_price and include_spacer %}
+                          <span class="price__spacer"></span>
+                        {% elsif show_original %}
+                          <span class="money price__original" data-price-original></span>
+                        {% endif %}
+                      </div>
+                  
+                  
+                      {% if include_hidden_price %}
+                        {% comment %}
+                          Hide an element containing compare at price info to fill in the price when no variant is selected
+                        {% endcomment %}
+                        <div class="price__compare-at--hidden" data-compare-price-range-hidden>
+                          {% if price_range_format == 'range' %}
+                            <span class="visually-hidden">{{ 'product_price.price.original' | t }}</span>
+                            <span class="money price__compare-at--min" data-price-compare-min>
+                              {{ compare_at_price_min | money }}
+                            </span>
+                            -
+                            <span class="visually-hidden">{{ 'product_price.price.original' | t }}</span>
+                            <span class="money price__compare-at--max" data-price-compare-max>
+                              {{ compare_at_price_max | money }}
+                            </span>
+                          {% else %}
+                            {{ 'product_price.item.price.range_html' | t: price: compare_at_price_html | strip_newlines }}
+                          {% endif %}
+                        </div>
+                        <div class="price__compare-at--hidden" data-compare-price-hidden>
+                          <span class="visually-hidden">{{ 'product_price.price.original' | t }}</span>
+                          <span class="money price__compare-at--single" data-price-compare>
+                            {{ compare_at_price | money }}
+                          </span>
+                        </div>
+                      {% endif %}
+                    {% endif %}
+                  
+                    <div class="price__current {% if emphasize_price %}price__current--emphasize{% endif %} {% if on_sale %}price__current--on-sale{% endif %}" data-price-container>
+                      {%- capture price_html -%}
+                        <span class="money" data-price>
+                          {{ price | money }}
+                        </span>
+                      {%- endcapture -%}
+                  
+                      {% capture current_price_range_html %}
+                        {% if price_varies %}
+                          {% if price_range_format == 'range' %}
+                            <span class="money price__current--min" data-price-min>{{ price_min | money}}</span>
+                            -
+                            <span class="money price__current--max" data-price-max>{{ price_max | money }}</span>
+                          {% else %}
+                            {{ 'product_price.price.range_html' | t: price: price_html | strip_newlines }}
+                          {% endif %}
+                        {% endif %}
+                      {% endcapture %}
+                  
+                      {% capture current_price_html %}
+                        {% if on_sale and show_original %}
+                          <span class="visually-hidden">{{ 'product_price.price.current' | t }}</span>
+                        {% endif %}
+                        {{ price_html }}
+                      {% endcapture %}
+                  
+                      {% if show_range and price_varies %}
+                        {{ current_price_range_html }}
+                      {% else %}
+                        {{ current_price_html }}
+                      {% endif %}
+                    </div>
+                  
+                    {% if include_hidden_price %}
+                      {% comment %}
+                        Hide an element containing current price info to fill in the price when no variant is selected
+                      {% endcomment %}
+                      <div class="price__current--hidden" data-current-price-range-hidden>
+                        {% if price_range_format == 'range' %}
+                          <span class="money price__current--min" data-price-min>{{ price_min | money}}</span>
+                          -
+                          <span class="money price__current--max" data-price-max>{{ price_max | money }}</span>
+                        {% else %}
+                          {{ 'product_price.price.range_html' | t: price: price_html | strip_newlines }}
+                        {% endif %}
+                      </div>
+                      <div class="price__current--hidden" data-current-price-hidden>
+                        <span class="visually-hidden">{{ 'product_price.price.current' | t }}</span>
+                        {{ price_html }}
+                      </div>
+                    {% endif %}
+                  
+                    {% if include_unit_price %}
+                      {% assign variant = product.selected_or_first_available_variant %}
+                      {% capture total_quantity %}<span class="{{ class_root }}__total-quantity" data-total-quantity>{{ variant.unit_price_measurement.quantity_value }}{{ variant.unit_price_measurement.quantity_unit }}</span>{% endcapture %}
+                      {% capture unit_price %}<span class="{{ class_root }}__unit-price--amount money" data-unit-price-amount>{{ variant.unit_price | money }}</span>{% endcapture %}
+                      {% capture unit_measure %}<span class="{{ class_root }}__unit-price--measure" data-unit-price-measure>{%- if variant.unit_price_measurement.reference_value != 1 -%}{{ variant.unit_price_measurement.reference_value }}{%- endif %}{{ variant.unit_price_measurement.reference_unit }}</span>{% endcapture %}
+                  
+                      <div
+                        class="
+                          {{ class_root }}__unit-price
+                          {% unless variant.unit_price_measurement %}hidden{% endunless %}
+                        "
+                        data-unit-price
+                      >
+                        {{ 'product_price.price.price_per_unit_html' | t: total_quantity: total_quantity, unit_price: unit_price, unit_measure: unit_measure | strip_newlines }}
+                      </div>
+                    {% endif %}
+                  
+                    {% if include_tax_line %}
+                      {%- capture tax_text -%}
+                        {{ 'product_price.price.tax_line_html' | t }}
+                      {%- endcapture -%}
+                  
+                      {%- if tax_text != blank and class_root != 'productitem' -%}
+                        <div class="
+                            {{ class_root }}__tax
+                            {% unless variant.taxable %}hidden{% endunless %}
+                          "
+                          data-tax-line
+                        >
+                          {{ tax_text }}
+                        </div>
+                      {%- endif -%}
+                    {% endif %}
+                  </div>
+                  {% comment %}Inject @pixelunion/shopify-price-ui/price end{% endcomment %}
+
+                </div>
+
+                {% if tooltip_link_text != blank %}
+                  <div class="hotspot__tooltip-link">
+                    {{ tooltip_link_text }}
+                  </div>
+                {% endif %}
+              </div>
+            </a>
+          </div>
+        </div>
+      {% else %}
+        <div
+          class="shoppable-image__hotspot"
+          style="
+            left: {{ block.settings[x_axis_id] }}%;
+            bottom: {{ block.settings[y_axis_id] }}%;
+            visibility: hidden;
+          "
+          data-hotspot-x-axis="{{ block.settings[x_axis_id] }}"
+          data-hotspot-y-axis="{{ block.settings[y_axis_id] }}"
+          data-hotspot
+          data-hotspot-product="{{ hotspot_product.id }}"
+          aria-label="Product hotspot"
+          tabindex=0
+          {{ block.shopify_attributes }}
+        >
+          <div class="shoppable-image__hotspot-inner"></div>
+          <div
+            class="hotspot__tooltip-wrapper"
+            data-tooltip-wrapper
+            role="tooltip"
+          >
+            <a
+              href="#"
+              class="hotspot__tooltip"
+              data-tooltip
+              tabindex=0
+            >
+              {% if show_tooltip_image %}
+                <div class="hotspot__tooltip-image-wrapper">
+                  {{ 'product-1' | placeholder_svg_tag: 'tooltip__image tooltip__placeholder-image' }}
+                </div>
+              {% endif %}
+              <div class="hotspot__tooltip-content">
+                <div class="hotspot__tooltip-title">
+                  {{ 'sections.shoppable-image.onboarding.product' | t }}
+                </div>
+
+                <div class="hotspot__tooltip-price money">
+                  {{ 1999 | money }}
+                </div>
+
+                {% if tooltip_link_text != blank %}
+                  <div class="hotspot__tooltip-link">
+                    {{ tooltip_link_text }}
+                  </div>
+                {% endif %}
+              </div>
+            </a>
+          </div>
+        </div>
+      {% endif %}
+    {% endfor %}
+  </div>
+  {% if enable_text_box %}
+    <div class="shoppable-image__text-box-wrapper {{ text_box_root_class }}">
+      <div class="shoppable-image__text-box-content">
+        {% if text_box_heading != blank %}
+          <h2 class="shoppable-image__text-box-title">{{ text_box_heading }}</h2>
+        {% endif %}
+        {% if text_box_subheading != blank %}
+          <div class="shoppable-image__text-box-subheading">{{ text_box_subheading }}</div>
+        {% endif %}
+        {% if text_box_button_link != blank or text_box_button_label != blank %}
+          <a href="{{ text_box_button_link }}" class="shoppable-image__text-box-button {{ text_box_button_class }}" data-shoppable-image-textbox-link>{{ text_box_button_label }}</a>
+        {% endif %}
+      </div>
+    </div>
+  </div> {% comment %} content wrapper div only exists when text box is enabled {% endcomment %}
+  {% endif %}
+</section>
+{% comment %}Inject @pixelunion/pxs-shoppable-image/dynamic-shoppable-image end{% endcomment %}
+
+
+<div class="hotspot__modal"
+  data-hotspot-modal-id="{{ section.id }}"
+>
+  <div class="hotspot__modal-wrapper"
+    data-hotspot-section-id="{{ section.id }}"
+  >
+    <div class="hotspot__modal-sidebar" data-hotspot-modal-sidebar>
+      <div class="hotspot__modal-sidebar-content" data-hotspot-modal-sidebar-content>
+        {% for block in section.blocks %}
+          {% assign block_product = all_products[block.settings.product] %}
+            {% if block_product != blank %}
+              {% capture to_hash %}
+                {{ shop.money_format | strip_html }}
+                {{ settings | json }}
+                {{ 'product.buttons.add_to_cart' | t }}
+                {{ 'product.buttons.sold_out' | t  }}
+                {{ block_product | json }}
+              {% endcapture %}
+              {% assign to_hash = to_hash | replace: ' ', '' | sha256 %}
+              <a class="hotspot__modal-sidebar-image-wrapper"
+                data-hotspot-modal-sidebar-item
+                data-quickshop-hash="{{ to_hash }}"
+                data-product-quickshop-url="{{ block_product.url }}"
+                data-product-id="{{ block_product.id }}"
+                data-index="{{ forloop.index }}"
+              >
+                {%
+                  include 'rimg',
+                  img: block_product.featured_media.preview_image,
+                  size: '800x',
+                  class: 'hotspot__modal-sidebar-image',
+                  crop: 'center',
+                  lazy: true,
+                  canvas: true,
+                  attr: 'data-modal-sidebar-image',
+                %}
+              </a>
+            {% endif%}
+          {% endfor %}
+        </div>
+      <span class="hotspot__modal-sidebar-arrow" data-sidebar-arrow>
+        <span class="hotspot__modal-sidebar-icon"></span>
+      </span>
+    </div>
+      <div
+        class="hotspot__modal-quickshop"
+        data-hotspot-modal-quickshop
+        data-product-quickshop
+      >
+        {% render 'quick-shop' %}
+      </div>
+  </div>
+</div>
+
+{% schema %}
+{
+  "name": "Shoppable image",
+  "class": "shoppable-image--section",
+  "max_blocks": 5,
+  "settings": [
+    {
+      "type": "text",
+      "id": "title",
+      "label": "Section heading",
+      "default": "Shoppable Image"
+    },
+    {
+      "type": "image_picker",
+      "id": "image",
+      "label": "Image"
+    },
+    {
+      "type": "select",
+      "id": "image_width",
+      "label": "Image width",
+      "options": [
+        {
+          "value": "half",
+          "label": "Half"
+        },
+        {
+          "value": "two-thirds",
+          "label": "Two thirds"
+        },
+        {
+          "value": "full",
+          "label": "Full width"
+        }
+      ],
+      "default": "two-thirds"
+    },
+    {
+      "type": "text",
+      "id": "link_text",
+      "label": "Product tooltip link text",
+      "default": "View product"
+    },
+    {
+      "type": "header",
+      "content": "Text"
+    },
+    {
+      "type": "text",
+      "id": "textbox_title",
+      "label": "Heading",
+      "default": "Shop the look"
+    },
+    {
+      "type": "richtext",
+      "id": "textbox_subheading",
+      "label": "Subheading",
+      "default": "<p>Make an image shoppable by adding hotspots that link to various products.</p>"
+    },
+    {
+      "type": "text",
+      "id": "textbox_button_label",
+      "label": "Button label",
+      "default": "Button"
+    },
+    {
+      "type": "url",
+      "id": "textbox_button_link",
+      "label": "Button link"
+    },
+    {
+      "type": "select",
+      "id": "textbox_button_style",
+      "label": "Button style",
+      "options": [
+        {
+          "value": "primary",
+          "label": "Primary"
+        },
+        {
+          "value": "secondary",
+          "label": "Secondary"
+        }
+      ],
+      "default": "primary"
+    },
+    {
+      "type": "select",
+      "id": "textbox_text_alignment",
+      "label": "Text alignment",
+      "options": [
+        {
+          "value": "left",
+          "label": "Left"
+        },
+        {
+          "value": "center",
+          "label": "Center"
+        },
+        {
+          "value": "right",
+          "label": "Right"
+        }
+      ],
+      "default": "left"
+    },
+    {
+      "type": "select",
+      "id": "textbox_text_position",
+      "label": "Text position",
+      "options": [
+        {
+          "value": "left",
+          "label": "Left of image"
+        },
+        {
+          "value": "right",
+          "label": "Right of image"
+        }
+      ],
+      "default": "right",
+      "info": "Does not apply to full-width images"
+    }
+  ],
+  "blocks": [
+    {
+      "type": "hotspot",
+      "name": "Product",
+      "settings": [
+        {
+          "type": "product",
+          "id": "product",
+          "label": "Product"
+        },
+        {
+          "type": "range",
+          "id": "x_axis",
+          "label": "Horizontal axis",
+          "min": 0,
+          "max": 100,
+          "step": 1,
+          "unit": "%",
+          "default": 50
+        },
+        {
+          "type": "range",
+          "id": "y_axis",
+          "label": "Vertical axis",
+          "min": 0,
+          "max": 100,
+          "step": 1,
+          "unit": "%",
+          "default": 50
+        }
+      ]
+    }
+  ],
+  "presets": [
+    {
+      "name": "Shoppable Image",
+      "category": "Image",
+      "blocks": [
+        {
+          "type": "hotspot",
+          "settings": {
+            "x_axis": 10,
+            "y_axis": 65
+          }
+        },
+        {
+          "type": "hotspot",
+          "settings": {
+            "x_axis": 25,
+            "y_axis": 30
+          }
+        },
+        {
+          "type": "hotspot",
+          "settings": {
+            "x_axis": 85,
+            "y_axis": 55
+          }
+        }
+      ]
+    }
+  ]
+}
+
+{% endschema %}

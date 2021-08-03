@@ -1,0 +1,56 @@
+{% comment %} Assign object as block or section {% endcomment %}
+{% if type == 'block' %}
+  {%- assign object = block -%}
+{% else %}
+  {%- assign object = section -%}
+{% endif %}
+
+{% assign collection_title = 'onboarding.collection_title' | t %}
+
+{% unless onboard %}
+  {% assign current_collection = link.object %}
+
+  {% if current_collection == blank %}
+    {% continue %}
+  {% endif %}
+
+  {% assign collection_title = current_collection.title %}
+
+  {% assign current_collection = link.object %}
+  {% if current_collection == blank %}
+    {% continue %}
+  {% endif %}
+
+  {% if current_collection.image and object.settings.thumbnail_image == 'collection-image' %}
+    {% assign collection_image = current_collection.image %}
+  {% else %}
+    {% assign collection_image = current_collection.products.first.featured_media.preview_image %}
+  {% endif %}
+{% endunless %}
+
+<li class="subcollections-grid__item" data-subcollections-grid-item {% if block %}{{ block.shopify_attributes }}{% endif %}>
+  <a href="{{ current_collection.url }}">
+    <figure class="subcollections-grid__item-image">
+        {% unless onboard or collection_image == blank %}
+          {%
+            render 'rimg',
+            img: collection_image,
+            alt: collection_image.alt,
+            size: '1350x',
+            lazy: true,
+            canvas: true,
+            attr: 'data-collection-image'
+          %}
+        {% else %}
+          {%- capture index -%}
+            {%- cycle '1', '2', '3', '4', '5', '6' -%}
+          {%- endcapture -%}
+          {{ 'collection-' | append: index | placeholder_svg_tag: 'placeholder--image' }}
+        {% endunless %}
+    </figure>
+
+    <span class="subcollections-grid__item-info subcollections-grid__item-title">
+      {{ collection_title }} {% if show_product_count %}({{ current_collection.all_products_count }}) {% endif %}
+    </span> 
+  </a>
+</li>

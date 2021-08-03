@@ -1,0 +1,255 @@
+<script
+  type="application/json"
+  data-section-id="{{ section.id }}"
+  data-section-type="dynamic-promo-mosaic"
+  data-section-data
+>
+  {
+    "compress_blocks": {{ section.settings.compress_blocks | json }}
+  }
+</script>
+
+<script type="application/pxs-animation-mapping+json">
+  {
+    "blocks": [".promo-block"],
+    "elements": [
+      ".promo-block--header",
+      ".promo-block--text",
+      ".promo-block--button"
+    ]
+  }
+</script>
+
+<section class="promo-mosaic--container">
+  {% if section.settings.title != blank %}
+    <h2 class="home-section--title">
+      {{ section.settings.title | escape }}
+    </h2>
+  {% endif %}
+
+  <div class="home-section--content promo-mosaic--height-{{ section.settings.section_height }}">
+    {% if section.blocks.size > 0 %}
+      <div
+        class="
+          promo-mosaic--inner
+          promo-mosaic--layout-{{ section.blocks.size }}
+          {% if section.settings.compress_blocks %}promo-mosaic--compressed{% endif %}
+          {% if section.settings.maintain_aspect_ratio %}
+          promo-mosaic--maintain-aspect-ratio
+          {% endif %}
+        "
+      >
+      {% for block_item in section.blocks %}
+        {%
+          render 'promo-block',
+          block: block_item,
+          text_alignment: section.settings.text_alignment,
+          compress_blocks: section.settings.compress_blocks,
+          maintain_aspect_ratio: section.settings.maintain_aspect_ratio,
+          index: forloop.index,
+        %}
+      {% endfor %}
+      </div>
+    {% endif %}
+  </div>
+
+  {%
+    render 'promo-block-background',
+    blocks: section.blocks
+  %}
+</section>
+
+{% schema %}
+{
+  "name": "Mosaic",
+  "class": "promo-mosaic--section",
+  "max_blocks": 5,
+  "settings": [
+    {
+      "type": "text",
+      "id": "title",
+      "label": "Heading",
+      "default": "Mosaic"
+    },
+    {
+      "id": "section_height",
+      "type": "select",
+      "label": "Section height",
+      "options": [
+        {
+          "value": "small",
+          "label": "Small"
+        },
+        {
+          "value": "medium",
+          "label": "Medium"
+        },
+        {
+          "value": "large",
+          "label": "Large"
+        }
+      ],
+      "default": "small"
+    },
+    {
+      "id": "text_alignment",
+      "type": "select",
+      "label": "Text alignment",
+      "options": [
+        {
+          "value": "top-left",
+          "label": "Top left"
+        },
+        {
+          "value": "top-center",
+          "label": "Top center"
+        },
+        {
+          "value": "top-right",
+          "label": "Top right"
+        },
+        {
+          "value": "center-left",
+          "label": "Center left"
+        },
+        {
+          "value": "center-center",
+          "label": "Center center"
+        },
+        {
+          "value": "center-right",
+          "label": "Center right"
+        },
+        {
+          "value": "bottom-left",
+          "label": "Bottom left"
+        },
+        {
+          "value": "bottom-center",
+          "label": "Bottom center"
+        },
+        {
+          "value": "bottom-right",
+          "label": "Bottom right"
+        }
+      ],
+      "default": "top-left"
+    },
+    {
+      "id": "maintain_aspect_ratio",
+      "type": "checkbox",
+      "label": "Maintain aspect ratio",
+      "default": false
+    },
+    {
+      "type": "header",
+      "content": "Mobile"
+    },
+    {
+      "id": "compress_blocks",
+      "type": "checkbox",
+      "label": "Compress blocks",
+      "default": false
+    }
+  ],
+  "blocks": [
+    {
+      "type": "promotion",
+      "name": "Promotional item",
+      "settings": [
+        {
+          "id": "image",
+          "type": "image_picker",
+          "label": "Image"
+        },
+        {
+          "type": "text",
+          "id": "title",
+          "label": "Heading",
+          "default": "Mosaic"
+        },
+        {
+          "type": "textarea",
+          "id": "text",
+          "label": "Text",
+          "default": "Use this section to welcome customers to your store, say a bit about your brand, or share news."
+        },
+        {
+          "type": "color",
+          "id": "color",
+          "label": "Text color",
+          "default": "#4d4d4d"
+        },
+        {
+          "type": "url",
+          "id": "block_link",
+          "label": "Link"
+        },
+        {
+          "type": "text",
+          "id": "button_text",
+          "label": "Button text"
+        },
+        {
+          "id": "button_style",
+          "type": "select",
+          "label": "Button style",
+          "options": [
+            {
+              "value": "primary",
+              "label": "Primary"
+            },
+            {
+              "value": "secondary",
+              "label": "Secondary"
+            }
+          ],
+          "default": "primary"
+        },
+        {
+          "type": "header",
+          "content": "Overlay"
+        },
+        {
+          "id": "show_overlay",
+          "type": "checkbox",
+          "label": "Show overlay"
+        },
+        {
+          "id": "background",
+          "type": "color",
+          "label": "Color"
+        },
+        {
+          "id": "opacity",
+          "type": "range",
+          "label": "Opacity",
+          "min": 1,
+          "max": 100,
+          "step": 1,
+          "unit": "%",
+          "default": 50
+        }
+      ]
+    }
+  ],
+  "presets": [
+    {
+      "name": "Mosaic",
+      "category": "Image",
+      "blocks": [
+        {
+          "type": "promotion"
+        },
+        {
+          "type": "promotion"
+        },
+        {
+          "type": "promotion"
+        }
+      ]
+    }
+  ]
+}
+
+{% endschema %}

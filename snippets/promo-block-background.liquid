@@ -1,0 +1,35 @@
+{%- comment -%}
+  @param blocks {array}
+    Array of blocks to iterate block stylings through
+{%- endcomment -%}
+
+<style>
+  {% for block in blocks %}
+    .promo-block--{{ block.id }} {
+      {% if block.settings.color != blank %}
+        color: {{ block.settings.color }};
+      {% endif %}
+
+      {% unless block.settings.image %}
+        {%- capture bg_image -%}
+
+          {%-
+            render 'placeholder_svg_uri'
+            placeholder: 'image'
+           -%}
+        {%- endcapture -%}
+        background-color: {{ settings.color_text | color_mix: settings.color_background, 10 }};
+        background-image: url('{{ bg_image | strip_newlines }}');
+      {% endunless %}
+    }
+
+    {% if block.settings.show_overlay and block.settings.background != blank %}
+      {% assign opacity = block.settings.opacity | times: 0.01 %}
+      {% assign overlay = block.settings.background | color_modify: 'alpha', opacity %}
+
+      .promo-block--{{ block.id }} .promo-block--content {
+        background-color: {{ overlay }};
+      }
+    {% endif %}
+  {% endfor %}
+</style>

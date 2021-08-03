@@ -1,0 +1,108 @@
+{% assign social_networks = 'facebook|twitter|pinterest|instagram|tumblr|vimeo|youtube|linkedin|email|rss' %}
+{% assign social_networks = social_networks | split: '|' %}
+
+{% assign has_social_icons = false %}
+
+{% for network in social_networks %}
+  {% assign setting = 'social_' | append: network %}
+  {% if settings[setting] != blank %}
+    {% assign has_social_icons = true %}
+    {% break %}
+  {% endif %}
+{% endfor %}
+
+{% if has_social_icons %}
+  <div class="social-icons">
+    {%- if settings.social_facebook != blank -%}
+      {%
+        render 'social-link',
+        id: 'facebook',
+        title: 'Facebook',
+        url: settings.social_facebook
+      %}
+    {%- endif -%}
+
+    {%- if settings.social_twitter != blank -%}
+      {%
+        render 'social-link',
+        id: 'twitter',
+        title: 'Twitter',
+        url: settings.social_twitter
+      %}
+    {%- endif -%}
+
+    {%- if settings.social_pinterest != blank -%}
+      {%
+        render 'social-link',
+        id: 'pinterest',
+        title: 'Pinterest',
+        url: settings.social_pinterest
+      %}
+    {%- endif -%}
+
+    {%- if settings.social_instagram != blank -%}
+      {%
+        render 'social-link',
+        id: 'instagram',
+        title: 'Instagram',
+        url: settings.social_instagram
+      %}
+    {%- endif -%}
+
+    {%- if settings.social_tumblr != blank -%}
+      {%
+        render 'social-link',
+        id: 'tumblr',
+        title: 'Tumblr'
+        url: settings.social_tumblr
+      %}
+    {%- endif -%}
+
+    {%- if settings.social_vimeo != blank -%}
+      {%
+        render 'social-link',
+        id: 'vimeo',
+        title: 'Vimeo',
+        url: settings.social_vimeo
+      %}
+    {%- endif -%}
+
+    {%- if settings.social_youtube != blank -%}
+      {%
+        render 'social-link',
+        id: 'youtube',
+        title: 'Youtube',
+        url: settings.social_youtube
+      %}
+    {%- endif -%}
+
+    {%- if settings.social_linkedin != blank -%}
+      {%
+        render 'social-link',
+        id: 'linkedin',
+        title: 'LinkedIn',
+        url: settings.social_linkedin
+      %}
+    {%- endif -%}
+
+    {%- if settings.social_email != blank -%}
+      {% assign url = 'mailto:' | append: settings.social_email %}
+      {% assign email_title = 'general.general.email' | t %}
+      {%
+        render 'social-link',
+        id: 'email',
+        title: email_title,
+        url: url
+      %}
+    {%- endif -%}
+
+    {%- if settings.social_rss != blank -%}
+      {%
+        render 'social-link',
+        id: 'rss',
+        title: 'general.social.rss' | t,
+        url: settings.social_rss
+      %}
+    {%- endif -%}
+  </div>
+{% endif %}

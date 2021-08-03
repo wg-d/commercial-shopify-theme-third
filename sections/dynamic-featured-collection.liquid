@@ -1,0 +1,407 @@
+<script
+  type="application/json"
+  data-section-id="{{ section.id }}"
+  data-section-type="dynamic-featured-collection"
+></script>
+
+<script type="application/pxs-animation-mapping+json">
+  {
+    "blocks": [
+      ".featured-collection__title-card"
+    ],
+    "elements": [
+      ".featured-collection__title-card-pre-heading",
+      ".featured-collection__title-card-heading",
+      ".featured-collection__title-card-button"
+    ]
+  }
+</script>
+
+{% assign selected_collection = collections[section.settings.collection] %}
+{% assign product_count = section.settings.product_count | at_most: selected_collection.products_count %}
+{% assign title_card_block = section.blocks.first %}
+{% assign product_count_remainder = product_count | modulo: 5 %}
+
+{% assign horizontal_size = title_card_block.settings.horizontal_size %}
+{% if section.settings.layout == 'slideshow' %}
+  {% assign horizontal_size = 1 %}
+{% endif %}
+
+{% comment %}
+  Determine how many items are in the featured collection
+{% endcomment %}
+
+{% if section.settings.layout == 'grid' %}
+  {% assign item_count = horizontal_size | plus: product_count %}
+{% else %}
+  {% if section.blocks.size > 0 %}
+    {% assign item_count = 1 | plus: product_count %}
+  {% else %}
+    {% assign item_count = product_count %}
+  {% endif %}
+{% endif %}
+
+{% if item_count > 5 %}
+  {% assign vertical_size = title_card_block.settings.vertical_size %}
+{% else %}
+  {% assign vertical_size = 1 %}
+{% endif %}
+
+{% style %}
+  #shopify-section-{{ section.id }} .featured-collection__title-card {
+    color: {{ title_card_block.settings.text_color }};
+  }
+
+  #shopify-section-{{ section.id }} .featured-collection__title-card-outer::before {
+    background-color: {{ title_card_block.settings.overlay_color }};
+    opacity: {{ title_card_block.settings.overlay_opacity | divided_by: 100.00 }};
+  }
+
+  @media screen and (min-width: 1080px) {
+    #shopify-section-{{ section.id }} [data-layout="grid"] .featured-collection__title-card {
+      {% if title_card_block.type == 'title_card' %}
+        grid-column: span {{ horizontal_size }};
+        {% if item_count > 5 %}
+          grid-row: span {{ vertical_size }};
+        {% endif %}
+      {% endif %}
+    }
+  }
+{% endstyle %}
+
+{% if section.settings.title != blank %}
+  {% capture title %}
+    <h2 class="home-section--title">
+      {{ section.settings.title | escape }}
+    </h2>
+  {% endcapture %}
+{% endif %}
+
+{%
+  render 'featured-collection',
+  section: section,
+  selected_collection: selected_collection,
+  title_card_source: 'block',
+  title_card_block: title_card_block,
+  item_count: item_count,
+  title: title,
+%}
+
+{% render 'quick-shop' %}
+
+{% schema %}
+{
+  "name": "Featured collection",
+  "class": "featured-collection--section",
+  "settings": [
+    {
+      "type": "text",
+      "id": "title",
+      "label": "Heading",
+      "default": "Featured collection"
+    },
+    {
+      "type": "select",
+      "id": "layout",
+      "label": "Layout",
+      "options": [
+        {
+          "value": "grid",
+          "label": "Grid"
+        },
+        {
+          "value": "slideshow",
+          "label": "Slideshow"
+        }
+      ],
+      "default": "grid"
+    },
+    {
+      "type": "collection",
+      "id": "collection",
+      "label": "Collection"
+    },
+    {
+      "type": "range",
+      "id": "product_count",
+      "min": 1,
+      "max": 25,
+      "step": 1,
+      "label": "Number of products",
+      "default": 5
+    },
+    {
+      "type": "header",
+      "content": "Call to action"
+    },
+    {
+      "type": "text",
+      "id": "cta_label",
+      "label": "Label",
+      "default": "Shop collection"
+    },
+    {
+      "type": "select",
+      "id": "cta_button_style",
+      "label": "Button style",
+      "options": [
+        {
+          "value": "primary",
+          "label": "Primary"
+        },
+        {
+          "value": "secondary",
+          "label": "Secondary"
+        }
+      ],
+      "default": "primary"
+    }
+  ],
+  "blocks": [
+    {
+      "type": "title_card",
+      "name": "Title card",
+      "settings": [
+        {
+          "type": "image_picker",
+          "id": "image",
+          "label": "Image",
+          "info": "500 x 750px .jpg recommended"
+        },
+        {
+          "type": "select",
+          "id": "horizontal_size",
+          "label": "Horizontal size",
+          "info": "Only applies to 'Grid' layout.",
+          "options": [
+            {
+              "value": "1",
+              "label": "1 column"
+            },
+            {
+              "value": "2",
+              "label": "2 columns"
+            },
+            {
+              "value": "3",
+              "label": "3 columns"
+            }
+          ],
+          "default": "2"
+        },
+        {
+          "type": "select",
+          "id": "vertical_size",
+          "label": "Vertical size",
+          "info": "Only applies to 'Grid' layout.",
+          "options": [
+            {
+              "value": "1",
+              "label": "1 row"
+            },
+            {
+              "value": "2",
+              "label": "2 rows"
+            }
+          ],
+          "default": "2"
+        },
+        {
+          "type": "select",
+          "id": "text_alignment",
+          "label": "Text alignment",
+          "options": [
+            {
+              "value": "top-left",
+              "label": "Top left"
+            },
+            {
+              "value": "top-center",
+              "label": "Top center"
+            },
+            {
+              "value": "top-right",
+              "label": "Top right"
+            },
+            {
+              "value": "center-left",
+              "label": "Center left"
+            },
+            {
+              "value": "center-center",
+              "label": "Center center"
+            },
+            {
+              "value": "center-right",
+              "label": "Center right"
+            },
+            {
+              "value": "bottom-left",
+              "label": "Bottom left"
+            },
+            {
+              "value": "bottom-center",
+              "label": "Bottom center"
+            },
+            {
+              "value": "bottom-right",
+              "label": "Bottom right"
+            }
+          ],
+          "default": "center-center"
+        },
+        {
+          "type": "text",
+          "id": "pre_heading",
+          "label": "Pre-heading",
+          "default": "Featured"
+        },
+        {
+          "type": "text",
+          "id": "heading",
+          "label": "Heading",
+          "default": "Collection"
+        },
+        {
+          "type": "color",
+          "id": "text_color",
+          "label": "Text color",
+          "default": "#FFFFFF"
+        },
+        {
+          "type": "header",
+          "content": "Call to action"
+        },
+        {
+          "type": "text",
+          "id": "cta_label",
+          "label": "Label",
+          "default": "See more"
+        },
+        {
+          "type": "header",
+          "content": "Overlay"
+        },
+        {
+          "type": "color",
+          "id": "overlay_color",
+          "label": "Color",
+          "default": "#000000"
+        },
+        {
+          "type": "range",
+          "id": "overlay_opacity",
+          "min": 0,
+          "max": 100,
+          "step": 1,
+          "unit": "%",
+          "label": "Opacity",
+          "default": 50
+        }
+      ]
+    },
+    {
+      "type": "view_all_card",
+      "name": "View all card",
+      "settings": [
+        {
+          "type": "image_picker",
+          "id": "image",
+          "label": "Image",
+          "info": "500 x 750px .jpg recommended"
+        },
+        {
+          "type": "select",
+          "id": "text_alignment",
+          "label": "Text alignment",
+          "options": [
+            {
+              "value": "top-left",
+              "label": "Top left"
+            },
+            {
+              "value": "top-center",
+              "label": "Top center"
+            },
+            {
+              "value": "top-right",
+              "label": "Top right"
+            },
+            {
+              "value": "center-left",
+              "label": "Center left"
+            },
+            {
+              "value": "center-center",
+              "label": "Center center"
+            },
+            {
+              "value": "center-right",
+              "label": "Center right"
+            },
+            {
+              "value": "bottom-left",
+              "label": "Bottom left"
+            },
+            {
+              "value": "bottom-center",
+              "label": "Bottom center"
+            },
+            {
+              "value": "bottom-right",
+              "label": "Bottom right"
+            }
+          ],
+          "default": "center-center"
+        },
+        {
+          "type": "text",
+          "id": "pre_heading",
+          "label": "Pre-heading",
+          "default": "View all"
+        },
+        {
+          "type": "text",
+          "id": "heading",
+          "label": "Heading",
+          "default": "Collection"
+        },
+        {
+          "type": "color",
+          "id": "text_color",
+          "label": "Text color",
+          "default": "#FFFFFF"
+        },
+        {
+          "type": "header",
+          "content": "Overlay"
+        },
+        {
+          "type": "color",
+          "id": "overlay_color",
+          "label": "Color",
+          "default": "#000000"
+        },
+        {
+          "type": "range",
+          "id": "overlay_opacity",
+          "min": 0,
+          "max": 100,
+          "step": 1,
+          "unit": "%",
+          "label": "Opacity",
+          "default": 50
+        }
+      ]
+    }
+  ],
+  "max_blocks": 1,
+  "presets": [
+    {
+      "name": "Featured collection",
+      "category": "Collection"
+    }
+  ]
+}
+
+{% endschema %}

@@ -1,0 +1,116 @@
+{% comment %}
+  Use 'search-sanitizer' to remove added `*` added by HeaderSearch
+    - Adding `*` after a word helps Shopify increase amount of results
+{% endcomment %}
+{% capture sanitized_terms %}
+  {%
+    render 'search-sanitizer',
+    search_terms: search.terms
+  %}
+{% endcapture %}
+
+{% assign sanitized_terms = sanitized_terms | strip %}
+
+{%- paginate search.results by 50 -%}
+  {%- capture product_results -%}
+    {% assign product_count = 0 %}
+
+    {%- for item in search.results -%}
+      {% if product_count >= 5 %}
+        {% break %}
+      {% endif %}
+      {%- if item.object_type == 'product' -%}
+        {% comment %}
+          Elevate boolean logic to data source as much as possible
+        {% endcomment %}
+
+        {% assign on_sale = false %}
+        {% if item.compare_at_price > item.price %}
+          {% assign on_sale = true %}
+        {% endif %}
+
+        {% assign consistent_saved = false %}
+        {% capture consistent_savings %}
+          {%
+            render 'consistent-savings',
+            variants: product.variants,
+            on_sale: on_sale
+          %}
+        {% endcapture %}
+        {% if consistent_savings contains 'true' %}
+          {% assign consistent_saved = true %}
+        {% endif %}
+
+        {%- assign swatch_count = nil -%}
+        {%- if settings.swatches_enable -%}
+            {%- assign swatch_trigger = settings.swatches_swatch_trigger | strip | downcase -%}
+            {%- for option in item.options_with_values -%}
+              {%- assign option_name = option.name | downcase -%}
+              {%- if option_name == swatch_trigger -%}
+                {%- assign swatch_count = 'product.color_swatches.swatches_count' | t: count: option.values.size -%}
+                {%- break -%}
+              {%- endif -%}
+            {%- endfor -%}
+        {%- endif -%}
+
+        {%- capture product_image -%}
+          {% if item.featured_media %}
+            {% assign image_alt = item.title | escape %}
+            {% if item.featured_media.alt != blank %}
+              {% assign image_alt = item.featured_media.alt | escape %}
+            {% endif %}
+
+            {%
+              render 'rimg',
+              img: item.featured_media.preview_image,
+              alt: image_alt,
+              size: '100x100',
+            %}
+          {% else %}
+            {{ 'image' | placeholder_svg_tag: 'placeholder--image' }}
+          {% endif %}
+        {%- endcapture -%}
+        ,
+        {
+          "title": {{ item.title | highlight: sanitized_terms | json }},
+          "id": {{ item.id | json }},
+          "handle": {{ item.handle | json }},
+          "on_sale": {{ on_sale | json }},
+          "consistent_saved": {{ consistent_saved | json }},
+          "price": {
+            "price": {{ item.price | json }},
+            "price_min": {{ item.price_min | json }},
+            "price_max": {{ item.price_max | json }},
+            "compare_at_price": {{ item.compare_at_price | json }},
+            "compare_at_price_min": {{ item.compare_at_price_min | json }},
+            "compare_at_price_max": {{ item.compare_at_price_max | json }},
+            "compare_at_price_varies": {{ item.compare_at_price_varies | json }}
+          },
+          "image": {{ product_image | strip_newlines | json }},
+          "url": {{ item.url | json }},
+          "swatch_count": {{ swatch_count | json }}
+        }
+        {% assign product_count = product_count | plus: 1 %}
+      {%- endif -%}
+    {%- endfor -%}
+  {%- endcapture -%}
+
+  {%- capture content_results -%}
+    {%- for item in search.results -%}
+      {% if item.object_type == 'article' or item.object_type == 'page' %}
+        ,
+        {
+          "title": {{ item.title | json }},
+          "url": {{ item.url | json }}
+        }
+      {%- endif -%}
+    {%- endfor -%}
+  {%- endcapture -%}
+{%- endpaginate -%}
+{% layout none %}
+{
+  "content": [{{ content_results | strip_newlines | remove_first: ',' }}],
+  "products": [{{ product_results | strip_newlines | remove_first: ',' }}],
+  "terms": {{ search.terms | json }},
+  "sanitizedTerms": {{ sanitized_terms | json }}
+}

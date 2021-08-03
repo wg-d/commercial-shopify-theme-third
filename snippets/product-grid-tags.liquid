@@ -1,0 +1,164 @@
+<button
+  class="
+    productgrid--sidebar-button
+    productgrid--sidebar-button--as-tags
+    productgrid--sidebar-title
+  "
+  data-filter-group-trigger
+  aria-expanded="false"
+>
+  <h2
+    class="
+      productgrid--sidebar-title
+      productgrid--sidebar-title-as-tags
+    "
+  >
+    {{ 'product_grid.filters.title_count' | t: count: 0 }}
+  </h2>
+  <div class="
+      productgrid--sidebar-icon-wrapper
+      productgrid--sidebar-icon-wrapper-hide-mobile
+    "
+    tabindex="-1"
+  >
+    <span class="productgrid--sidebar-icon">
+      {% render 'icon-chevron-down-small' %}
+    </span>
+  </div>
+</button>
+
+{% if current_tags.size > 0 %}
+  <div class="productgrid--sidebar-item productgrid--sidebar-filters--current">
+    {%- render 'product-grid-tags-active' -%}
+  </div>
+{% endif %}
+
+<div
+  class="
+    productgrid--sidebar-group
+    productgrid--sidebar-group-as-tags
+  "
+>
+  <ul class="productgrid--sidebar-item filter-group"
+    data-filter-group
+    data-accordion-content
+    aria-expanded="false"
+  >
+    {% comment %}
+      Strip the prepended categories if they happen to exist.
+    {% endcomment %}
+
+    {%- assign custom_ordered_tags = section.settings.custom_ordered_tags | split: ',' -%}
+    {%- assign custom_tags = blank -%}
+
+    {%- for custom_ordered_tag in custom_ordered_tags -%}
+      {%- assign custom_tag = custom_ordered_tag | strip -%}
+
+      {%- unless collection.all_tags contains custom_tag -%}
+        {%- continue -%}
+      {%- endunless -%}
+
+      {%-
+        assign custom_tags = custom_tags
+        | append: '|'
+        | append: custom_tag
+      -%}
+    {%- endfor -%}
+
+    {% liquid
+      assign excluded_tags_array = section.settings.excluded_tags | split: ','
+      assign excluded_tags_temp = ''
+
+      for excluded_tag_value in excluded_tags_array
+        assign excluded_tag = excluded_tag_value | strip
+        assign excluded_tags_temp = excluded_tags_temp | append: '|' | append: excluded_tag
+      endfor
+
+      assign excluded_tags = excluded_tags_temp | remove_first: '|' | split: '|'
+    %}
+
+    {% assign sorted_tags = custom_tags | remove_first: '|' | split:  '|' | concat: collection.all_tags | uniq %}
+
+    {% for tag in sorted_tags %}
+      {% assign is_advanced_tag = false %}
+      {% assign cat = tag | split: '_' | first %}
+
+      {%- if cat == 'searchfilter' -%}
+        {%- continue -%}
+      {%- endif -%}
+
+      {%- if excluded_tags contains tag -%}
+        {%- continue -%}
+      {%- endif -%}
+
+      {% unless cat == tag %}
+        {% if cat_array contains cat %}
+          {% assign is_advanced_tag = true %}
+        {% endif %}
+      {% endunless %}
+
+        {%- if is_advanced_tag -%}
+          {% assign tag_content = tag | remove_first: cat | remove_first: '_' %}
+        {%- else -%}
+          {% assign tag_content = tag %}
+        {%- endif -%}
+
+      {%- capture tag_text -%}
+
+        {% assign animation_state = 'unchecked' %}
+        {% if current_tags contains tag %}
+          {% assign animation_state = 'checked' %}
+        {% endif %}
+        <span class="filter-icon--checkbox" data-handle="{{ tag | handle }}">
+          {%- render 'icon-checkmark-animated', animation_state: animation_state -%}
+        </span>
+        <span class="filter-text">
+          {{ tag_content }}
+        </span>
+          <span
+            class="
+              filtered-product-count
+              {% if section.settings.show_filter_product_count == false %}
+                filtered-product-count--hidden
+              {% endif %}
+            "
+            data-filtered-product-count>
+          </span>
+      {%- endcapture -%}
+
+      {% assign filter_active = false %}
+      {%- if current_tags contains tag -%}
+        {% assign filter_active = true %}
+      {%- endif -%}
+
+      {% assign filter_class = 'filter-item' %}
+
+      {%- if forloop.index > tag_limit -%}
+        {% assign filter_class = filter_class | append: ' filter-item--hidden' %}
+      {%- endif -%}
+
+      <li
+        class="{{ filter_class }}"
+        {% if forloop.index > tag_limit %}data-hidden-default{% endif %}
+        {% if current_tags contains tag %}aria-current="true"{% endif %}
+        data-handle="{{ tag | handle }}"
+        data-tag-title="{{ tag | escape }}"
+        data-filter-active="{{ filter_active }}"
+      >
+        {% if current_tags contains tag %}
+          {{ tag_text | link_to_remove_tag: tag | replace: '" title="', '&grid_list" title=""' | class: 'filter-link' }}
+        {% else %}
+          {{ tag_text | link_to_tag: tag | replace: '" title="', '&grid_list" title=""' | class: 'filter-link' }}
+        {% endif %}
+      </li>
+    {% endfor %}
+
+    {% if collection.all_tags.size > tag_limit %}
+      <li class="filter-item filter-item--toggle">
+        <a class="filter-text--link" href="#" data-filter-toggle="false">
+          {{ 'general.general.see_more' | t }}
+        </a>
+      </li>
+    {% endif %}
+  </ul>
+</div>

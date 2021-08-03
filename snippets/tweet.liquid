@@ -1,0 +1,82 @@
+{% comment %}
+  A tweet template.
+
+  @param onboarding
+         - Show onboarding information
+
+  @param username
+         - Show content placeholder if username is passed
+{% endcomment %}
+
+<article class="tweet--wrapper" data-tweet-content>
+  <a
+    class="tweet--header"
+    {% if onboarding or username %}
+      href="#"
+    {% else %}
+      target="_blank"
+    {% endif %}>
+    <div class="tweet--header-image">
+      {% if onboarding %}
+        {{ 'image' | placeholder_svg_tag: 'placeholder--image' }}
+      {% elsif username %}
+        {{ 'image' | placeholder_svg_tag: 'placeholder--image placeholder--content-image' }}
+      {% endif %}
+    </div>
+
+    <h2 class="tweet--header-authorinfo">
+      <span class="tweet--header-name">
+        {% if onboarding %}
+          {{ 'onboarding.twitter.username' | t }}
+        {% elsif username %}
+          <span class="placeholder--content-text twitter--placeholder-name"></span>
+        {% endif %}
+      </span>
+
+      <span class="tweet--header-screenname">
+        {% if onboarding %}
+          @{{ 'onboarding.twitter.username' | t }}
+        {% elsif username %}
+        <span class="placeholder--content-text twitter--placeholder-screenname"></span>
+        {% endif %}
+      </span>
+    </h2>
+  </a>
+
+  <div class="tweet--content">
+    {% if onboarding %}
+      <p class="tweet">
+        {{ 'onboarding.twitter.tweet_html' | t }}
+      </p>
+    {% elsif username %}
+      <p class="tweet twitter--placeholder-tweet">
+        {% for i in (1..3) %}
+          <span class="placeholder--content-text twitter--placeholder-tweet-line"></span>
+        {% endfor %}
+      </p>
+    {% endif %}
+  </div>
+
+  <a
+    class="tweet--footer"
+    {% if onboarding or username %}
+      href="#"
+    {% else %}
+      target="_blank"
+    {% endif %}>
+    <span class="tweet--footer--icon">
+      {%-
+        render 'social-icon',
+        id: 'twitter-alt'
+      -%}
+    </span>
+
+    <span class="tweet--footer--posted" data-tweet-posted>
+      {% if onboarding %}
+        {{ 'onboarding.twitter.time' | t }}
+      {% elsif username %}
+        <span class="placeholder--content-text twitter--placeholder-posted"></span>
+      {% endif %}
+    </span>
+  </a>
+</article>

@@ -1,0 +1,55 @@
+{% capture _ %}
+  {% comment %}
+    @param variants {Object}
+      Product variants
+
+    @param on_sale {Bool}
+  {% endcomment %}
+
+  {% assign consistent_saved = false %}
+  {% assign lowest_price = false %}
+
+  {% assign variant_sale_price = false %}
+  {% assign variant_sale_price_differs = false %}
+  {% assign variant_compare_at_price = false %}
+  {% assign variant_compare_at_price_differs = false %}
+
+  {%- if on_sale -%}
+    {%- for variant in variants -%}
+      {%- if lowest_price == false or variant.price <= lowest_price -%}
+        {% assign lowest_price = variant.price %}
+      {%- endif -%}
+
+      {% unless variant.compare_at_price %}
+        {% assign variant_sale_price_differs = true %}
+        {% assign variant_compare_at_price_differs = true %}
+        {% break %}
+      {% endunless %}
+
+      {%- if variant.price < variant.compare_at_price -%}
+        {% if variant_sale_price == false %}
+          {% assign variant_sale_price = variant.price %}
+        {% endif %}
+
+        {% if variant_sale_price != variant.price %}
+          {% assign variant_sale_price_differs = true %}
+        {% endif %}
+
+        {% if variant_compare_at_price == false %}
+          {% assign variant_compare_at_price = variant.compare_at_price %}
+        {% endif %}
+
+        {% if variant_compare_at_price != variant.compare_at_price %}
+          {% assign variant_compare_at_price_differs = true %}
+        {% endif %}
+      {%- endif -%}
+    {%- endfor -%}
+  {%- endif -%}
+
+  {%- if variant_sale_price_differs == false and variant_compare_at_price_differs == false -%}
+    {%- if lowest_price >= variant_sale_price -%}
+      {%- assign consistent_saved = true -%}
+    {%- endif -%}
+  {%- endif -%}
+{% endcapture %}
+{{ consistent_saved }}

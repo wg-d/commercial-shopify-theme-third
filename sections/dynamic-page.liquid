@@ -1,0 +1,115 @@
+<script
+  type="application/json"
+  data-section-id="{{ section.id }}"
+  data-section-type="dynamic-page"
+></script>
+
+<script type="application/pxs-animation-mapping+json">
+  {
+    "blocks": [".page__wrapper"],
+    "elements": []
+  }
+</script>
+
+<section
+  class="
+    page__container
+    page--{{ section.settings.width }}
+  "
+>
+  <div
+    class="page__wrapper"
+    {{ section.shopify_attributes }}
+  >
+      {% if section.settings.show_heading %}
+        <h2
+          class="
+            page__heading
+            page__heading--{{ section.settings.heading_size }}
+          "
+        >
+          {% if section.settings.page != blank %}
+            {{ pages[section.settings.page].title | escape }}
+          {% else %}
+            {{ 'onboarding.page.title' | t }}
+          {% endif %}
+        </h2>
+      {% endif %}
+
+      <div class="page__content rte" data-rte>
+        {% if section.settings.page != blank %}
+          {{ pages[section.settings.page].content }}
+        {% else %}
+          {{ 'page' | placeholder_svg_tag: 'placeholder--image' }}
+        {% endif %}
+      </div>
+  </div>
+</section>
+
+{% schema %}
+{
+  "name": "Page",
+  "class": "page--section",
+  "settings": [
+    {
+      "id": "width",
+      "type": "select",
+      "label": "Section width",
+      "options": [
+        {
+          "value": "regular",
+          "label": "Regular"
+        },
+        {
+          "value": "wide",
+          "label": "Wide"
+        },
+        {
+          "value": "full-width",
+          "label": "Full width"
+        }
+      ],
+      "default": "regular"
+    },
+    {
+      "type": "page",
+      "id": "page",
+      "label": "Page"
+    },
+    {
+      "type": "checkbox",
+      "id": "show_heading",
+      "label": "Show heading",
+      "default": true
+    },
+    {
+      "id": "heading_size",
+      "type": "select",
+      "label": "Heading size",
+      "options": [
+        {
+          "value": "small",
+          "label": "Small"
+        },
+        {
+          "value": "medium",
+          "label": "Medium"
+        },
+        {
+          "value": "large",
+          "label": "Large"
+        }
+      ],
+      "default": "medium"
+    }
+  ],
+  "presets": [
+    {
+      "name": "Page",
+      "category": "Text",
+      "settings": {}
+    }
+  ]
+}
+
+{% endschema %}

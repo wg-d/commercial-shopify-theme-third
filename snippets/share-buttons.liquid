@@ -1,0 +1,72 @@
+{% comment %}
+  @param social_url {String}
+    URL to share
+
+  @param social_title {Object}
+    If sending data to a service, description or title to share
+
+  @param social_image {String|Boolean}
+    If sending data to a service, URL of image to share, or false for no image
+{% endcomment %}
+
+{% assign share_url = social_url | url_param_escape %}
+{% assign share_title = social_title | url_param_escape %}
+{% assign share_image = false %}
+{% if social_image %}
+  {% assign share_image = social_image | url_param_escape %}
+{% endif %}
+
+<aside class="share-buttons" aria-label="{{ snippet_title | t }}">
+
+  <span class="share-buttons--title">
+    {{ snippet_title | t }}
+  </span>
+
+  <div class="share-buttons--list">
+    <a
+      class="share-buttons--button share-buttons--facebook"
+      target="_blank"
+      href="//www.facebook.com/sharer.php?u={{ share_url }}">
+      {%-
+        render 'social-icon',
+        id: 'facebook'
+      -%}
+      <span class="visually-hidden">{{ 'general.accessibility.share_on_facebook' | t }}</span>
+    </a>
+
+    <a
+      class="share-buttons--button share-buttons--twitter"
+      target="_blank"
+      href="//twitter.com/share?url={{ share_url }}">
+      {%-
+        render 'social-icon',
+        id: 'twitter'
+      -%}
+      <span class="visually-hidden">{{ 'general.accessibility.share_on_twitter' | t }}</span>
+    </a>
+
+    <a
+      class="share-buttons--button share-buttons--linkedin"
+      target="_blank"
+      href="//www.linkedin.com/shareArticle?mini=true&url={{ share_url }}&title={{ share_title }}">
+      {%-
+        render 'social-icon',
+        id: 'linkedin'
+      -%}
+      <span class="visually-hidden">{{ 'general.accessibility.share_on_linkedin' | t }}</span>
+    </a>
+
+    {% if share_image %}
+      <a
+        class="share-buttons--button share-buttons--pinterest"
+        target="_blank"
+        href="//pinterest.com/pin/create/button/?url={{ share_url }}&amp;media={{ share_image }}&amp;description={{ share_title }}">
+        {%-
+          render 'social-icon',
+          id: 'pinterest'
+        -%}
+        <span class="visually-hidden">{{ 'general.accessibility.share_on_pinterest' | t }}</span>
+      </a>
+    {% endif %}
+  </div>
+</aside>

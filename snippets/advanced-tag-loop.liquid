@@ -1,0 +1,42 @@
+{%- capture _ -%}
+  {% comment %}
+  A loop to catch and filter out the different tag categories.
+  This is mainly for advanced tagging, but will also help us strip
+  out any tag categories from our tags (E.g. remove BRAND_ from BRAND_tag)
+  {% endcomment %}
+
+  {%- if template.name == 'collection' and collection.all_tags.size > 0 -%}
+    {% assign categories = blank %}
+    {%- for tag in collection.all_tags -%}
+      {%- if tag contains '_' -%}
+        {% assign category = tag | split: '_' | first %}
+
+        {% assign categories = categories
+          | append: '|'
+          | append: category
+        %}
+      {%- endif -%}
+    {%- endfor -%}
+    {% assign base_cat_array = categories | remove_first: '|' | split: '|' | uniq %}
+
+    {%- assign custom_ordered_categories = section.settings.custom_ordered_categories | split: ',' -%}
+    {%- assign custom_categories = blank -%}
+
+    {%- for custom_ordered_category in custom_ordered_categories -%}
+      {%- assign custom_category = custom_ordered_category | strip -%}
+
+      {%- unless base_cat_array contains custom_category -%}
+        {%- continue -%}
+      {%- endunless -%}
+
+      {%-
+        assign custom_categories = custom_categories
+        | append: '|'
+        | append: custom_category
+      -%}
+    {%- endfor -%}
+
+    {%- assign cat_array = custom_categories | remove_first: '|' | split: '|' | concat: base_cat_array | uniq -%}
+  {%- endif -%}
+{%- endcapture -%}
+{{- cat_array | join: '|' -}}

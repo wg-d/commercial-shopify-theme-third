@@ -1,0 +1,133 @@
+<script
+  type="application/json"
+  data-section-id="{{ section.id }}"
+  data-section-type="dynamic-rich-text"
+></script>
+
+<script type="application/pxs-animation-mapping+json">
+  {
+    "blocks": [".rich-text-block"],
+    "elements": []
+  }
+</script>
+
+<section
+  class="
+    rich-text--container
+    rich-text-{{ section.settings.width }}
+  "
+>
+    <div
+      class="
+        rich-text-block
+        rich-text-alignment-{{ section.settings.text_alignment }}
+      "
+      {{ section.shopify_attributes }}
+    >
+        {% if section.settings.title != blank %}
+          <h2
+            class="
+              rich-text-heading
+              rich-text-heading-{{ section.settings.heading_size }}
+            "
+          >
+            {{ section.settings.title | escape }}
+          </h2>
+        {% endif %}
+
+        {% if section.settings.text != blank %}
+          <div class="rich-text-content rte" data-rte>
+            {{ section.settings.text }}
+          </div>
+        {% endif %}
+    </div>
+</section>
+
+{% schema %}
+{
+  "name": "Rich Text",
+  "class": "rich-text--section",
+  "settings": [
+    {
+      "id": "width",
+      "type": "select",
+      "label": "Section width",
+      "options": [
+        {
+          "value": "regular",
+          "label": "Regular"
+        },
+        {
+          "value": "wide",
+          "label": "Wide"
+        },
+        {
+          "value": "full-width",
+          "label": "Full width"
+        }
+      ],
+      "default": "regular"
+    },
+    {
+      "type": "text",
+      "id": "title",
+      "label": "Heading",
+      "default": "Rich text"
+    },
+    {
+      "type": "richtext",
+      "id": "text",
+      "label": "Text",
+      "default": "<p>Use this section to welcome customers to your store, say a bit about your brand, or share news and seasonal promotions.</p>"
+    },
+    {
+      "id": "heading_size",
+      "type": "select",
+      "label": "Heading size",
+      "options": [
+        {
+          "value": "small",
+          "label": "Small"
+        },
+        {
+          "value": "medium",
+          "label": "Medium"
+        },
+        {
+          "value": "large",
+          "label": "Large"
+        }
+      ],
+      "default": "medium"
+    },
+    {
+      "id": "text_alignment",
+      "type": "select",
+      "label": "Text alignment",
+      "options": [
+        {
+          "value": "left",
+          "label": "Left"
+        },
+        {
+          "value": "center",
+          "label": "Center"
+        },
+        {
+          "value": "right",
+          "label": "Right"
+        }
+      ],
+      "default": "left"
+    }
+  ],
+  "presets": [
+    {
+      "name": "Rich text",
+      "category": "Text",
+      "settings": {}
+    }
+  ]
+}
+
+{% endschema %}

@@ -1,0 +1,928 @@
+{% comment %}
+  Product form
+
+  @param product
+
+  @param selected_variant
+{% endcomment %}
+{% assign instructions = product.metafields.instructions %}
+{% if is_product_modal and settings.quickshop_show_dcb %}
+  {% assign quickshop_smart_buttons = true %}
+{% endif %}
+
+{% if is_product_modal == false and section.settings.show_dcb %}
+  {% assign product_smart_buttons = true %}
+{% endif %}
+
+{% if selected_variant.available == false %}
+  {% assign quickshop_smart_buttons = false %}
+  {% assign product_smart_buttons = false %}
+{% endif %}
+
+{% assign product_form_class = '' %}
+{% if product_smart_buttons or quickshop_smart_buttons %}
+  {% assign product_form_class = 'smart-payment-enabled' %}
+{% endif %}
+
+{% form 'product', product, class: product_form_class, data-product-form: '' %}
+  {% comment %}
+    Display variant options for a product
+
+    @param product
+    @param selected_variant
+    @param style
+
+    @param enable_swatches
+    @param swatches_shape
+    @param swatches_option_trigger
+    @param swatches_option_style
+    @param swatches_product_page_size
+    @param swatch_colors
+
+    @param select_main_classes
+    @param select_classes
+    @param input_select_wrapper_classes
+    @param input_select_classes
+    @param input_select_label_classes
+    @param input_select_chevron_classes
+
+    @param radios_classes
+    @param option_header_classes
+    @param option_name_classes
+    @param option_values_classes
+    @param option_value_classes
+    @param option_value_label_classes
+    @param option_value_input_classes
+    @param option_value_name_classes
+
+    @param swatches_classes
+    @param option_swatch_wrapper_classes
+    @param option_swatch_classes
+    @param option_swatch_inner_classes
+  {% endcomment %}
+  {% assign product = product %}
+  {% assign selected_variant = selected_variant %}
+  {% assign style = settings.product_option_style %}
+  {% assign style = 'select' %}
+  {% assign enable_swatches = settings.swatches_enable %}
+  {% assign swatches_shape = settings.swatches_shape %}
+  {% assign swatches_option_trigger = settings.swatches_swatch_trigger %}
+  {% assign swatches_option_style = settings.swatches_option_style %}
+  {% assign swatches_product_page_size = settings.swatches_product_page_size %}
+  {% assign swatches_custom_colors = settings.swatches_custom_colors %}
+  {% assign select_main_classes = 'form-options' %}
+  {% assign select_classes = 'form-field form-options' %}
+  {% assign input_select_wrapper_classes = 'form-field-select-wrapper' %}
+  {% assign input_select_classes = 'form-field-input form-field-select' %}
+  {% assign input_select_label_classes = 'form-field-title' %}
+  {% assign radios_classes = 'form-options form-options-selectable-boxes' %}
+  {% assign option_header_classes = 'option-header' %}
+  {% assign option_name_classes = 'option-name' %}
+  {% assign option_values_classes = 'option-values' %}
+  {% assign option_value_classes = 'option-value' %}
+  {% assign option_value_label_classes = 'option-value-label' %}
+  {% assign option_value_input_classes = 'option-value-input' %}
+  {% assign option_value_name_classes = 'option-value-name' %}
+  {% assign swatches_classes = 'form-options form-options-swatches' %}
+  {% assign option_swatch_wrapper_classes = 'option-value-name option-value-swatch-wrapper' %}
+  {% assign option_swatch_classes = 'swatch' %}
+  {% assign option_swatch_inner_classes = 'swatch-inner' %}
+
+  {% comment %}Inject @pixelunion/shopify-variants-ui/variants-ui begin{% endcomment %}
+  {% comment %}
+    Display variant options for a product
+  
+    @param product
+    @param selected_variant
+    @param style
+  
+    @param enable_swatches
+    @param swatches_shape
+    @param swatches_option_trigger
+    @param swatches_option_style
+    @param swatches_product_page_size
+    @param swatch_colors
+  
+    @param select_main_classes
+    @param select_classes
+    @param input_select_wrapper_classes
+    @param input_select_classes
+    @param input_select_label_classes
+    @param input_select_chevron_classes
+  
+    @param radios_classes
+    @param option_header_classes
+    @param option_name_classes
+    @param option_values_classes
+    @param option_value_classes
+    @param option_value_label_classes
+    @param option_value_input_classes
+    @param option_value_name_classes
+  
+    @param swatches_classes
+    @param option_swatch_wrapper_classes
+    @param option_swatch_classes
+    @param option_swatch_inner_classes
+  {% endcomment %}
+  
+  {% if product.has_only_default_variant %}
+    <input
+      class="
+        variants-ui
+        variants-ui--default-variant
+      "
+      name="id"
+      type="hidden"
+      value="{{ product.variants.first.id }}"
+      data-variants-ui
+      data-variants
+    >
+  {% else %}
+    {% comment %}Inject @pixelunion/shopify-variants-ui/variants-ui-options begin{% endcomment %}
+    {% comment %}
+      Display variant options for a product
+    
+      @param product
+      @param selected_variant
+      @param style
+    
+      @param enable_swatches
+      @param swatches_shape
+      @param swatches_option_trigger
+      @param swatches_option_style
+      @param swatches_product_page_size
+      @param swatch_colors
+    
+      @param select_main_classes
+      @param select_classes
+      @param input_select_wrapper_classes
+      @param input_select_classes
+      @param input_select_label_classes
+      @param input_select_chevron_classes
+    
+      @param radios_classes
+      @param option_header_classes
+      @param option_name_classes
+      @param option_values_classes
+      @param option_value_classes
+      @param option_value_label_classes
+      @param option_value_input_classes
+      @param option_value_name_classes
+    
+      @param swatches_classes
+      @param option_swatch_wrapper_classes
+      @param option_swatch_classes
+      @param option_swatch_inner_classes
+    {% endcomment %}
+    
+    {% assign hide_select_a11y = "" %}
+    
+    {% if style == 'radio' %}
+      {% assign hide_select_a11y = "tabindex='-1'" %}
+    {% endif %}
+    
+    {%- capture form_id -%}{% increment form_id %}{%- endcapture -%}
+    
+    <div
+      class="
+        variants-ui
+        {%
+          if enable_swatches
+          and swatches_shape == 'square'
+          and swatches_option_style == 'variant_image'
+        %}
+          variants-ui--swatches-square
+        {% endif %}
+      "
+      data-variants-ui
+    >
+      <select
+        class="
+          variants-ui__select-main
+          {{ select_main_classes }}
+        "
+        name="id"
+        {{ hide_select_a11y }}
+        data-variants
+      >
+        <option
+          value=""
+          disabled
+          {% if selected_variant %}selected{% endif %}
+        >
+          {{ 'product.variants.choose_variant' }}
+        </option>
+        {% for variant in product.variants %}
+          <option
+            {% if selected_variant and selected_variant.id == variant.id %}selected{% endif %}
+            value="{{ variant.id }}"
+            {% unless variant.available %}disabled{% endunless %}
+            data-variant-id="{{ variant.id }}"
+            data-sku="{{ variant.sku }}"
+          >
+            {{ variant.title }} - {{ variant.price | money }}
+          </option>
+        {% endfor %}
+      </select>
+    
+      {% for option in product.options_with_values %}
+        {% assign option_index = forloop.index0 %}
+        {% assign show_swatches = false %}
+        {% if enable_swatches %}
+          {%- assign swatches_option_trigger = swatches_option_trigger | strip | downcase -%}
+          {%- assign option_name = option.name | strip | downcase -%}
+    
+          {% if option_name == swatches_option_trigger %}
+            {% assign show_swatches = true %}
+            {% assign swatch_option_key = 'option' | append: forloop.index %}
+          {% endif %}
+        {% endif %}
+    
+        {% if style == 'select' and show_swatches == false %}
+          {% comment %}Inject @pixelunion/shopify-variants-ui/variants-ui-select begin{% endcomment %}
+          {% comment %}
+            Display variant options for a product
+          
+            @param selected_variant
+          
+            @param select_classes
+            @param input_select_wrapper_classes
+            @param input_select_classes
+            @param input_select_label_classes
+            @param input_select_chevron_classes
+          {% endcomment %}
+          
+          <div
+            class="
+              variants-ui__select
+              {% if forloop.first %}variants-ui__select--first{% endif %}
+              {% if forloop.last %}variants-ui__select--last{% endif %}
+              {{ select_classes }}
+            "
+          >
+            <div class="purchase-here">
+              
+              <span class="purchase-here--title">Selecciona el corte</span>
+            </div>
+            <div
+              class="
+                variants-ui__input-select-wrapper
+                {{ input_select_wrapper_classes }}
+              "
+              style=" padding: 20px; background: #f1f1f1; padding-bottom: 0px;"
+            > 
+              <div style="width: 48%; float: left; padding-left: 5px;">
+                <div>
+                  <label for='select-width' class="select-width-label">
+                    Ancho(m):
+                  </label>
+                  <select id='select-width' 
+                  style="padding: 10px;width: 50%;"
+                  class="
+                      select-current-width
+                      select-width-arrow
+                      variants-ui__input-select
+                      {{ input_select_classes }}
+                    "
+                  >
+                    <option>
+                      {% assign option_val = instructions['Formato del rollo'] | slice:0 %}
+                      {{ option_val }}
+                      {% if option_val == ''%}
+                        4
+                      {% endif %}
+                    </option>
+                  </select>
+                </div>
+                <div class="clear"></div>
+                <div style=" margin-top: 17px;">
+                  <label for="select-length" class="select-width-label">
+                    Largo(m):
+                  </label>
+                  <select
+                    id="data-variant-option-{{ option_index }}"
+                    style="padding: 10px; width: 50%;"
+                    class="
+                      select-current-length
+                      select-width-arrow
+                      variants-ui__input-select
+                      {{ input_select_classes }}
+                    "
+                    select-length
+                    data-variant-option
+                    data-variant-option-index="{{ option_index }}"
+                    data-variant-option-chosen-value="{% if selected_variant %}{{ option.selected_value }}{% else %}false{% endif %}"
+                  >
+                    {% unless selected_variant %}
+    
+                      <option
+                        value=""
+                        disabled
+                        selected
+                        data-variant-option-value-wrapper
+                        data-variant-option-value
+                        data-variant-option-value-index="{{ option_index }}"
+                      >
+                        {{ 'product.variants.choose_option' | t: option: option.name }}
+                      </option>
+                    {% endunless %}
+                    
+                    {% for value in option.values %}
+                      <option
+                        value="{{ value | escape }}"
+                        {% if selected_variant and option.selected_value == value %}selected{% endif %}
+                        data-variant-option-value-wrapper
+                        data-variant-option-value
+                        data-variant-option-value-index="{{ option_index }}"
+                      >
+                        {{ value }}
+                      </option>
+                    {% endfor %}
+                  </select>
+                </div>
+              </div>
+              <div style="width: 40%; float: right; text-align: center;">
+                <label>
+                  La cantidad de <span id ="sqm-total">1&#13217;</span> y el tamaño de rollos elegidos costarían:
+                </label>
+                <h2 id="variant_current--price"></h2>
+              </div>
+              <div class="clear"></div>
+            </div>
+          </div>
+        {% elsif style == 'radio' or show_swatches == true %}
+          <fieldset
+            class="
+              {% unless show_swatches %}
+                variants-ui__radios
+                {% if forloop.first %}variants-ui__radios--first{% endif %}
+                {% if forloop.last %}variants-ui__radios--last{% endif %}
+                {{ radios_classes }}
+              {% else %}
+                variants-ui__swatches
+                {{ swatches_classes }}
+                {% if forloop.first %}variants-ui__swatches--first{% endif %}
+                {% if forloop.last %}variants-ui__swatches--last{% endif %}
+              {% endunless %}
+            "
+          >
+            <legend
+              class="
+                variants-ui__option-header
+                {{ option_header_classes }}
+              "
+            >
+              <span
+                class="
+                  variants-ui__option-name
+                  {{ option_name_classes }}
+                "
+                data-variant-option-name="{{ 'product.variants.chosen_option_html' | t: option: option.name, value: option.selected_value | escape }}"
+                data-variant-option-choose-name="{{ 'product.variants.choose_option' | t: option: option.name }}"
+              >
+                {% if selected_variant %}
+                  {{ 'product.variants.chosen_option_html' | t: option: option.name, value: option.selected_value }}
+                {% else %}
+                  {{ 'product.variants.choose_option' | t: option: option.name }}
+                {% endif %}
+              </span>
+            </legend>
+          
+            <div
+              class="
+                variants-ui__option-values
+                {{ option_values_classes }}
+              "
+              data-variant-option
+              data-variant-option-index="{{ option_index }}"
+              data-variant-option-chosen-value="{% if selected_variant %}{{ option.selected_value }}{% else %}false{% endif %}"
+            >
+              {% for value in option.values %}
+                <div
+                  class="
+                    variants-ui__option-value
+                    {% if selected_variant and option.selected_value == value %}variants-ui__option-value--selected{% endif %}
+                    {{ option_value_classes }}
+                  "
+                  data-variant-option-value-wrapper
+                >
+                  <label
+                    class="
+                      variants-ui__option-value-label
+                      {{ option_value_label_classes }}
+                    "
+                    for="{{ section.id }}-form-{{ form_id }}-variant-option-{{ option_index }}-{{ forloop.index0 }}"
+                  >
+                    <input
+                      id="{{ section.id }}-form-{{ form_id }}-variant-option-{{ option_index }}-{{ forloop.index0 }}"
+                      class="
+                        variants-ui__option-value-input
+                        {{ option_value_input_classes }}
+                      "
+                      type="radio"
+                      name="{{ option.name | url_encode }}"
+                      value="{{ value | escape }}"
+                      tabindex="0"
+                      aria-label="{{ value | escape }}"
+                      {% if selected_variant and option.selected_value == value %}checked{% endif %}
+                      data-variant-option-value
+                      data-variant-option-value-index="{{ option_index }}"
+                    >
+          
+                    <span
+                      class="
+          
+                        {% unless show_swatches %}
+                          variants-ui__option-value-name
+                          {{ option_value_name_classes }}
+                        {% else %}
+                          variants-ui__option-swatch-wrapper
+                          {{ option_swatch_wrapper_classes }}
+                        {% endunless %}
+                      "
+                      tabindex="-1"
+                      {% if show_swatches %}
+                        data-swatch-tooltip="{{ value | escape }}"
+                      {% endif %}
+                    >
+                      {% unless show_swatches %}
+                        {{ value }}
+                      {% else %}
+                        {% assign use_variant_images = false %}
+                        {% if swatches_option_style == 'variant_image' %}
+                          {% assign use_variant_images = true %}
+                        {% endif %}
+                        {% assign use_aspect_ratio = false %}
+                        {% if swatches_shape == 'square' %}
+                          {% assign use_aspect_ratio = true %}
+                        {% endif %}
+                        {% capture swatch_styles %}
+                          {% assign color_name = value %}
+                          {% assign use_variant_images = use_variant_images %}
+                          {% assign swatch_product = product %}
+                          {% assign swatch_option_key = swatch_option_key %}
+                          {% assign swatch_size = swatches_product_page_size %}
+                          {% assign use_aspect_ratio = use_aspect_ratio %}
+                          {% comment %}Inject @pixelunion/shopify-variants-ui/variants-ui-swatch-styles begin{% endcomment %}
+                          {%- capture _ -%}
+                            {% comment %}
+                              @param color_name {string}
+                                Color name for which to find a suitable background
+                          
+                              @param use_variant_images {boolean} [Optional - required if using variant images]
+                                Use variant images as pattern images instead of the standard manual pattern images.
+                          
+                              @param swatch_product {product} [Optional - required if using variant images]
+                                Product from which to use variant images.
+                          
+                              @param swatch_option_key {string} [Optional - required if using variant images]
+                                option that contains swatch variants, one of `option1`, `option2`, or `option3`.
+                          
+                              @param swatch_size {integer} [Optional - required if using variant images]
+                                Pixel height of swatch.
+                          
+                              @param use_aspect_ratio {boolean} [Optional]
+                                Set swatch aspect ratio based on variant image?
+                          
+                              Outputs a string CSS background properties
+                            {% endcomment %}
+                          
+                            {%- assign use_variant_images = use_variant_images | default: false -%}
+                            {%- assign swatch_product = swatch_product | default: blank -%}
+                            {%- assign swatch_option_key = swatch_option_key | default: blank -%}
+                            {%- assign swatch_size = swatch_size | default: 32 -%}
+                            {%- assign use_aspect_ratio = use_aspect_ratio | default: true, allow_false: true -%}
+                          
+                            {%- assign swatch_bg_color = blank -%}
+                            {%- assign swatch_bg_image = blank -%}
+                            {%- assign swatch_bg_variables = blank -%}
+                            {%- assign swatch_colors = swatches_custom_colors -%}
+                          
+                            {% comment %} First look for a defined custom color {% endcomment %}
+                            {%- assign swatch_colors = swatch_colors | newline_to_br | strip_newlines | split: '<br />' -%}
+                            {%- assign swatch_search_color = color_name | downcase -%}
+                            {%- for swatch_option in swatch_colors -%}
+                              {%- assign swatch_color = swatch_option | split: ':' -%}
+                              {%- assign swatch_color_name = swatch_color[0] | strip | downcase -%}
+                              {%- assign swatch_color_value = swatch_color[1] | strip -%}
+                              {%- if swatch_search_color == swatch_color_name -%}
+                                {% capture swatch_bg_color %}
+                                  background-color: {{ swatch_color_value }};
+                                {% endcapture %}
+                                {%- break -%}
+                              {%- endif -%}
+                            {%- endfor -%}
+                          
+                            {% comment %} Otherwise default to the raw color name, which will either be a
+                            valid named HTML color and displayed as such, or will be ignored by the browser. {% endcomment %}
+                            {%- if swatch_bg_color == blank -%}
+                              {% capture swatch_bg_color %}
+                                background-color: {{ color_name | handleize }};
+                              {% endcapture %}
+                            {%- endif -%}
+                          
+                            {%- if use_variant_images and swatch_product != blank and swatch_option_key != blank -%}
+                              {% for variant in swatch_product.variants %}
+                                {% assign option_value_downcased = variant[swatch_option_key] | downcase %}
+                                {% if option_value_downcased == swatch_search_color %}
+                                  {% if variant.image != blank %}
+                                    {%- assign swatch_image_resolution = swatch_size | times: 2 | prepend: 'x' -%}
+                                    {%- assign swatch_file_url = variant.image | img_url: swatch_image_resolution, crop: 'center' -%}
+                                    {%- assign swatch_height = swatch_size | times: 1.0 -%}
+                                    {%- assign swatch_width = swatch_size | times: 1.0 -%}
+                                    {%- if use_aspect_ratio -%}
+                                      {%- assign swatch_width = swatch_size | times: variant.image.aspect_ratio -%}
+                                    {%- endif -%}
+                                    {%- capture swatch_bg_image -%}
+                                      background-image: url('{{- swatch_file_url  -}}');
+                                      width: {{ swatch_width }}px;
+                                      border: 0; {% comment %}Variant image swatches don't get inset borders{% endcomment %}
+                                    {%- endcapture -%}
+                                    {%- assign selected_border_offset = 2 | times: 2 -%}
+                                    {%- capture swatch_bg_variables -%}
+                                      --swatch-inner-transform-x: {{ swatch_width | minus: selected_border_offset | divided_by: swatch_width }};
+                                      --swatch-inner-transform-y: {{ swatch_height | minus: selected_border_offset | divided_by: swatch_height }};
+                                    {%- endcapture -%}
+                                  {% endif %}
+                                  {%- break -%}
+                                {% endif %}
+                              {% endfor %}
+                            {%- else -%}
+                              {% comment %} Then look for a pattern image. {% endcomment %}
+                              {% assign swatch_file_name = color_name | downcase | handleize | append: '.png' %}
+                              {%- if images[swatch_file_name] != blank -%}
+                                {%- capture swatch_image_resolution -%}{{ swatch_size | times: 2 }}x{{ swatch_size | times: 2 }}{%- endcapture -%}
+                                {%- assign swatch_file_url = swatch_file_name | file_img_url: swatch_image_resolution, crop: 'center' -%}
+                                {%- capture swatch_bg_image -%}
+                                  background-image: url('{{- swatch_file_url  -}}');
+                                {%- endcapture -%}
+                              {%- endif -%}
+                            {%- endif -%}
+                          
+                          {%- endcapture -%}
+                          {{ swatch_bg_color }}
+                          {{ swatch_bg_image }}
+                          /* variables */
+                          {{ swatch_bg_variables }}
+                          {% comment %}Inject @pixelunion/shopify-variants-ui/variants-ui-swatch-styles end{% endcomment %}
+          
+                        {% endcapture %}
+                        <div
+                          class="
+                            variants-ui__option-swatch
+                            {{ option_swatch_classes }}
+                          "
+                          style="{{ swatch_styles | split: '/* variables */' | last | remove: '/* variables */' }}"
+                        >
+                          <div
+                            class="
+                              variants-ui__option-swatch-inner
+                              {{ option_swatch_inner_classes }}
+                            "
+                            style="{{ swatch_styles | split: '/* variables */' | first }}"
+                          >
+                          </div>
+                        </div>
+                      {% endunless %}
+                    </span>
+                  </label>
+                </div>
+              {% endfor %}
+            </div>
+          </fieldset>
+          {% comment %}Inject @pixelunion/shopify-variants-ui/variants-ui-radios end{% endcomment %}
+    
+        {% endif %}
+      {% endfor %}
+    </div>
+    {% comment %}Inject @pixelunion/shopify-variants-ui/variants-ui-options end{% endcomment %}
+  
+  {% endif %}
+  {% comment %}Inject @pixelunion/shopify-variants-ui/variants-ui end{% endcomment %}
+  {% assign technical_sheet_confirm = instructions['Formato del rollo']%}
+
+  <div class="product-form--atc" 
+  {% if product.title contains 'Alfombra' or product.title contains 'Pasto Sintético'%}
+    {% unless product.title contains 'Instalación de' %}
+      {% unless technical_sheet_confirm == '' %}
+        style=" text-align: center; background: #f1f1f1; margin-top: 0; padding-top: 16px;"
+      {% endunless%}
+    {% endunless%}
+  {% endif%}
+  >
+    <div class="product-form--atc-qty form-fields--qty" id="product-form-atc-qty-id" data-quantity-wrapper
+      {% if product.title contains 'Alfombra' or product.title contains 'Pasto Sintético'%}
+      {% unless product.title contains 'Instalación de' %}
+        style="width: 10.1875rem;"
+      {% endunless%}
+      {% endif%}
+    >
+      <div class="form-field form-field--qty-select">
+        <div class="form-field-select-wrapper" style="display: flex;">
+          {% if product.title contains 'Alfombra' or product.title contains 'Pasto Sintético'%}
+            {% unless product.title contains 'Instalación de' %}
+              <label for="product-quantity-select" style="font-size: 15px; padding-left: 9px; padding-top: 9px; padding-right: 9px; margin-right: 9px; background-color: #ccc;">Cantidad</label>
+            {% endunless%}
+          {% endif%}
+          <select
+            id="product-quantity-select"
+            class="form-field-input form-field-select
+            {% if product.title contains 'Alfombra' or product.title contains 'Pasto Sintético'%}
+              {% unless product.title contains 'Instalación de' %}
+                product-quantity-select-input
+              {% endunless%}
+            {% endif%}
+            "
+            {% if product.title contains 'Alfombra' or product.title contains 'Pasto Sintético'%}
+            {% unless product.title contains 'Instalación de' %}
+              style="padding-top: 6px;"
+            {% endunless%}
+            {% endif%}
+            aria-label="{{ 'general.general.quantity' | t }}"
+            data-quantity-select
+          >
+            {% for i in (1..9) %}
+              <option {% if i == 1 %}selected {% endif %}value="{{ i }}">
+                {{ i }}
+              </option>
+            {% endfor %}
+            <option value="10+">
+              10+
+            </option>
+          </select>
+          <label
+            for="product-quantity-select"
+            class="form-field-title"
+            {% if product.title contains 'Alfombra' or product.title contains 'Pasto Sintético'%}
+            {% unless product.title contains 'Instalación de' %}
+              style="display: none;"
+            {% endunless%}
+            {% endif%}
+          >
+            {{ 'general.general.quantity' | t }}
+          </label>
+          {% render 'icon-chevron-down-small' %}
+        </div>
+      </div>
+      <div class="form-field form-field--qty-input hidden">
+        <input
+          id="product-quantity-input"
+          class="form-field-input form-field-number form-field-filled 
+          {% if product.title contains 'Alfombra' or product.title contains 'Pasto Sintético'%}
+            {% unless product.title contains 'Instalación de' %}
+              product-quantity-select-input
+            {% endunless%}
+          {% endif %}
+          "
+          {% if product.title contains 'Alfombra' or product.title contains 'Pasto Sintético'%}
+          {% unless product.title contains 'Instalación de' %}
+            style="padding-top: 6px;"
+          {% endunless%}
+          {% endif%}
+          value="1"
+          name="quantity"
+          type="text"
+          pattern="\d*"
+          aria-label="{{ 'general.general.quantity' | t }}"
+          data-quantity-input
+        >
+        <label
+          for="product-quantity-input"
+          class="form-field-title"
+          {% if product.title contains 'Alfombra' or product.title contains 'Pasto Sintético'%}
+          {% unless product.title contains 'Instalación de' %}
+            style="display: none;"
+          {% endunless%}
+          {% endif%}
+        >
+          {{ 'general.general.quantity' | t }}
+        </label>
+      </div>
+    </div>
+    <div class="product-form--atc-count">
+      <div class = "product-form--atc-calculator">
+        <div >
+          <div >
+            <div style = "float:left; margin-right:5px">
+              <img class="caculator_svg" src="{{ 'calculator-technology-svgrepo-com.svg' | asset_url }}" alt="calculator" width=40px height=auto>
+            </div>
+            <div style = "float:left; margin-right:60px">
+              <p style="margin:0;font-weight:bold">Calcula cuantas cajas necesitas para tu proyecto</p>
+              <p style="margin:0; color:#555">ingresa los m que necesitas cubrir</p>
+            </div>
+            <div class="product-form--atc-div">
+              <div class = "product-form--atc-input-wrapper">
+                <input          
+                  id="sqm-input"
+                  class="form-field-input form-field-number form-field-filled"
+                  value="0"
+                  name="sqm"
+                  type="text"
+                  data-quantity-input
+                  style="padding:6px"
+                       >
+                <p id="product-quantity-input-background-letter">&#13217;</p>
+              </div>
+
+            </div>
+            <div class = "clear"></div>
+          </div>
+          <div style = "padding-bottom:28px; border-bottom: 2px solid #aaa;">
+            <p id = "sqm--description" style="color:#555">Largo&#215;Ancho = <span style="color:#555">&#13217;</span>&nbsp; | &nbsp;<span style="color: #328ca8; font-weight:bold">Guia para calcular <span>&#13217;</span></span></p>
+          </div>
+        </div>
+        <div>
+          <h3 style="font-size: 0.8rem">Necesitas <span  id = "product-number-span"></span> cajas para cubir <span  id = "product-quantity-span"></span> &#13217;</h3>
+          <input type="checkbox" id="is_additional_checked" style=" width:15px; height:15px">
+          <p style="color:#555"> Incluir 10% adicional para cubir posibles daños y faltantes</p>
+        </div>
+      </div>
+      <div class="number_of_blocks">
+        <span class="minus" id="minus">&#8722;</span>
+        <input 
+               type="text" 
+               id="input_holder" 
+               value="0"
+               aria-label="{{ 'general.general.quantity' | t }}"
+               >
+        <span class="plus" id="plus" style="padding-top: 5px">&#43;</span>
+      </div>
+    </div>
+    <button
+      class="product-form--atc-button {% if selected_variant and selected_variant.available == false %}disabled{% endif %}"
+      type="submit" style="width:100%"
+      {% if selected_variant and selected_variant.available == false %}disabled{% endif %}
+      data-product-atc
+      >
+      <span class="atc-button--text">
+        {% unless selected_variant and selected_variant.available == false %}
+        {{ 'product.buttons.add_to_cart' | t }}
+        {% else %}
+        {{ 'product.buttons.sold_out' | t }}
+        {% endunless %}
+      </span>
+      <span class="atc-button--icon">
+        {%- render 'icon-spinner' -%}
+      </span>
+    </button>
+</div>
+
+  {% if product_smart_buttons or quickshop_smart_buttons %}
+    {{ form | payment_button }}
+  {% endif %}
+
+  <div data-payment-terms-reference style="display: none;">
+    {{ form | payment_terms }}
+  </div>
+  <script>
+    var unit_footage = "";
+    var str = '';
+    function getSecondPart(str) {
+    return str.split('Caja')[1];
+    }
+    $(document).ready(function(){
+      var hold_initial = false;
+      var initial_caja ;
+      var width =  $('.select-current-width').val();
+      var caja_price = $('#price_current-caja-price').text();
+      if( hold_initial == false )
+      {
+        initial_caja = caja_price;
+        hold_initial = true ;
+      }
+      var length = $('.select-current-length').val();
+      $('#sqm-total').text(width*length+"㎡");
+      $('#variant_current--price').text( '$' + (caja_price.slice(1,) * length * $('.product-quantity-select-input').val()/0.25).toFixed(3));
+      $('.product-quantity-select-input').change(function() {
+          var current_price = caja_price.slice(1,);
+           length = $('.select-current-length').val();
+          var total_current_price = (current_price * length * $(this).val()/0.25).toFixed(3) ;
+          $('#variant_current--price').text('$'+total_current_price);
+          $('#price_current-caja-price').text( initial_caja );
+        $('#sqm-total').text(width*length*$(this).val()+"㎡");
+      });
+      $('.select-current-length').change(function() {
+          var current_price = caja_price.slice(1,);
+           length = $(this).val();
+          var total_current_price =( current_price * length * $('.product-quantity-select-input').val()/0.25).toFixed(3) ;
+          $('#variant_current--price').text('$'+total_current_price);//M²
+          $('#price_current-caja-price').text( initial_caja );
+          // $('#fixed-price').text($('#price_current-caja-price').text().slice(1,)/width);
+	      $('#sqm-total').text(width*length*$('.product-quantity-select-input').val()+"㎡");
+      });
+
+      $('body').on('DOMSubtreeModified', '#current-price', function(){
+        $('#current-price').text(initial_caja + ' M²');
+      });
+
+      $(".product-description-title").click(function() {
+      	$(".product-description").toggleClass('hidden');
+        $(this).toggleClass('title-active');
+      });
+      $(".metafield-data-title").click(function() {
+      	$(".metafield-data").toggleClass('hidden');
+        $(this).toggleClass('title-active');
+      });      
+      var title_holder = $(".product-title").text();
+      if(title_holder.indexOf("Instalación") >= 0) {
+        $(".product-description-content").css({'border':'none', 'margin-top':'0'});
+      }
+      var secondPartString = getSecondPart(title_holder);
+      
+      if(title_holder.indexOf("Caja") >= 0)
+      { 
+        $("#product-form-atc-qty-id ").css('display','none');
+        $(".form-field-select-wrapper").hide();
+        unit_footage = (secondPartString).substring(0,secondPartString.indexOf("M"));
+        unit_footage = unit_footage.replace(',','.');
+        var additional_considered = false;
+        $("#sqm-input").on("input", function(){
+
+          if ($("#sqm-input").val().indexOf(",") >= 0){
+              str = $("#sqm-input").val().replace(',','.');
+          }
+          else{
+              str = $("#sqm-input").val();
+          }
+          $("#product-quantity-span").text(($("#sqm-input").val().replace('.',',')));
+          $("#product-number-span").text(Math.ceil(str/unit_footage));
+          $("#input_holder").val(Math.ceil(str/ unit_footage));
+          $("#product-quantity-input").val($("#input_holder").val());
+
+        });
+        $("#input_holder").on("input", function(){
+          $("#product-quantity-span").text((($("#input_holder").val()*unit_footage).toFixed(3)-0).replace('.',','));
+          $("#product-number-span").text($("#input_holder").val());
+          $("#sqm-input").val(($("#input_holder").val()*unit_footage).toFixed(3)-0);
+          $("#product-quantity-input").val($("#input_holder").val());
+
+        });
+        $("#minus" ).click(function() {
+          if($("#input_holder").val() == 0){
+              alert("Ingresar valor válido")
+          }
+          else{
+            $("#input_holder").val(Number($("#input_holder").val())-1);
+            $("#product-quantity-span").text((($("#input_holder").val()*unit_footage).toFixed(3)-0).toString().replace('.',','));
+            $("#product-number-span").text($("#input_holder").val());
+            $("#sqm-input").val(($("#input_holder").val()*unit_footage).toFixed(3)-0);
+            $("#product-quantity-input").val($("#input_holder").val());
+
+          }
+        });
+        $("#plus" ).click(function() {
+          $("#input_holder").val(Number($("#input_holder").val())+1);
+          $("#product-quantity-span").text((($("#input_holder").val()*unit_footage).toFixed(3)-0).toString().replace('.',','));
+          $("#product-number-span").text($("#input_holder").val());
+          $("#sqm-input").val(($("#input_holder").val()*unit_footage).toFixed(3)-0);
+          $("#product-quantity-input").val($("#input_holder").val());
+
+        });
+
+        $("#is_additional_checked").click( function(){
+          if ($("#sqm-input").val().indexOf(",") >= 0){
+            str = $("#sqm-input").val().replace(',','.');
+          }
+          else{
+            str = $("#sqm-input").val();
+          }
+
+          if(additional_considered == false){
+            str = str * 1.1;
+            $("#sqm-input").val(str.toFixed(3)-0);
+            $("#input_holder").val(Math.ceil(str/unit_footage));
+            $("#product-quantity-span").text((str.toFixed(3)-0).toString().replace('.',','));
+            $("#product-number-span").text(Math.ceil(str/unit_footage));
+            additional_considered = true;
+            $("#product-quantity-input").val($("#input_holder").val());
+
+          }
+          else{
+            str = str/1.1;
+            $("#sqm-input").val(str.toFixed(3)-0);
+            $("#input_holder").val(Math.ceil(str/unit_footage));
+            $("#product-quantity-span").text((str.toFixed(3)-0).toString().replace('.',','));
+            $("#product-number-span").text(Math.ceil(str/unit_footage));                                           
+            additional_considered = false;  
+            $("#product-quantity-input").val($("#input_holder").val());
+
+          }
+
+        });
+      }
+      else{
+        $(".product-form--atc-count").prop("disabled",true);
+        $(".product-form--atc-count").hide();
+//         $(".form-field--qty-select").show();
+        $(".form-field-select-wrapper").show();
+        $(".product-form--atc-button").css('width', '100%');
+      }
+      
+ 
+    });
+      
+  </script>
+  <div class="surface-pick-up" data-surface-pick-up></div>
+{% endform %}
+{% render "quotify-button", class: 'product-form--atc-button mdc-ripple-surface mdc-ripple-upgraded' %}
+

@@ -1,0 +1,442 @@
+{% liquid
+  assign enable_autoplay = section.settings.enable_autoplay
+  assign autoplay_interval = section.settings.autoplay_duration
+  assign slideshow_height = section.settings.slideshow_height
+  assign slideshow_height_mobile = section.settings.slideshow_height_mobile
+  assign show_pagination = true
+  assign mobile_navigation_adjust = true
+  assign slideshow_classes = 'slideshow--height-' | append: section.settings.slideshow_height | append: ' slideshow--height-' | append: section.settings.slideshow_height_mobile | append: '-mobile' | append: ' slideshow--width-' | append: section.settings.slideshow_width | append: ' slideshow--text-below-image-' | append: section.settings.slideshow_text_below_image
+  if slideshow_height == 'adapt' or slideshow_height_mobile == 'adapt'
+    assign first_block = section.blocks[0]
+    assign min_aspect_ratio_desktop = first_block.settings.image.aspect_ratio
+    assign min_aspect_ratio_mobile = first_block.settings.mobile_image.aspect_ratio
+    assign slide_height = 100 | divided_by: min_aspect_ratio_desktop
+    assign slide_height_mobile = 100 | divided_by: min_aspect_ratio_mobile
+  endif
+%}
+
+<script type="application/pxs-animation-mapping+json">
+  {
+    "blocks": [".slideshow-slide"],
+    "elements": [
+      ".slideshow-slide__heading",
+      ".slideshow-slide__text",
+      ".slideshow-slide__button"
+    ]
+  }
+</script>
+
+{% if slideshow_height == 'adapt' or slideshow_height_mobile == 'adapt' %}
+  {% style %}
+    @media screen and (min-width: 720px) {
+      #shopify-section-{{ section.id }} .slideshow-slide__image-wrapper {
+        height: {{ slide_height | append: 'vw' }};
+      }
+    }
+
+    @media screen and (max-width: 719px) {
+      #shopify-section-{{ section.id }} .slideshow-slide__image-wrapper {
+        {% if slide_height_mobile != blank %}
+          height: {{ slide_height_mobile | append: 'vw' }};
+        {% else %}
+          height: {{ slide_height | append: 'vw' }};
+        {% endif %}
+      }
+    }
+  {% endstyle %}
+{% endif %}
+
+{% comment %}Inject @pixelunion/pxs-slideshow/slideshow begin{% endcomment %}
+{%- comment -%}
+  @param section {Object}
+    The section object with all section data.
+  @param slideshow_heading {String}
+    The heading to be shown above the slideshow if one exists
+  @param enable_autoplay {Boolean}
+    If true the slideshow will play automatically
+  @param autoplay_interval {Number}
+    The number of seconds before switching to a new slide if autoplay is enabled
+  @param show_pagination {Boolean}
+    If set to true, the pagination dots will show on the slideshow
+  @param mobile_navigation_adjust {Boolean}
+    If set to true, the pagination dots will be dynamically placed below the image on mobile, and the
+    arrows (if displayed) will show in the middle of the image
+  @param transition_fade {Boolean}
+    If true, the slides will use a fade transition instead of a slide transition
+  @param slide_attraction {String}
+    This is the attraction of how fast a slide will move into place when changed - based on Flickity's property
+  @param slide_friction {String}
+    This is the friction of the slides and how sticky they are when snapping into place - based on Flickity's property
+  @param slideshow_classes {String}
+    A space separated list of classnames to add to the slideshow section element
+  @param wrapper_classes {String}
+    A space separated list of classnames to add to the slideshow internal wrapper element
+{%- endcomment -%}
+
+<script
+  type="application/json"
+  data-section-type="pxs-slideshow"
+  data-section-id="{{ section.id }}"
+  data-section-data
+>
+  {
+    "enable_autoplay": {{ enable_autoplay | json }},
+    "autoplay_interval": {{ autoplay_interval | json }},
+    "mobile_navigation_adjust": {{ mobile_navigation_adjust | json }},
+    "transition_fade": {{ transition_fade | json }},
+    "slide_attraction": {{ slide_attraction | json }},
+    "slide_friction": {{ slide_friction | json }},
+    "next_text": {{ 'sections.slideshow.next_slide' | t | json }},
+    "previous_text": {{ 'sections.slideshow.previous_slide' | t | json }}
+  }
+</script>
+
+<section
+  class="
+    slideshow
+    {{ slideshow_classes }}
+  "
+  aria-label="{{ 'sections.slideshow.slideshow' | t }}"
+  data-autoplay="{% if enable_autoplay %}true{% else %}false{% endif %}"
+  data-autoplay-interval="{{ autoplay_interval }}"
+>
+  {%- if slideshow_heading != blank -%}
+    <h2 class="slideshow__heading">
+      {{ slideshow_heading }}
+    </h2>
+  {%- endif -%}
+
+  <div
+    class="slideshow__wrapper {{ wrapper_classes }}"
+    data-slideshow-wrapper
+  >
+    {%- for block in section.blocks -%}
+      {%
+        render 'slideshow-slide',
+        section: section,
+        block: block,
+        block_index: forloop.index0,
+      %}
+    {%- endfor -%}
+  </div>
+
+  {%- if section.blocks.size > 1 and show_pagination -%}
+    <ol
+      class="slideshow-pagination"
+      data-slideshow-pagination
+    >
+      {%- for block in section.blocks -%}
+        <li class="slideshow-pagination__dot">
+          <button
+            class="slideshow-pagination__button"
+            data-selected="{% if forloop.index == 1 %}true{% else %}false{% endif %}"
+            data-slide-button="{{ forloop.index0 }}"
+          >
+            <span class="visually-hidden">{{ 'sections.slideshow.slide_index' | t: count: forloop.index }}</span>
+          </button>
+        </li>
+      {%- endfor -%}
+    </ol>
+  {%- endif -%}
+
+  <div
+    class="slideshow__current-slide visually-hidden"
+    aria-live="polite"
+    aria-atomic="true"
+    data-slide-counter
+    data-counter-template="{{ 'sections.slideshow.slide_counter' | t }}"
+  >
+  </div>
+</section>
+{% comment %}Inject @pixelunion/pxs-slideshow/slideshow end{% endcomment %}
+
+
+{% schema %}
+{
+  "name": "Slideshow",
+  "class": "slideshow--section",
+  "settings": [
+    {
+      "id": "enable_autoplay",
+      "type": "checkbox",
+      "label": "Autoplay slideshow",
+      "default": true
+    },
+    {
+      "id": "autoplay_duration",
+      "type": "range",
+      "label": "Autoplay slide duration",
+      "min": 5,
+      "max": 12,
+      "step": 1,
+      "unit": "sec",
+      "default": 8
+    },
+    {
+      "id": "slideshow_width",
+      "type": "select",
+      "label": "Slide width",
+      "options": [
+        {
+          "value": "full",
+          "label": "Full width"
+        },
+        {
+          "value": "content",
+          "label": "Content width"
+        }
+      ],
+      "default": "full"
+    },
+    {
+      "type": "header",
+      "content": "Desktop"
+    },
+    {
+      "id": "slideshow_height",
+      "type": "select",
+      "label": "Slide height",
+      "options": [
+        {
+          "value": "small",
+          "label": "Small (400px)"
+        },
+        {
+          "value": "medium",
+          "label": "Medium (500px)"
+        },
+        {
+          "value": "large",
+          "label": "Large (600px)"
+        },
+        {
+          "value": "fit_screen",
+          "label": "Fit screen"
+        },
+        {
+          "value": "adapt",
+          "label": "Adapt to first slide"
+        },
+        {
+          "value": "original",
+          "label": "Original aspect ratio"
+        }
+      ],
+      "default": "medium"
+    },
+    {
+      "type": "header",
+      "content": "Mobile"
+    },
+    {
+      "id": "slideshow_height_mobile",
+      "type": "select",
+      "label": "Slide height",
+      "options": [
+        {
+          "value": "small",
+          "label": "Small (250px)"
+        },
+        {
+          "value": "medium",
+          "label": "Medium (300px)"
+        },
+        {
+          "value": "large",
+          "label": "Large (350px)"
+        },
+        {
+          "value": "x-large",
+          "label": "Extra large (400px)"
+        },
+        {
+          "value": "fit_screen",
+          "label": "Fit screen"
+        },
+        {
+          "value": "adapt",
+          "label": "Adapt to first slide"
+        },
+        {
+          "value": "original",
+          "label": "Original aspect ratio"
+        }
+      ],
+      "default": "medium"
+    },
+    {
+      "type": "checkbox",
+      "id": "slideshow_text_below_image",
+      "label": "Show text below image",
+      "default": true
+    }
+  ],
+  "blocks": [
+    {
+      "type": "slide",
+      "name": "Slide",
+      "settings": [
+        {
+          "id": "background_image",
+          "type": "image_picker",
+          "label": "Image",
+          "info": "1800 x 1000px recommended"
+        },
+        {
+          "id": "mobile_background_image",
+          "type": "image_picker",
+          "label": "Mobile image",
+          "info": "Optional. The slideshow will use the main slide image on mobile by default."
+        },
+        {
+          "id": "title",
+          "type": "text",
+          "label": "Heading",
+          "default": "Slide"
+        },
+        {
+          "id": "text",
+          "type": "text",
+          "label": "Subheading",
+          "default": "Introduce customers to your shop with lifestyle and product imagery"
+        },
+        {
+          "id": "color",
+          "type": "color",
+          "label": "Text color",
+          "default": "#FFFFFF"
+        },
+        {
+          "id": "link",
+          "type": "url",
+          "label": "Background link"
+        },
+        {
+          "id": "text_alignment",
+          "type": "select",
+          "label": "Text alignment",
+          "options": [
+            {
+              "value": "left",
+              "label": "Left"
+            },
+            {
+              "value": "center",
+              "label": "Center"
+            },
+            {
+              "value": "right",
+              "label": "Right"
+            }
+          ],
+          "default": "center"
+        },
+        {
+          "type": "header",
+          "content": "Buttons"
+        },
+        {
+          "id": "button_one_label",
+          "type": "text",
+          "label": "Button 1 label",
+          "default": "Button"
+        },
+        {
+          "id": "button_one_link",
+          "type": "url",
+          "label": "Button 1 link"
+        },
+        {
+          "id": "button_one_style",
+          "type": "select",
+          "label": "Button 1 style",
+          "options": [
+            {
+              "value": "primary",
+              "label": "Primary"
+            },
+            {
+              "value": "secondary",
+              "label": "Secondary"
+            }
+          ],
+          "default": "primary"
+        },
+        {
+          "id": "button_two_label",
+          "type": "text",
+          "label": "Button 2 label"
+        },
+        {
+          "id": "button_two_link",
+          "type": "url",
+          "label": "Button 2 link"
+        },
+        {
+          "id": "button_two_style",
+          "type": "select",
+          "label": "Button 2 style",
+          "options": [
+            {
+              "value": "primary",
+              "label": "Primary"
+            },
+            {
+              "value": "secondary",
+              "label": "Secondary"
+            }
+          ],
+          "default": "primary"
+        },
+        {
+          "type": "header",
+          "content": "Overlay"
+        },
+        {
+          "id": "show_overlay",
+          "type": "checkbox",
+          "label": "Show overlay",
+          "default": true
+        },
+        {
+          "id": "overlay_color",
+          "type": "color",
+          "label": "Color",
+          "default": "#000000"
+        },
+        {
+          "id": "overlay_opacity",
+          "type": "range",
+          "label": "Opacity",
+          "min": 1,
+          "max": 100,
+          "step": 1,
+          "unit": "%",
+          "default": 50
+        }
+      ]
+    }
+  ],
+  "presets": [
+    {
+      "name": "Slideshow",
+      "category": "Image",
+      "blocks": [
+        {
+          "type": "slide",
+          "settings": {
+            "title": "Slide 1"
+          }
+        },
+        {
+          "type": "slide",
+          "settings": {
+            "title": "Slide 2"
+          }
+        }
+      ]
+    }
+  ]
+}
+
+{% endschema %}

@@ -1,0 +1,119 @@
+{% assign search_category = search_category | default: blank %}
+{% assign show_breadcrumbs = true %}
+
+{% if show_breadcrumbs %}
+  {% capture cat_array %}{%- render 'advanced-tag-loop' -%}{% endcapture %}
+  {% assign cat_array = cat_array | split: '|' %}
+
+  {%- capture delimiter -%}
+    <span class="breadcrumbs-delimiter" aria-hidden="true">
+      {% render 'icon-chevron-down-thin' %}
+    </span>
+  {%- endcapture -%}
+
+  <nav
+    class="breadcrumbs-container"
+    aria-label="{{ 'general.accessibility.nav_breadcrumbs' | t }}"
+  >
+    <a href="{{ routes.root_url }}">{{ 'general.breadcrumbs.home' | t }}</a>
+    {% if template contains 'page' %}
+
+      {{ delimiter }}
+      <span>{{ page.title }}</span>
+
+    {% elsif template contains 'product' %}
+
+      {% if collection.url %}
+        {{ delimiter }}
+        {{ collection.title | link_to: collection.url }}
+      {% endif %}
+      {{ delimiter }}
+      <span>{{ product.title }}</span>
+
+    {% elsif template contains 'list-collections' %}
+
+      {{ delimiter }}
+      <span>{{ 'general.breadcrumbs.collections' | t }}</span>
+
+    {% elsif template contains 'collection' and collection.handle %}
+
+      {{ delimiter }}
+      {% if current_tags %}
+        {% capture url %}/collections/{{ collection.handle }}{% endcapture %}
+        {{ collection.title | link_to: url }}
+        {{ delimiter }}
+
+        {% for tag in current_tags %}
+
+          {% assign is_advanced_tag = false %}
+          {% assign cat = tag | split: '_' | first %}
+          {% unless cat == tag %}
+            {% if cat_array contains cat %}
+              {% assign is_advanced_tag = true %}
+              <span class="breadcrumbs-tag">
+                {{ tag | remove_first: cat | remove_first: '_' }}
+              </span>
+            {% endif %}
+          {% endunless %}
+
+          {% unless is_advanced_tag %}
+            <span class="breadcrumbs-tag">{{ tag }}</span>
+          {% endunless %}
+
+          {% unless forloop.last %}
+            <span class="breadcrumbs-tag">+</span>
+          {% endunless %}
+        {% endfor %}
+      {% else %}
+        <span>{{ collection.title }}</span>
+      {% endif %}
+
+    {% elsif template == 'blog' %}
+
+      {{ delimiter }}
+      {% if current_tags %}
+        {{ blog.title | link_to: blog.url }}
+        {{ delimiter }}
+        <span>{{ current_tags | join: " + " }}</span>
+      {% else %}
+      <span>{{ blog.title }}</span>
+      {% endif %}
+
+    {% elsif template == 'article' %}
+
+      {{ delimiter }}
+      {{ blog.title | link_to: blog.url }}
+      {{ delimiter }}
+      <span>{{ article.title }}</span>
+
+    {% elsif template contains 'search' and search.performed %}
+      {% capture sanitized_terms %}
+        {%
+          render 'search-sanitizer',
+          search_terms: search.terms
+        %}
+      {% endcapture %}
+
+      {% assign sanitized_terms = sanitized_terms | strip %}
+
+      {{ delimiter }}
+
+      {% if search_category != blank %}
+        <span>
+          {{
+            'search.general.breadcrumbs_count_when_filtered'
+            | t: terms: sanitized_terms, category: search_category, count: search.results_count
+          }}
+        </span>
+      {% else %}
+        <span>{{ 'search.general.breadcrumbs_count' | t: terms: sanitized_terms, count: search.results_count }}</span>
+      {% endif %}
+
+    {% else %}
+
+      {{ delimiter }}
+       <span>{{ page_title }}</span>
+
+    {% endif %}
+  </nav>
+{% endif %}

@@ -1,0 +1,22 @@
+{% comment %}
+  @param button_label String
+    For assistive technology to read out label for button
+
+  @param depth Number
+    Current menu depth
+{% endcomment %}
+
+{% assign depth = depth | default: nil %}
+
+<button
+  class="navmenu-button"
+  data-navmenu-trigger
+  aria-expanded="false"
+>
+  <div class="navmenu-button-wrapper" tabindex="-1">
+    <span class="navmenu-icon {% if depth %}navmenu-icon-depth-{{ depth }}{% endif %}">
+      {% render 'icon-chevron-down-small' %}
+    </span>
+    <span class="visually-hidden">{{ button_label }}</span>
+  </div>
+</button>
